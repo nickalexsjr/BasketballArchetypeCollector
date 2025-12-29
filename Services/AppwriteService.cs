@@ -108,6 +108,16 @@ public class AppwriteService
 
     public async Task<AppUser> SignInWithEmail(string email, string password)
     {
+        // First, try to delete any existing session to avoid "session is active" error
+        try
+        {
+            await _account.DeleteSession("current");
+        }
+        catch
+        {
+            // No session exists, that's fine
+        }
+
         await _account.CreateEmailPasswordSession(email, password);
         var user = await _account.Get();
 
@@ -127,6 +137,16 @@ public class AppwriteService
 
     public async Task<AppUser> SignUpWithEmail(string email, string password, string displayName)
     {
+        // First, try to delete any existing session to avoid "session is active" error
+        try
+        {
+            await _account.DeleteSession("current");
+        }
+        catch
+        {
+            // No session exists, that's fine
+        }
+
         var user = await _account.Create(
             userId: ID.Unique(),
             email: email,
@@ -136,19 +156,42 @@ public class AppwriteService
 
         await _account.CreateEmailPasswordSession(email, password);
 
-        // Create user document
-        await _databases.CreateDocument(
-            databaseId: AppConfig.DatabaseId,
-            collectionId: AppConfig.UserCollectionsCollection,
-            documentId: user.Id,
-            data: new Dictionary<string, object>
-            {
-                { "userId", user.Id },
-                { "displayName", displayName },
-                { "email", email },
-                { "createdAt", DateTime.UtcNow.ToString("o") }
-            }
-        );
+        // Create user document with permissions for the user
+        try
+        {
+            await _databases.CreateDocument(
+                databaseId: AppConfig.DatabaseId,
+                collectionId: AppConfig.UserCollectionsCollection,
+                documentId: user.Id,
+                data: new Dictionary<string, object>
+                {
+                    { "userId", user.Id },
+                    { "displayName", displayName },
+                    { "email", email },
+                    { "coins", AppConfig.StartingCoins },
+                    { "playerIds", new List<string>() },
+                    { "packsOpened", 0 },
+                    { "cardsCollected", 0 },
+                    { "crestsGenerated", 0 },
+                    { "goatCount", 0 },
+                    { "legendaryCount", 0 },
+                    { "epicCount", 0 },
+                    { "rareCount", 0 }
+                },
+                permissions: new List<string>
+                {
+                    Permission.Read(Role.User(user.Id)),
+                    Permission.Write(Role.User(user.Id)),
+                    Permission.Update(Role.User(user.Id)),
+                    Permission.Delete(Role.User(user.Id))
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Failed to create user document: {ex.Message}");
+            // Don't fail signup if document creation fails - user can still use the app
+        }
 
         // Persist session for app restart
         await PersistUserSession(user.Id, user.Email, user.Name);
@@ -173,19 +216,41 @@ public class AppwriteService
         }
         catch
         {
-            // User document doesn't exist, create it
-            await _databases.CreateDocument(
-                databaseId: AppConfig.DatabaseId,
-                collectionId: AppConfig.UserCollectionsCollection,
-                documentId: userId,
-                data: new Dictionary<string, object>
-                {
-                    { "userId", userId },
-                    { "displayName", displayName ?? "User" },
-                    { "email", email ?? "" },
-                    { "createdAt", DateTime.UtcNow.ToString("o") }
-                }
-            );
+            // User document doesn't exist, create it with permissions
+            try
+            {
+                await _databases.CreateDocument(
+                    databaseId: AppConfig.DatabaseId,
+                    collectionId: AppConfig.UserCollectionsCollection,
+                    documentId: userId,
+                    data: new Dictionary<string, object>
+                    {
+                        { "userId", userId },
+                        { "displayName", displayName ?? "User" },
+                        { "email", email ?? "" },
+                        { "coins", AppConfig.StartingCoins },
+                        { "playerIds", new List<string>() },
+                        { "packsOpened", 0 },
+                        { "cardsCollected", 0 },
+                        { "crestsGenerated", 0 },
+                        { "goatCount", 0 },
+                        { "legendaryCount", 0 },
+                        { "epicCount", 0 },
+                        { "rareCount", 0 }
+                    },
+                    permissions: new List<string>
+                    {
+                        Permission.Read(Role.User(userId)),
+                        Permission.Write(Role.User(userId)),
+                        Permission.Update(Role.User(userId)),
+                        Permission.Delete(Role.User(userId))
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Failed to create user document: {ex.Message}");
+            }
         }
     }
 
