@@ -213,6 +213,12 @@ public class GameStateService
             playersOfRarity = _playerDataService.GetPlayersByRarity(Rarity.Common);
         }
 
+        // Final safety check
+        if (playersOfRarity.Count == 0)
+        {
+            throw new InvalidOperationException("No players available. Please ensure player data is loaded.");
+        }
+
         return playersOfRarity[random.Next(playersOfRarity.Count)];
     }
 

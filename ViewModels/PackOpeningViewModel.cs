@@ -9,6 +9,7 @@ namespace BasketballArchetypeCollector.ViewModels;
 public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly GameStateService _gameStateService;
+    private readonly PlayerDataService _playerDataService;
 
     [ObservableProperty]
     private Pack? _pack;
@@ -49,9 +50,10 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private int _sellAllValue;
 
-    public PackOpeningViewModel(GameStateService gameStateService)
+    public PackOpeningViewModel(GameStateService gameStateService, PlayerDataService playerDataService)
     {
         _gameStateService = gameStateService;
+        _playerDataService = playerDataService;
         Title = "Open Pack";
     }
 
@@ -78,6 +80,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 
         try
         {
+            // Ensure players are loaded first
+            await _playerDataService.LoadPlayersAsync();
+
             // Animated loading sequence
             await AnimateLoading();
 
@@ -158,6 +163,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task SkipToEnd()
     {
+        if (Cards.Count == 0) return;
+
         CurrentCardIndex = Cards.Count;
         AllRevealed = true;
         CurrentCard = Cards.LastOrDefault();

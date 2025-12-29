@@ -45,7 +45,7 @@ public partial class CollectionViewModel : BaseViewModel
 
     public List<string> RarityOptions { get; } = new()
     {
-        "All", "GOAT", "Legendary", "Epic", "Rare", "Uncommon", "Common"
+        "All", "Goat", "Legendary", "Epic", "Rare", "Uncommon", "Common"
     };
 
     public List<string> EraOptions { get; } = new()
@@ -133,8 +133,10 @@ public partial class CollectionViewModel : BaseViewModel
         // Rarity filter
         if (SelectedRarity != "All")
         {
-            var rarity = Enum.Parse<Rarity>(SelectedRarity);
-            filtered = filtered.Where(p => p.Rarity == rarity);
+            if (Enum.TryParse<Rarity>(SelectedRarity, true, out var rarity))
+            {
+                filtered = filtered.Where(p => p.Rarity == rarity);
+            }
         }
 
         // Era filter
