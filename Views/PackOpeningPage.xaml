@@ -158,7 +158,8 @@
 
             <!-- Cards -->
             <ScrollView Grid.Row="1">
-                <FlexLayout Direction="Row"
+                <FlexLayout x:Name="CardsContainer"
+                            Direction="Row"
                             Wrap="Wrap"
                             JustifyContent="Center"
                             AlignItems="Start"
@@ -171,7 +172,10 @@
                                     StrokeThickness="3"
                                     BackgroundColor="Transparent"
                                     Padding="4"
-                                    Margin="8">
+                                    Margin="8"
+                                    Opacity="0"
+                                    Scale="0.3"
+                                    Rotation="-15">
                                 <Border.Shadow>
                                     <Shadow Brush="{Binding RarityColor}"
                                             Offset="0,0"
