@@ -165,15 +165,28 @@
                             BindableLayout.ItemsSource="{Binding Cards}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:CardItem">
-                            <controls:PlayerCard Player="{Binding Player}"
-                                                 CrestImageUrl="{Binding CrestImageUrl}"
-                                                 CardSize="Medium"
-                                                 Margin="8">
-                                <controls:PlayerCard.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PackOpeningViewModel}}, Path=ViewCardCommand}"
-                                                          CommandParameter="{Binding}" />
-                                </controls:PlayerCard.GestureRecognizers>
-                            </controls:PlayerCard>
+                            <!-- Outer glow container for rarity highlight -->
+                            <Border StrokeShape="RoundRectangle 16"
+                                    Stroke="{Binding RarityColor}"
+                                    StrokeThickness="3"
+                                    BackgroundColor="Transparent"
+                                    Padding="4"
+                                    Margin="8">
+                                <Border.Shadow>
+                                    <Shadow Brush="{Binding RarityColor}"
+                                            Offset="0,0"
+                                            Radius="20"
+                                            Opacity="0.7" />
+                                </Border.Shadow>
+                                <controls:PlayerCard Player="{Binding Player}"
+                                                     CrestImageUrl="{Binding CrestImageUrl}"
+                                                     CardSize="Medium">
+                                    <controls:PlayerCard.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PackOpeningViewModel}}, Path=ViewCardCommand}"
+                                                              CommandParameter="{Binding}" />
+                                    </controls:PlayerCard.GestureRecognizers>
+                                </controls:PlayerCard>
+                            </Border>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </FlexLayout>

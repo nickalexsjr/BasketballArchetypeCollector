@@ -41,6 +41,7 @@ public static class MauiProgram
         builder.Services.AddTransient<StatsViewModel>();
 
         // Register Pages
+        builder.Services.AddTransient<LoadingPage>();
         builder.Services.AddTransient<HomePage>();
         builder.Services.AddTransient<CollectionPage>();
         builder.Services.AddTransient<PackStorePage>();

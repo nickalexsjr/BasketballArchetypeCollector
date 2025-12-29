@@ -321,6 +321,13 @@ public class GameStateService
         _archetypeCache[archetype.PlayerId] = archetype;
         await SaveLocalArchetypeCache();
 
+        // Increment crests generated stat if this is a new crest with image
+        if (archetype.HasCrestImage)
+        {
+            _currentState.Stats.CrestsGenerated++;
+            await SaveAndSync();
+        }
+
         // Save to Appwrite if logged in
         if (!string.IsNullOrEmpty(_currentUserId))
         {

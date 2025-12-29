@@ -5,6 +5,7 @@ namespace BasketballArchetypeCollector.Views;
 public partial class PackOpeningPage : ContentPage
 {
     private readonly PackOpeningViewModel _viewModel;
+    private bool _hasStartedOpening;
 
     public PackOpeningPage(PackOpeningViewModel viewModel)
     {
@@ -16,11 +17,16 @@ public partial class PackOpeningPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        // Auto-start pack opening when page appears
-        if (_viewModel.OpenPackCommand.CanExecute(null))
+
+        // Only auto-start ONCE per page instance
+        if (!_hasStartedOpening && !_viewModel.IsOpening && _viewModel.Cards.Count == 0)
         {
+            _hasStartedOpening = true;
             await Task.Delay(100); // Small delay for smooth transition
-            _viewModel.OpenPackCommand.Execute(null);
+            if (_viewModel.OpenPackCommand.CanExecute(null))
+            {
+                _viewModel.OpenPackCommand.Execute(null);
+            }
         }
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BasketballArchetypeCollector.Views.LoadingPage"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False">
+
+    <Grid VerticalOptions="Center" HorizontalOptions="Center">
+        <VerticalStackLayout Spacing="24">
+            <!-- App Logo/Title -->
+            <Label Text="BASKETBALL"
+                   FontFamily="OrbitronBlack"
+                   FontSize="28"
+                   TextColor="#f97316"
+                   HorizontalTextAlignment="Center" />
+            <Label Text="ARCHETYPE COLLECTOR"
+                   FontFamily="OrbitronBold"
+                   FontSize="18"
+                   TextColor="White"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,-16,0,0" />
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="True"
+                               Color="#f97316"
+                               HeightRequest="50"
+                               WidthRequest="50"
+                               HorizontalOptions="Center" />
+
+            <Label Text="Loading..."
+                   FontFamily="InterRegular"
+                   FontSize="14"
+                   TextColor="#64748b"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

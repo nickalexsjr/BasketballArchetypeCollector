@@ -10,6 +10,11 @@
     Shell.TabBarTitleColor="#f97316"
     Shell.TabBarUnselectedColor="#64748b">
 
+    <!-- Loading screen - shown while checking session -->
+    <ShellItem Route="loading" FlyoutItemIsVisible="False">
+        <ShellContent ContentTemplate="{DataTemplate views:LoadingPage}" />
+    </ShellItem>
+
     <!-- Login/Signup screen - no tabs visible -->
     <ShellItem Route="login" FlyoutItemIsVisible="False">
         <ShellContent ContentTemplate="{DataTemplate views:SignInPage}" />

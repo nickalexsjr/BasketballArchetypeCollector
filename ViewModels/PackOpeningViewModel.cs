@@ -15,6 +15,8 @@ public partial class CardItem : ObservableObject
     [ObservableProperty]
     private string? _crestImageUrl;
 
+    public string RarityColor => RarityConfig.GetInfo(Player.Rarity).PrimaryColor;
+
     public CardItem(Player player, string? crestImageUrl = null)
     {
         Player = player;
