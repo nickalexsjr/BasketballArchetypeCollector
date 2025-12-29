@@ -453,7 +453,7 @@ public class AppwriteService
 
     #endregion
 
-    #region Archetype Generation (Appwrite Function)
+    #region Archetype Generation (Appwrite Function - like SwishPot)
 
     public async Task<ArchetypeData?> GenerateArchetype(string playerId, string playerName, string statHints)
     {
@@ -461,17 +461,8 @@ public class AppwriteService
 
         try
         {
-            // First, verify we have an active session for function calls
-            try
-            {
-                var session = await _account.GetSession("current");
-                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Active session found: {session.UserId}");
-            }
-            catch (Exception sessionEx)
-            {
-                System.Diagnostics.Debug.WriteLine($"[AppwriteService] No active session for function call: {sessionEx.Message}");
-                // Functions may still work if configured with "Any" execute permission
-            }
+            // Create a fresh Functions instance like SwishPot does
+            var functions = new Appwrite.Services.Functions(_client);
 
             var payload = System.Text.Json.JsonSerializer.Serialize(new
             {
@@ -482,22 +473,26 @@ public class AppwriteService
 
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] Calling function '{AppConfig.GenerateArchetypeFunctionId}' with payload: {payload}");
 
-            var execution = await _functions.CreateExecution(
+            var execution = await functions.CreateExecution(
                 functionId: AppConfig.GenerateArchetypeFunctionId,
                 body: payload,
                 xasync: false,
                 method: Appwrite.Enums.ExecutionMethod.POST
             );
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function response status: {execution.Status}, ResponseBody length: {execution.ResponseBody?.Length ?? 0}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function execution status: {execution.Status}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function response length: {execution.ResponseBody?.Length ?? 0}");
+
+            if (!string.IsNullOrEmpty(execution.ResponseBody))
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] ResponseBody: {execution.ResponseBody.Substring(0, Math.Min(500, execution.ResponseBody.Length))}");
+            }
 
             if (string.IsNullOrEmpty(execution.ResponseBody))
             {
                 System.Diagnostics.Debug.WriteLine("[AppwriteService] Empty response from generate-archetype function");
                 return null;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] ResponseBody: {execution.ResponseBody.Substring(0, Math.Min(500, execution.ResponseBody.Length))}...");
 
             var response = System.Text.Json.JsonDocument.Parse(execution.ResponseBody);
 
@@ -518,6 +513,28 @@ public class AppwriteService
                     };
 
                     System.Diagnostics.Debug.WriteLine($"[AppwriteService] SUCCESS: Archetype={archetype.Archetype}, CrestUrl={archetype.CrestImageUrl ?? "null"}");
+                    return archetype;
+                }
+            }
+
+            // Check for cached response
+            if (response.RootElement.TryGetProperty("cached", out var cached) && cached.GetBoolean())
+            {
+                if (response.RootElement.TryGetProperty("data", out var cachedData))
+                {
+                    var archetype = new ArchetypeData
+                    {
+                        PlayerId = playerId,
+                        PlayerName = playerName,
+                        Archetype = cachedData.TryGetProperty("archetype", out var arch) ? arch.GetString() ?? "" : "",
+                        SubArchetype = cachedData.TryGetProperty("subArchetype", out var sub) ? sub.GetString() ?? "" : "",
+                        PlayStyleSummary = cachedData.TryGetProperty("playStyleSummary", out var summary) ? summary.GetString() ?? "" : "",
+                        CrestImageUrl = cachedData.TryGetProperty("crestImageUrl", out var url) ? url.GetString() : null,
+                        Confidence = cachedData.TryGetProperty("confidence", out var conf) ? conf.GetString() ?? "" : "",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    System.Diagnostics.Debug.WriteLine($"[AppwriteService] CACHED: Archetype={archetype.Archetype}, CrestUrl={archetype.CrestImageUrl ?? "null"}");
                     return archetype;
                 }
             }
