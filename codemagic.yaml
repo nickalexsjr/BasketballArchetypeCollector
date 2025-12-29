@@ -11,8 +11,8 @@ workflows:
       vars:
         BUNDLE_ID: "com.basketballarchetype.app"
         APP_NAME: "BasketballArchetypeCollector"
-        # Appwrite Configuration
-        APPWRITE_ENDPOINT: "https://cloud.appwrite.io/v1"
+        # Appwrite Configuration (Sydney region)
+        APPWRITE_ENDPOINT: "https://syd.cloud.appwrite.io/v1"
         APPWRITE_PROJECT_ID: "basketballarchetype"
         APPWRITE_DATABASE_ID: "basketball-archetypes"
 

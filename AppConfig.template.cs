@@ -8,7 +8,7 @@ namespace BasketballArchetypeCollector;
 public static class AppConfig
 {
     // Appwrite Configuration (Sydney region)
-    public const string AppwriteEndpoint = "https://cloud.appwrite.io/v1";
+    public const string AppwriteEndpoint = "https://syd.cloud.appwrite.io/v1";
     public const string AppwriteProjectId = "YOUR_APPWRITE_PROJECT_ID";
 
     // App Settings
