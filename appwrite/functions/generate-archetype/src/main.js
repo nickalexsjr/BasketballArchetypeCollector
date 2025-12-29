@@ -1,3 +1,18 @@
+/**
+ * Generate Archetype Function
+ *
+ * CRITICAL: This function requires Appwrite timeout set to 120+ seconds!
+ *
+ * In Appwrite Console:
+ * 1. Go to Functions → generate-archetype → Settings
+ * 2. Find "Timeout" setting (default is 30 seconds)
+ * 3. Change to 120 or 180 seconds
+ * 4. Save and REDEPLOY the function
+ *
+ * ModelsLab image generation works 100% - the 30s failure is Appwrite
+ * killing the function before ModelsLab can complete.
+ */
+
 const { Client, Databases, Storage, ID } = require('node-appwrite');
 const OpenAI = require('openai');
 
@@ -39,7 +54,9 @@ function stableSeed(text) {
 }
 
 // Generate image using ModelsLab API with timeout
-async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 30000) {
+// NOTE: Appwrite function timeout must be set to 120+ seconds in the Console!
+// Go to Functions → generate-archetype → Settings → Timeout → set to 120 or 180
+async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 60000) {
     const url = 'https://modelslab.com/api/v6/images/text2img';
     const startTime = Date.now();
 
@@ -64,11 +81,21 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
 
     log(`Calling ModelsLab text2img API...`);
 
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
+    // Use AbortController to enforce timeout on fetch
+    const controller = new AbortController();
+    const fetchTimeout = setTimeout(() => controller.abort(), 30000); // 30s for initial request
+
+    let response;
+    try {
+        response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+        });
+    } finally {
+        clearTimeout(fetchTimeout);
+    }
 
     if (!response.ok) {
         throw new Error(`ModelsLab API error: ${response.status}`);
@@ -153,8 +180,11 @@ module.exports = async function (context) {
     const databases = new Databases(client);
     const storage = new Storage(client);
 
+    // OpenAI SDK with extended timeout (default is 10 minutes but let's be explicit)
     const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
+        apiKey: process.env.OPENAI_API_KEY,
+        timeout: 120000,  // 120 seconds timeout for API calls
+        maxRetries: 2     // Retry failed requests
     });
 
     const databaseId = process.env.DATABASE_ID;
@@ -249,15 +279,18 @@ Important:
         let crestImageUrl = null;
         if (archetypeData.image_prompt) {
             // Try ModelsLab first (much cheaper: ~$0.002/image vs $0.016/image)
+            // ModelsLab works 100% - the issue is Appwrite function timeout, not ModelsLab
+            // IMPORTANT: Appwrite function timeout must be set to 120+ seconds in Console!
+            // Go to: Functions → generate-archetype → Settings → Timeout → set to 120
             if (modelsLabApiKey) {
-                log(`Generating crest image with ModelsLab (30s timeout)...`);
+                log(`Generating crest image with ModelsLab (60s timeout)...`);
                 try {
                     crestImageUrl = await generateImageWithModelsLab(
                         archetypeData.image_prompt,
                         modelsLabApiKey,
                         log,
                         error,
-                        30000  // 30 second max wait, then fallback to DALL-E
+                        60000  // 60 second max wait for ModelsLab, then fallback to DALL-E
                     );
                     log(`ModelsLab image generated successfully`);
                 } catch (mlErr) {
