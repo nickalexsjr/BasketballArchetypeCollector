@@ -18,6 +18,7 @@ public partial class DatabasePlayerItem : ObservableObject
     public double Apg { get; set; }
     public string RarityLabel { get; set; } = string.Empty;
     public string RarityColor { get; set; } = "#7F8C8D";
+    public string RarityTextColor { get; set; } = "White";
     public bool IsOwned { get; set; }
     public string RowBackgroundColor => IsOwned ? "#1a3a1a" : "#0f172a";
 }
@@ -130,6 +131,8 @@ public partial class DatabaseViewModel : BaseViewModel
         {
             var rarityInfo = RarityConfig.GetInfo(player.Rarity);
             var isOwned = gameState.Collection.Contains(player.Id);
+            // Legendary (yellow/gold) needs black text for readability
+            var textColor = player.Rarity == Rarity.Legendary ? "Black" : "White";
 
             FilteredPlayers.Add(new DatabasePlayerItem
             {
@@ -143,6 +146,7 @@ public partial class DatabaseViewModel : BaseViewModel
                 Apg = player.Apg,
                 RarityLabel = rarityInfo.Label,
                 RarityColor = rarityInfo.PrimaryColor,
+                RarityTextColor = textColor,
                 IsOwned = isOwned
             });
         }
@@ -208,6 +212,8 @@ public partial class DatabaseViewModel : BaseViewModel
         {
             var rarityInfo = RarityConfig.GetInfo(player.Rarity);
             var isOwned = gameState.Collection.Contains(player.Id);
+            // Legendary (yellow/gold) needs black text for readability
+            var textColor = player.Rarity == Rarity.Legendary ? "Black" : "White";
 
             FilteredPlayers.Add(new DatabasePlayerItem
             {
@@ -221,6 +227,7 @@ public partial class DatabaseViewModel : BaseViewModel
                 Apg = player.Apg,
                 RarityLabel = rarityInfo.Label,
                 RarityColor = rarityInfo.PrimaryColor,
+                RarityTextColor = textColor,
                 IsOwned = isOwned
             });
         }
