@@ -198,8 +198,8 @@ Schema is correct with all required fields.
 
 ### 4. pack_purchases Collection Empty
 **Issue**: No rows in pack_purchases collection
-**Cause**: App doesn't save to this collection yet - would need to add to GameStateService.OpenPack()
-**Status**: Not implemented - low priority
+**Cause**: Collection defined but intentionally not used - all needed data is in `user_collections`
+**Status**: NOT A BUG - can delete this collection from Appwrite if desired
 
 ### 5. Storage Bucket (crests) Empty
 **Issue**: No files in crests storage bucket
