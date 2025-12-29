@@ -73,19 +73,6 @@
                                 BackgroundColor="Transparent" />
                     </Border>
 
-                    <!-- Ownership Filter -->
-                    <Border StrokeShape="RoundRectangle 8"
-                            BackgroundColor="#1e293b"
-                            Padding="8,4">
-                        <Picker Title="Owned"
-                                SelectedItem="{Binding SelectedOwnership}"
-                                ItemsSource="{Binding OwnershipOptions}"
-                                TextColor="White"
-                                TitleColor="#64748b"
-                                FontFamily="InterRegular"
-                                BackgroundColor="Transparent" />
-                    </Border>
-
                     <!-- Sort -->
                     <Border StrokeShape="RoundRectangle 8"
                             BackgroundColor="#1e293b"

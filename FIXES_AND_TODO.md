@@ -152,12 +152,14 @@ Schema is correct with all required fields.
 
 ## TODO List
 
-### High Priority - TESTING NOW (2025-12-30)
+### High Priority - v1.3.7 (2025-12-30)
 - [x] **Fix ARCHETYPES_COLLECTION_ID env var** - Verified set to `archetypes`
 - [x] **Fix schema mismatch** - Removed `createdAt`, added `imagePrompt`
-- [x] **Redeploy generate-archetype function** - Uploaded new tar.gz
-- [ ] **Test pack opening** - Verify archetypes save to database ← TESTING NOW
-- [ ] **Verify crestsGenerated stat** - Should increment when crest generated
+- [x] **Archetypes saving** - Confirmed archetypes collection now populates!
+- [x] **Collection filter fix** - Now defaults to "Owned", removed "All" option
+- [x] **Optimize function for speed** - DALL-E first (faster), ModelsLab fallback, reduced polling
+- [ ] **Redeploy generate-archetype function** - Upload new tar.gz with optimizations
+- [ ] **Test pack opening** - Verify crest images generate without timeout
 - [ ] **Verify loading page** - Should hide login flash on app launch
 - [ ] **Verify pack re-opening bug** - Going back from card detail shouldn't re-open pack
 - [ ] **Verify rarity glow** - Cards in pack results should have colored glow

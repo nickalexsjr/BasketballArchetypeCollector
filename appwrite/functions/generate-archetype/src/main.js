@@ -38,24 +38,25 @@ function stableSeed(text) {
     return Math.abs(hash).toString(16).substring(0, 16);
 }
 
-// Generate image using ModelsLab API (much cheaper than DALL-E)
-async function generateImageWithModelsLab(prompt, apiKey, log, error) {
+// Generate image using ModelsLab API with shorter timeout
+async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 60000) {
     const url = 'https://modelslab.com/api/v6/images/text2img';
+    const startTime = Date.now();
 
     const enhancedPrompt = `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents, high quality, detailed.`;
 
     const payload = {
         key: apiKey,
-        model_id: "sdxl",  // Use SDXL model - stable and widely available
+        model_id: "flux",  // Use Flux model - faster
         prompt: enhancedPrompt,
         negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality",
         width: "512",
         height: "512",
         samples: "1",
-        num_inference_steps: "30",
+        num_inference_steps: "20",  // Reduced for speed
         guidance_scale: 7.5,
         safety_checker: "no",
-        enhance_prompt: "yes",
+        enhance_prompt: "no",  // Disabled for speed
         seed: null,
         webhook: null,
         track_id: null
@@ -80,15 +81,21 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error) {
         throw new Error(`ModelsLab error: ${result.message || result.messege || 'Unknown error'}`);
     }
 
-    // Handle async processing
+    // Handle async processing with timeout
     if (result.status === 'processing') {
         log(`Image processing, ETA: ${result.eta} seconds`);
         const fetchUrl = result.fetch_result;
 
-        // Wait and poll for result
-        await new Promise(resolve => setTimeout(resolve, (result.eta || 10) * 1000));
+        // Wait initial ETA (capped at 30s)
+        const initialWait = Math.min((result.eta || 10) * 1000, 30000);
+        await new Promise(resolve => setTimeout(resolve, initialWait));
 
-        for (let attempt = 0; attempt < 10; attempt++) {
+        // Poll with timeout check
+        for (let attempt = 0; attempt < 6; attempt++) {
+            if (Date.now() - startTime > maxWaitMs) {
+                throw new Error('ModelsLab timeout: exceeded max wait time');
+            }
+
             const pollResponse = await fetch(fetchUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -106,8 +113,8 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error) {
                 throw new Error(`ModelsLab polling error: ${pollResult.message}`);
             }
 
-            // Wait 3 seconds before next poll
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Wait 5 seconds before next poll
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
         throw new Error('ModelsLab timeout: Image generation took too long');
@@ -225,42 +232,40 @@ Important:
 
         log(`Archetype generated: ${archetypeData.archetype}`);
 
-        // Step 2: Generate crest image with ModelsLab (cheaper) or DALL-E (fallback)
+        // Step 2: Generate crest image - try DALL-E first (faster, more reliable), then ModelsLab
         let crestImageUrl = null;
         if (archetypeData.image_prompt) {
-            // Try ModelsLab first (much cheaper: ~$0.002/image vs $0.016/image)
-            if (modelsLabApiKey) {
-                log(`Generating crest image with ModelsLab...`);
-                try {
-                    crestImageUrl = await generateImageWithModelsLab(
-                        archetypeData.image_prompt,
-                        modelsLabApiKey,
-                        log,
-                        error
-                    );
-                    log(`ModelsLab image generated successfully`);
-                } catch (mlErr) {
-                    error(`ModelsLab error: ${mlErr.message}`);
-                    // Fall through to DALL-E
-                }
-            }
+            // Try DALL-E first (more reliable, ~15-20 seconds)
+            log(`Generating crest image with DALL-E...`);
+            try {
+                const imageResponse = await openai.images.generate({
+                    model: 'dall-e-2',
+                    prompt: `Premium holographic trading card crest design. ${archetypeData.image_prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
+                    n: 1,
+                    size: '256x256'
+                });
 
-            // Fallback to DALL-E if ModelsLab fails or not configured
-            if (!crestImageUrl) {
-                log(`Generating crest image with DALL-E (fallback)...`);
-                try {
-                    const imageResponse = await openai.images.generate({
-                        model: 'dall-e-2',
-                        prompt: `Premium holographic trading card crest design. ${archetypeData.image_prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
-                        n: 1,
-                        size: '256x256'
-                    });
+                crestImageUrl = imageResponse.data[0].url;
+                log(`DALL-E image generated successfully`);
+            } catch (dalleErr) {
+                error(`DALL-E error: ${dalleErr.message}`);
 
-                    crestImageUrl = imageResponse.data[0].url;
-                    log(`DALL-E image generated successfully`);
-                } catch (imgErr) {
-                    error(`DALL-E error: ${imgErr.message}`);
-                    // Continue without image
+                // Fallback to ModelsLab if DALL-E fails
+                if (modelsLabApiKey) {
+                    log(`Trying ModelsLab as fallback...`);
+                    try {
+                        crestImageUrl = await generateImageWithModelsLab(
+                            archetypeData.image_prompt,
+                            modelsLabApiKey,
+                            log,
+                            error,
+                            60000  // 60 second max wait
+                        );
+                        log(`ModelsLab image generated successfully`);
+                    } catch (mlErr) {
+                        error(`ModelsLab error: ${mlErr.message}`);
+                        // Continue without image - we'll still save archetype data
+                    }
                 }
             }
         }

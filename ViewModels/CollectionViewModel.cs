@@ -35,7 +35,7 @@ public partial class CollectionViewModel : BaseViewModel
     private string _selectedEra = "All";
 
     [ObservableProperty]
-    private string _selectedOwnership = "All";
+    private string _selectedOwnership = "Owned";
 
     [ObservableProperty]
     private string _selectedSort = "Overall";
