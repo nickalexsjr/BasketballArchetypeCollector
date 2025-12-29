@@ -24,9 +24,6 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
     private ArchetypeData? _archetype;
 
     [ObservableProperty]
-    private bool _isLoadingArchetype;
-
-    [ObservableProperty]
     private bool _hasArchetype;
 
     [ObservableProperty]
@@ -92,33 +89,6 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
         ArchetypeName = archetype.ArchetypeName;
         ArchetypeDescription = archetype.Description;
         CrestImageUrl = archetype.CrestImageUrl;
-    }
-
-    [RelayCommand]
-    private async Task GenerateArchetypeAsync()
-    {
-        if (Player == null || IsLoadingArchetype) return;
-
-        IsLoadingArchetype = true;
-
-        try
-        {
-            var archetype = await _appwriteService.GenerateArchetype(Player);
-            if (archetype != null)
-            {
-                await _gameStateService.CacheArchetype(archetype);
-                SetArchetype(archetype);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Archetype error: {ex.Message}");
-            await Shell.Current.DisplayAlert("Error", "Failed to generate archetype. Please try again.", "OK");
-        }
-        finally
-        {
-            IsLoadingArchetype = false;
-        }
     }
 
     [RelayCommand]

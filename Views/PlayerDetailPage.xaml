@@ -117,44 +117,25 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Generate Archetype Button -->
+            <!-- Locked Player Message (not owned) -->
             <Border StrokeShape="RoundRectangle 12"
                     BackgroundColor="#1e293b"
                     Padding="20"
-                    IsVisible="{Binding HasArchetype, Converter={StaticResource InvertedBoolConverter}}">
+                    IsVisible="{Binding IsOwned, Converter={StaticResource InvertedBoolConverter}}">
                 <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
-                    <Label Text="🎨"
+                    <Label Text="🔒"
                            FontSize="48"
                            HorizontalTextAlignment="Center" />
-                    <Label Text="Generate Archetype Crest"
+                    <Label Text="Player Locked"
                            FontFamily="InterBold"
                            FontSize="18"
                            TextColor="White"
                            HorizontalTextAlignment="Center" />
-                    <Label Text="Create a unique archetype crest image"
+                    <Label Text="Collect this player from a pack to unlock their archetype crest"
                            FontFamily="InterRegular"
                            FontSize="14"
                            TextColor="#94a3b8"
                            HorizontalTextAlignment="Center" />
-
-                    <Button Text="Generate Crest"
-                            Command="{Binding GenerateArchetypeCommand}"
-                            BackgroundColor="#667eea"
-                            TextColor="White"
-                            FontFamily="InterBold"
-                            CornerRadius="12"
-                            Padding="24,12"
-                            IsEnabled="{Binding IsLoadingArchetype, Converter={StaticResource InvertedBoolConverter}}" />
-
-                    <ActivityIndicator IsRunning="{Binding IsLoadingArchetype}"
-                                       IsVisible="{Binding IsLoadingArchetype}"
-                                       Color="#667eea" />
-                    <Label Text="This may take 10-20 seconds..."
-                           FontFamily="InterRegular"
-                           FontSize="12"
-                           TextColor="#64748b"
-                           HorizontalTextAlignment="Center"
-                           IsVisible="{Binding IsLoadingArchetype}" />
                 </VerticalStackLayout>
             </Border>
 
