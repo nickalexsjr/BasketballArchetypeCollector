@@ -7,90 +7,158 @@
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:Class="BasketballArchetypeCollector.Views.CollectionPage"
              x:DataType="vm:CollectionViewModel"
-             BackgroundColor="#0f172a"
+             BackgroundColor="#0a0a0f"
              Shell.NavBarIsVisible="False"
              ios:Page.UseSafeArea="True">
 
     <Grid RowDefinitions="Auto,Auto,*">
-        <!-- Header -->
-        <Grid Grid.Row="0" Padding="16" ColumnDefinitions="*,Auto">
-            <VerticalStackLayout Grid.Column="0">
-                <Label Text="COLLECTION"
-                       FontFamily="OrbitronBold"
-                       FontSize="24"
-                       TextColor="White" />
-                <Label Text="{Binding CollectionCount, StringFormat='{0} cards owned'}"
-                       FontFamily="InterRegular"
-                       FontSize="12"
-                       TextColor="#94a3b8" />
-            </VerticalStackLayout>
+        <!-- Header with gradient feel -->
+        <Border Grid.Row="0"
+                BackgroundColor="#0f172a"
+                Padding="20,16"
+                StrokeThickness="0">
+            <Border.Shadow>
+                <Shadow Brush="#000000"
+                        Offset="0,4"
+                        Radius="8"
+                        Opacity="0.3" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                    <Label Text="COLLECTION"
+                           FontFamily="OrbitronBold"
+                           FontSize="26"
+                           TextColor="White">
+                        <Label.Shadow>
+                            <Shadow Brush="#f97316"
+                                    Offset="0,0"
+                                    Radius="10"
+                                    Opacity="0.3" />
+                        </Label.Shadow>
+                    </Label>
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="{Binding CollectionCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="16"
+                               TextColor="#f97316" />
+                        <Label Text="cards owned"
+                               FontFamily="InterRegular"
+                               FontSize="14"
+                               TextColor="#64748b"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
 
-            <controls:CoinDisplay Grid.Column="1"
-                                  Coins="{Binding Coins}"
-                                  VerticalOptions="Center" />
-        </Grid>
+                <controls:CoinDisplay Grid.Column="1"
+                                      Coins="{Binding Coins}"
+                                      VerticalOptions="Center" />
+            </Grid>
+        </Border>
 
-        <!-- Filters -->
-        <VerticalStackLayout Grid.Row="1" Padding="16,0" Spacing="8">
-            <!-- Search -->
-            <Border StrokeShape="RoundRectangle 8"
+        <!-- Filters Section -->
+        <VerticalStackLayout Grid.Row="1"
+                             Padding="16,12"
+                             Spacing="12"
+                             BackgroundColor="#0a0a0f">
+            <!-- Search Bar with icon feel -->
+            <Border StrokeShape="RoundRectangle 12"
                     BackgroundColor="#1e293b"
-                    Padding="12,8">
-                <Entry Text="{Binding SearchQuery}"
-                       Placeholder="Search players..."
-                       PlaceholderColor="#64748b"
-                       TextColor="White"
-                       FontFamily="InterRegular"
-                       BackgroundColor="Transparent" />
+                    Stroke="#334155"
+                    StrokeThickness="1"
+                    Padding="16,12">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Label Grid.Column="0"
+                           Text="🔍"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Margin="0,0,12,0" />
+                    <Entry Grid.Column="1"
+                           Text="{Binding SearchQuery}"
+                           Placeholder="Search by name or team..."
+                           PlaceholderColor="#64748b"
+                           TextColor="White"
+                           FontFamily="InterRegular"
+                           FontSize="15"
+                           BackgroundColor="Transparent" />
+                </Grid>
             </Border>
 
-            <!-- Filter Row -->
-            <ScrollView Orientation="Horizontal">
-                <HorizontalStackLayout Spacing="8">
+            <!-- Filter Pills -->
+            <ScrollView Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="10">
                     <!-- Rarity Filter -->
-                    <Border StrokeShape="RoundRectangle 8"
+                    <Border StrokeShape="RoundRectangle 10"
                             BackgroundColor="#1e293b"
-                            Padding="8,4">
-                        <Picker Title="Rarity"
-                                SelectedItem="{Binding SelectedRarity}"
-                                ItemsSource="{Binding RarityOptions}"
-                                TextColor="White"
-                                TitleColor="#64748b"
-                                FontFamily="InterRegular"
-                                BackgroundColor="Transparent" />
+                            Stroke="#334155"
+                            StrokeThickness="1"
+                            Padding="12,8">
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="✨"
+                                   FontSize="12"
+                                   VerticalOptions="Center" />
+                            <Picker Title="Rarity"
+                                    SelectedItem="{Binding SelectedRarity}"
+                                    ItemsSource="{Binding RarityOptions}"
+                                    TextColor="White"
+                                    TitleColor="#94a3b8"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="13"
+                                    BackgroundColor="Transparent"
+                                    WidthRequest="80" />
+                        </HorizontalStackLayout>
                     </Border>
 
                     <!-- Era Filter -->
-                    <Border StrokeShape="RoundRectangle 8"
+                    <Border StrokeShape="RoundRectangle 10"
                             BackgroundColor="#1e293b"
-                            Padding="8,4">
-                        <Picker Title="Era"
-                                SelectedItem="{Binding SelectedEra}"
-                                ItemsSource="{Binding EraOptions}"
-                                TextColor="White"
-                                TitleColor="#64748b"
-                                FontFamily="InterRegular"
-                                BackgroundColor="Transparent" />
+                            Stroke="#334155"
+                            StrokeThickness="1"
+                            Padding="12,8">
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="📅"
+                                   FontSize="12"
+                                   VerticalOptions="Center" />
+                            <Picker Title="Era"
+                                    SelectedItem="{Binding SelectedEra}"
+                                    ItemsSource="{Binding EraOptions}"
+                                    TextColor="White"
+                                    TitleColor="#94a3b8"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="13"
+                                    BackgroundColor="Transparent"
+                                    WidthRequest="70" />
+                        </HorizontalStackLayout>
                     </Border>
 
-                    <!-- Sort -->
-                    <Border StrokeShape="RoundRectangle 8"
+                    <!-- Sort Filter -->
+                    <Border StrokeShape="RoundRectangle 10"
                             BackgroundColor="#1e293b"
-                            Padding="8,4">
-                        <HorizontalStackLayout Spacing="4">
+                            Stroke="#334155"
+                            StrokeThickness="1"
+                            Padding="12,8">
+                        <HorizontalStackLayout Spacing="6">
                             <Picker Title="Sort"
                                     SelectedItem="{Binding SelectedSort}"
                                     ItemsSource="{Binding SortOptions}"
                                     TextColor="White"
-                                    TitleColor="#64748b"
-                                    FontFamily="InterRegular"
-                                    BackgroundColor="Transparent" />
-                            <Button Text="{Binding SortDescending, Converter={StaticResource SortDirectionConverter}}"
-                                    Command="{Binding ToggleSortOrderCommand}"
+                                    TitleColor="#94a3b8"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="13"
                                     BackgroundColor="Transparent"
-                                    TextColor="#94a3b8"
-                                    FontSize="16"
-                                    Padding="4" />
+                                    WidthRequest="70" />
+                            <Border StrokeShape="RoundRectangle 6"
+                                    BackgroundColor="#334155"
+                                    Padding="6,4">
+                                <Label Text="{Binding SortDescending, Converter={StaticResource SortDirectionConverter}}"
+                                       FontSize="12"
+                                       TextColor="#f97316"
+                                       VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ToggleSortOrderCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Border>
                         </HorizontalStackLayout>
                     </Border>
                 </HorizontalStackLayout>
@@ -101,14 +169,15 @@
         <RefreshView Grid.Row="2"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding LoadPlayersCommand}"
-                     RefreshColor="#f97316">
+                     RefreshColor="#f97316"
+                     BackgroundColor="#0a0a0f">
             <CollectionView ItemsSource="{Binding Players}"
-                            Margin="8">
+                            Margin="12,8,12,12">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"
                                      Span="3"
-                                     HorizontalItemSpacing="8"
-                                     VerticalItemSpacing="8" />
+                                     HorizontalItemSpacing="10"
+                                     VerticalItemSpacing="12" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Player">
@@ -124,27 +193,52 @@
                 <CollectionView.EmptyView>
                     <VerticalStackLayout VerticalOptions="Center"
                                          HorizontalOptions="Center"
-                                         Padding="40">
-                        <Label Text="No players found"
-                               FontFamily="InterSemiBold"
-                               FontSize="18"
+                                         Padding="40"
+                                         Spacing="12">
+                        <Label Text="🃏"
+                               FontSize="48"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="No cards found"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
                                TextColor="#64748b"
                                HorizontalTextAlignment="Center" />
-                        <Label Text="Try adjusting your filters"
+                        <Label Text="Try adjusting your filters or open some packs!"
                                FontFamily="InterRegular"
                                FontSize="14"
                                TextColor="#475569"
                                HorizontalTextAlignment="Center" />
+                        <Button Text="Open Packs"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CollectionViewModel}}, Path=GoToPacksCommand}"
+                                BackgroundColor="#f97316"
+                                TextColor="White"
+                                FontFamily="InterSemiBold"
+                                CornerRadius="10"
+                                Padding="24,12"
+                                Margin="0,8,0,0"
+                                HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
             </CollectionView>
         </RefreshView>
 
-        <!-- Loading -->
-        <ActivityIndicator Grid.Row="2"
-                           IsRunning="{Binding IsBusy}"
-                           IsVisible="{Binding IsBusy}"
-                           Color="#f97316"
-                           VerticalOptions="Center" />
+        <!-- Loading Overlay -->
+        <Grid Grid.Row="2"
+              BackgroundColor="#0a0a0f99"
+              IsVisible="{Binding IsBusy}">
+            <VerticalStackLayout VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Spacing="12">
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   Color="#f97316"
+                                   HeightRequest="50"
+                                   WidthRequest="50" />
+                <Label Text="Loading collection..."
+                       FontFamily="InterRegular"
+                       FontSize="14"
+                       TextColor="#94a3b8"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </Grid>
     </Grid>
 </ContentPage>

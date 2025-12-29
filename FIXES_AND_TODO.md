@@ -1,7 +1,7 @@
 # Basketball Archetype Collector - Fixes Applied & TODO
 
 ## Current Version
-- **Version**: 1.3.8 (Build 21)
+- **Version**: 1.4.0 (Build 22)
 - **Target Framework**: net8.0-ios (builds on Codemagic, not local due to .NET 10 RC2 SDK)
 - **Last Updated**: 2025-12-30
 
@@ -46,6 +46,36 @@
 **Problem**: `crests` storage bucket appeared unused but purpose was unclear.
 
 **Solution**: Added comment in `AppConfig.cs` explaining it's intentionally unused - crest images are stored as external URLs from ModelsLab/DALL-E for cost optimization.
+
+### 5. PlayerCard Redesign - Full Rarity Color Theme
+**Problem**: Cards only showed rarity color on border, not prominent enough.
+
+**Solution**: Complete PlayerCard redesign with:
+- Full rarity-tinted background color (dark variants)
+- Glowing outer border with rarity color shadow
+- Improved overall badge with glow effect
+- Colored stats (PPG=orange, RPG=blue, APG=green)
+- Cleaner rarity label at bottom
+- Better crest image framing
+
+**Files Changed**:
+- `Controls/PlayerCard.xaml` - Complete UI overhaul
+- `Controls/PlayerCard.xaml.cs` - Added RarityBackgroundColor, RarityLabel properties
+
+### 6. Collection Page UI Redesign
+**Problem**: Collection page looked cramped and boring.
+
+**Solution**: Modern redesign with:
+- Header with shadow and glow effects
+- Search bar with search icon
+- Filter pills with icons (✨ Rarity, 📅 Era)
+- Better spacing and dark theme
+- Improved empty state with "Open Packs" button
+- Better loading overlay
+
+**Files Changed**:
+- `Views/CollectionPage.xaml` - Complete UI overhaul
+- `ViewModels/CollectionViewModel.cs` - Added GoToPacksCommand
 
 ---
 
@@ -243,7 +273,7 @@ Schema is correct with all required fields.
 - Shows "No players found" on first load (works after playing with filters)
 - UI looks cramped
 - Cards need better rarity visuals (make whole card the rarity color)
-**Status**: PARTIALLY FIXED - removed "All" filter, need UI improvements
+**Status**: ✅ FIXED - Complete UI redesign with rarity-colored cards, better spacing, modern filters
 
 ### 4. pack_purchases Collection
 **Previous Status**: Was intentionally unused

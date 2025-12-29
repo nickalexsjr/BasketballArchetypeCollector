@@ -45,7 +45,28 @@ public partial class PlayerCard : ContentView
     public string RarityColor => Player != null && RarityConfig.Info.TryGetValue(Player.Rarity, out var info)
         ? info.Color
         : "#6b7280";
+
+    // Background color with rarity tint (semi-transparent overlay on dark base)
+    public string RarityBackgroundColor => Player != null ? GetRarityBackground(Player.Rarity) : "#1e293b";
+
+    public string RarityLabel => Player != null ? RarityConfig.GetLabel(Player.Rarity) : "COMMON";
+
     public string EraColor => Player != null ? EraConfig.GetColor(Player.Era) : "#6b7280";
+
+    private static string GetRarityBackground(Rarity rarity)
+    {
+        // Dark background with subtle rarity color tint
+        return rarity switch
+        {
+            Rarity.Goat => "#2a1015",      // Dark crimson tint
+            Rarity.Legendary => "#2a2010", // Dark gold tint
+            Rarity.Epic => "#1f1a2e",      // Dark purple tint
+            Rarity.Rare => "#0f1a2a",      // Dark blue tint
+            Rarity.Uncommon => "#0f1f1a",  // Dark green tint
+            Rarity.Common => "#1a1f24",    // Dark gray tint
+            _ => "#1e293b"
+        };
+    }
 
     public double CardWidth => CardSize switch
     {
@@ -73,6 +94,8 @@ public partial class PlayerCard : ContentView
         if (bindable is PlayerCard card)
         {
             card.OnPropertyChanged(nameof(RarityColor));
+            card.OnPropertyChanged(nameof(RarityBackgroundColor));
+            card.OnPropertyChanged(nameof(RarityLabel));
             card.OnPropertyChanged(nameof(EraColor));
         }
     }

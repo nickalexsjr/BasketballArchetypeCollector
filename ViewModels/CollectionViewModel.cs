@@ -203,5 +203,11 @@ public partial class CollectionViewModel : BaseViewModel
         await Shell.Current.GoToAsync($"playerdetail?playerId={player.Id}");
     }
 
+    [RelayCommand]
+    private async Task GoToPacks()
+    {
+        await Shell.Current.GoToAsync("//main/packs");
+    }
+
     public bool IsOwned(string playerId) => _gameStateService.OwnsCard(playerId);
 }

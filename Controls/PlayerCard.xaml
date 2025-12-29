@@ -5,151 +5,163 @@
              x:Class="BasketballArchetypeCollector.Controls.PlayerCard"
              x:Name="thisCard">
 
-    <Border StrokeShape="RoundRectangle 12"
-            StrokeThickness="2"
+    <!-- Outer glow border for rarity -->
+    <Border StrokeShape="RoundRectangle 14"
+            StrokeThickness="3"
             Stroke="{Binding RarityColor, Source={x:Reference thisCard}}"
-            BackgroundColor="#1e293b"
-            Padding="8"
+            BackgroundColor="Transparent"
             HeightRequest="{Binding CardHeight, Source={x:Reference thisCard}}"
             WidthRequest="{Binding CardWidth, Source={x:Reference thisCard}}">
+        <Border.Shadow>
+            <Shadow Brush="{Binding RarityColor, Source={x:Reference thisCard}}"
+                    Offset="0,0"
+                    Radius="15"
+                    Opacity="0.5" />
+        </Border.Shadow>
 
-        <Grid RowDefinitions="Auto,*,Auto,Auto">
-            <!-- Overall Badge -->
-            <Border Grid.Row="0"
-                    StrokeShape="RoundRectangle 8"
-                    BackgroundColor="{Binding RarityColor, Source={x:Reference thisCard}}"
-                    HorizontalOptions="End"
-                    Padding="6,2">
-                <Label Text="{Binding Player.Overall, Source={x:Reference thisCard}}"
-                       FontFamily="OrbitronBold"
-                       FontSize="14"
-                       TextColor="White" />
-            </Border>
+        <!-- Inner card with rarity-tinted background -->
+        <Border StrokeShape="RoundRectangle 12"
+                StrokeThickness="0"
+                BackgroundColor="{Binding RarityBackgroundColor, Source={x:Reference thisCard}}"
+                Padding="8">
 
-            <!-- Crest Image or Player Info -->
-            <Grid Grid.Row="1" VerticalOptions="Center">
-                <!-- Crest Image (shown if available) -->
-                <Border StrokeShape="RoundRectangle 8"
-                        BackgroundColor="#0f172a"
-                        IsVisible="{Binding HasCrest, Source={x:Reference thisCard}}"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"
-                        HeightRequest="60"
-                        WidthRequest="60">
-                    <Image Source="{Binding CrestImageUrl, Source={x:Reference thisCard}}"
-                           Aspect="AspectFill"
-                           HeightRequest="60"
-                           WidthRequest="60" />
-                </Border>
-
-                <!-- Player Info (shown if no crest) -->
-                <VerticalStackLayout VerticalOptions="Center"
-                                     Spacing="2"
-                                     IsVisible="{Binding HasCrest, Source={x:Reference thisCard}, Converter={StaticResource InvertedBoolConverter}}">
-                    <Label Text="{Binding Player.FirstName, Source={x:Reference thisCard}}"
-                           FontFamily="InterRegular"
-                           FontSize="11"
-                           TextColor="#94a3b8"
-                           LineBreakMode="TailTruncation" />
-                    <Label Text="{Binding Player.LastName, Source={x:Reference thisCard}}"
-                           FontFamily="InterBold"
-                           FontSize="14"
-                           TextColor="White"
-                           LineBreakMode="TailTruncation" />
-                    <Label Text="{Binding Player.TeamAbbreviation, Source={x:Reference thisCard}}"
-                           FontFamily="InterRegular"
-                           FontSize="10"
-                           TextColor="#64748b" />
-                </VerticalStackLayout>
-            </Grid>
-
-            <!-- Stats Row -->
-            <Grid Grid.Row="2"
-                  ColumnDefinitions="*,*,*,*"
-                  Margin="0,4,0,0">
-                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
-                    <Label Text="{Binding Player.Ppg, Source={x:Reference thisCard}, StringFormat='{0:F1}'}"
-                           FontFamily="OrbitronBold"
-                           FontSize="9"
-                           TextColor="White"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="PPG"
-                           FontFamily="InterRegular"
-                           FontSize="7"
-                           TextColor="#64748b"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
-                    <Label Text="{Binding Player.Rpg, Source={x:Reference thisCard}, StringFormat='{0:F1}'}"
-                           FontFamily="OrbitronBold"
-                           FontSize="9"
-                           TextColor="White"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="RPG"
-                           FontFamily="InterRegular"
-                           FontSize="7"
-                           TextColor="#64748b"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
-                    <Label Text="{Binding Player.Apg, Source={x:Reference thisCard}, StringFormat='{0:F1}'}"
-                           FontFamily="OrbitronBold"
-                           FontSize="9"
-                           TextColor="White"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="APG"
-                           FontFamily="InterRegular"
-                           FontSize="7"
-                           TextColor="#64748b"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center">
-                    <Label Text="{Binding Player.Games, Source={x:Reference thisCard}}"
-                           FontFamily="OrbitronBold"
-                           FontSize="9"
-                           TextColor="White"
-                           HorizontalTextAlignment="Center" />
-                    <Label Text="GP"
-                           FontFamily="InterRegular"
-                           FontSize="7"
-                           TextColor="#64748b"
-                           HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
-            </Grid>
-
-            <!-- Rarity/Era Badges -->
-            <HorizontalStackLayout Grid.Row="3"
-                                   Spacing="4"
-                                   Margin="0,4,0,0"
-                                   HorizontalOptions="Center">
-                <Border StrokeShape="RoundRectangle 4"
+            <Grid RowDefinitions="Auto,*,Auto,Auto">
+                <!-- Overall Badge with glow -->
+                <Border Grid.Row="0"
+                        StrokeShape="RoundRectangle 8"
                         BackgroundColor="{Binding RarityColor, Source={x:Reference thisCard}}"
-                        Padding="4,2">
-                    <Label Text="{Binding Player.Rarity, Source={x:Reference thisCard}}"
-                           FontFamily="InterSemiBold"
-                           FontSize="8"
+                        HorizontalOptions="End"
+                        Padding="8,4">
+                    <Border.Shadow>
+                        <Shadow Brush="{Binding RarityColor, Source={x:Reference thisCard}}"
+                                Offset="0,2"
+                                Radius="6"
+                                Opacity="0.6" />
+                    </Border.Shadow>
+                    <Label Text="{Binding Player.Overall, Source={x:Reference thisCard}}"
+                           FontFamily="OrbitronBold"
+                           FontSize="16"
                            TextColor="White" />
                 </Border>
-                <Border StrokeShape="RoundRectangle 4"
-                        BackgroundColor="{Binding EraColor, Source={x:Reference thisCard}}"
-                        Padding="4,2">
-                    <Label Text="{Binding Player.Era, Source={x:Reference thisCard}}"
-                           FontFamily="InterSemiBold"
-                           FontSize="8"
-                           TextColor="White" />
-                </Border>
-            </HorizontalStackLayout>
 
-            <!-- Locked Overlay -->
-            <Border Grid.RowSpan="4"
-                    BackgroundColor="#80000000"
-                    StrokeShape="RoundRectangle 12"
-                    IsVisible="{Binding IsLocked, Source={x:Reference thisCard}}">
-                <Label Text="🔒"
-                       FontSize="24"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center" />
-            </Border>
-        </Grid>
+                <!-- Crest Image or Player Info -->
+                <Grid Grid.Row="1" VerticalOptions="Center">
+                    <!-- Crest Image (shown if available) -->
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="#0f172a80"
+                            Stroke="{Binding RarityColor, Source={x:Reference thisCard}}"
+                            StrokeThickness="1"
+                            IsVisible="{Binding HasCrest, Source={x:Reference thisCard}}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            HeightRequest="70"
+                            WidthRequest="70"
+                            Padding="2">
+                        <Image Source="{Binding CrestImageUrl, Source={x:Reference thisCard}}"
+                               Aspect="AspectFill"
+                               HeightRequest="66"
+                               WidthRequest="66" />
+                    </Border>
+
+                    <!-- Player Info (shown if no crest) -->
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         Spacing="2"
+                                         IsVisible="{Binding HasCrest, Source={x:Reference thisCard}, Converter={StaticResource InvertedBoolConverter}}">
+                        <Label Text="{Binding Player.FirstName, Source={x:Reference thisCard}}"
+                               FontFamily="InterRegular"
+                               FontSize="11"
+                               TextColor="#cbd5e1"
+                               LineBreakMode="TailTruncation"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding Player.LastName, Source={x:Reference thisCard}}"
+                               FontFamily="OrbitronBold"
+                               FontSize="14"
+                               TextColor="White"
+                               LineBreakMode="TailTruncation"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding Player.TeamAbbreviation, Source={x:Reference thisCard}}"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Stats Row with improved styling -->
+                <Grid Grid.Row="2"
+                      ColumnDefinitions="*,*,*"
+                      Margin="0,6,0,0">
+                    <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Ppg, Source={x:Reference thisCard}, StringFormat='{0:F1}'}"
+                               FontFamily="OrbitronBold"
+                               FontSize="11"
+                               TextColor="#f97316"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="PPG"
+                               FontFamily="InterSemiBold"
+                               FontSize="7"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Rpg, Source={x:Reference thisCard}, StringFormat='{0:F1}'}"
+                               FontFamily="OrbitronBold"
+                               FontSize="11"
+                               TextColor="#3b82f6"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="RPG"
+                               FontFamily="InterSemiBold"
+                               FontSize="7"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Apg, Source={x:Reference thisCard}, StringFormat='{0:F1}'}"
+                               FontFamily="OrbitronBold"
+                               FontSize="11"
+                               TextColor="#22c55e"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="APG"
+                               FontFamily="InterSemiBold"
+                               FontSize="7"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Rarity Badge (no era - cleaner look) -->
+                <Border Grid.Row="3"
+                        StrokeShape="RoundRectangle 6"
+                        BackgroundColor="#00000040"
+                        Stroke="{Binding RarityColor, Source={x:Reference thisCard}}"
+                        StrokeThickness="1"
+                        Padding="8,4"
+                        Margin="0,6,0,0"
+                        HorizontalOptions="Center">
+                    <Label Text="{Binding RarityLabel, Source={x:Reference thisCard}}"
+                           FontFamily="OrbitronBold"
+                           FontSize="9"
+                           TextColor="{Binding RarityColor, Source={x:Reference thisCard}}"
+                           HorizontalTextAlignment="Center" />
+                </Border>
+
+                <!-- Locked Overlay -->
+                <Border Grid.RowSpan="4"
+                        BackgroundColor="#000000CC"
+                        StrokeShape="RoundRectangle 12"
+                        IsVisible="{Binding IsLocked, Source={x:Reference thisCard}}">
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="4">
+                        <Label Text="🔒"
+                               FontSize="28"
+                               HorizontalOptions="Center" />
+                        <Label Text="LOCKED"
+                               FontFamily="OrbitronBold"
+                               FontSize="10"
+                               TextColor="#64748b"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </Border>
     </Border>
 </ContentView>
