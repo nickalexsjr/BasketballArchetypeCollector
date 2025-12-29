@@ -361,6 +361,8 @@ public class AppwriteService
 
     public async Task SaveUserGameState(string userId, GameState state)
     {
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] SaveUserGameState for {userId}: Coins={state.Coins}, Cards={state.Collection.Count}, PacksOpened={state.Stats.PacksOpened}");
+
         var data = new Dictionary<string, object>
         {
             { "userId", userId },
@@ -368,11 +370,11 @@ public class AppwriteService
             { "playerIds", state.Collection },
             { "packsOpened", state.Stats.PacksOpened },
             { "cardsCollected", state.Stats.CardsCollected },
+            { "crestsGenerated", state.Stats.CrestsGenerated },
             { "goatCount", state.Stats.GoatCount },
             { "legendaryCount", state.Stats.LegendaryCount },
             { "epicCount", state.Stats.EpicCount },
-            { "rareCount", state.Stats.RareCount },
-            { "updatedAt", DateTime.UtcNow.ToString("o") }
+            { "rareCount", state.Stats.RareCount }
         };
 
         try
@@ -384,16 +386,34 @@ public class AppwriteService
                 documentId: userId,
                 data: data
             );
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SaveUserGameState SUCCESS (update)");
         }
-        catch
+        catch (Exception updateEx)
         {
-            // Document doesn't exist, create it
-            await _databases.CreateDocument(
-                databaseId: AppConfig.DatabaseId,
-                collectionId: AppConfig.UserCollectionsCollection,
-                documentId: userId,
-                data: data
-            );
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Update failed: {updateEx.Message}, trying create...");
+            // Document doesn't exist, create it with permissions
+            try
+            {
+                await _databases.CreateDocument(
+                    databaseId: AppConfig.DatabaseId,
+                    collectionId: AppConfig.UserCollectionsCollection,
+                    documentId: userId,
+                    data: data,
+                    permissions: new List<string>
+                    {
+                        Permission.Read(Role.User(userId)),
+                        Permission.Write(Role.User(userId)),
+                        Permission.Update(Role.User(userId)),
+                        Permission.Delete(Role.User(userId))
+                    }
+                );
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] SaveUserGameState SUCCESS (create)");
+            }
+            catch (Exception createEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Create also failed: {createEx.Message}");
+                throw;
+            }
         }
     }
 
