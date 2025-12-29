@@ -10,34 +10,111 @@
              Shell.NavBarIsVisible="False">
 
     <Grid>
-        <!-- Loading State -->
-        <VerticalStackLayout IsVisible="{Binding IsOpening}"
-                             VerticalOptions="Center"
-                             HorizontalOptions="Center"
-                             Spacing="20">
-            <Label Text="{Binding Pack.Name}"
-                   FontFamily="OrbitronBold"
-                   FontSize="24"
-                   TextColor="#fbbf24"
-                   HorizontalTextAlignment="Center" />
+        <!-- Cool Loading State -->
+        <Grid IsVisible="{Binding IsOpening}"
+              VerticalOptions="Center"
+              HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="24" Padding="40">
+                <!-- Pack Name with glow effect -->
+                <Label Text="{Binding Pack.Name}"
+                       FontFamily="OrbitronBold"
+                       FontSize="28"
+                       TextColor="#fbbf24"
+                       HorizontalTextAlignment="Center">
+                    <Label.Shadow>
+                        <Shadow Brush="#fbbf24"
+                                Offset="0,0"
+                                Radius="20"
+                                Opacity="0.6" />
+                    </Label.Shadow>
+                </Label>
 
-            <ActivityIndicator IsRunning="True"
-                               Color="#fbbf24"
-                               HeightRequest="60"
-                               WidthRequest="60" />
+                <!-- Animated Card Stack -->
+                <Grid HeightRequest="120" WidthRequest="120" HorizontalOptions="Center">
+                    <!-- Background cards (stacked effect) -->
+                    <Border StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#1e293b"
+                            Rotation="-12"
+                            Opacity="0.4"
+                            HeightRequest="100"
+                            WidthRequest="70"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+                    <Border StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#334155"
+                            Rotation="-6"
+                            Opacity="0.6"
+                            HeightRequest="100"
+                            WidthRequest="70"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+                    <Border StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#475569"
+                            Rotation="0"
+                            Opacity="0.8"
+                            HeightRequest="100"
+                            WidthRequest="70"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+                    <!-- Top card with shimmer -->
+                    <Border StrokeShape="RoundRectangle 12"
+                            Stroke="#f97316"
+                            StrokeThickness="2"
+                            BackgroundColor="#1e293b"
+                            Rotation="6"
+                            HeightRequest="100"
+                            WidthRequest="70"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Border.Shadow>
+                            <Shadow Brush="#f97316"
+                                    Offset="0,0"
+                                    Radius="15"
+                                    Opacity="0.5" />
+                        </Border.Shadow>
+                        <Label Text="?"
+                               FontFamily="OrbitronBold"
+                               FontSize="36"
+                               TextColor="#f97316"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+                </Grid>
 
-            <Label Text="Generating archetype crests..."
-                   FontFamily="InterRegular"
-                   FontSize="16"
-                   TextColor="#94a3b8"
-                   HorizontalTextAlignment="Center" />
+                <!-- Loading message -->
+                <Label Text="{Binding LoadingMessage}"
+                       FontFamily="InterSemiBold"
+                       FontSize="18"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center" />
 
-            <Label Text="This may take 10-20 seconds..."
-                   FontFamily="InterRegular"
-                   FontSize="12"
-                   TextColor="#64748b"
-                   HorizontalTextAlignment="Center" />
-        </VerticalStackLayout>
+                <!-- Progress bar -->
+                <Grid WidthRequest="250" HeightRequest="8" HorizontalOptions="Center">
+                    <Border StrokeShape="RoundRectangle 4"
+                            BackgroundColor="#1e293b"
+                            HeightRequest="8" />
+                    <Border StrokeShape="RoundRectangle 4"
+                            BackgroundColor="#f97316"
+                            HeightRequest="8"
+                            HorizontalOptions="Start"
+                            WidthRequest="{Binding LoadingProgress, Converter={StaticResource ProgressToWidthConverter}}">
+                        <Border.Shadow>
+                            <Shadow Brush="#f97316"
+                                    Offset="0,0"
+                                    Radius="8"
+                                    Opacity="0.7" />
+                        </Border.Shadow>
+                    </Border>
+                </Grid>
+
+                <!-- Progress percentage -->
+                <Label Text="{Binding LoadingProgress, StringFormat='{0:F0}%'}"
+                       FontFamily="OrbitronBold"
+                       FontSize="14"
+                       TextColor="#64748b"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+        </Grid>
 
         <!-- Cards Revealed -->
         <Grid IsVisible="{Binding IsOpening, Converter={StaticResource InvertedBoolConverter}}"
@@ -51,7 +128,14 @@
                    FontSize="24"
                    TextColor="#fbbf24"
                    HorizontalTextAlignment="Center"
-                   Margin="0,20,0,20" />
+                   Margin="0,20,0,20">
+                <Label.Shadow>
+                    <Shadow Brush="#fbbf24"
+                            Offset="0,0"
+                            Radius="15"
+                            Opacity="0.4" />
+                </Label.Shadow>
+            </Label>
 
             <!-- Cards -->
             <ScrollView Grid.Row="1">
@@ -77,13 +161,15 @@
 
             <!-- Bottom Actions -->
             <VerticalStackLayout Grid.Row="2" Spacing="12" Margin="0,20,0,0">
-                <Label Text="Click a card to view details"
+                <Label Text="Tap a card to view details"
                        FontFamily="InterRegular"
                        FontSize="12"
                        TextColor="#64748b"
                        HorizontalTextAlignment="Center" />
 
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <!-- Action Buttons -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <!-- Close -->
                     <Button Grid.Column="0"
                             Text="Close"
                             Command="{Binding GoBackCommand}"
@@ -93,8 +179,21 @@
                             CornerRadius="12"
                             HeightRequest="50" />
 
+                    <!-- Sell All -->
                     <Button Grid.Column="1"
-                            Text="{Binding Pack.Cost, StringFormat='Open Another ({0} coins)'}"
+                            Text="{Binding SellAllValue, StringFormat='Sell All ({0})'}"
+                            Command="{Binding SellAllCommand}"
+                            BackgroundColor="#dc262620"
+                            TextColor="#ef4444"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="12"
+                            HeightRequest="50"
+                            BorderColor="#ef4444"
+                            BorderWidth="1" />
+
+                    <!-- Open Another -->
+                    <Button Grid.Column="2"
+                            Text="Open Another"
                             Command="{Binding OpenAnotherCommand}"
                             BackgroundColor="#f97316"
                             TextColor="White"
@@ -112,16 +211,37 @@
         <VerticalStackLayout IsVisible="{Binding Cards.Count, Converter={StaticResource ZeroToVisibleConverter}}"
                              VerticalOptions="Center"
                              HorizontalOptions="Center"
-                             Spacing="20">
+                             Spacing="24">
             <Label Text="{Binding Pack.Name}"
                    FontFamily="OrbitronBold"
-                   FontSize="28"
+                   FontSize="32"
                    TextColor="#fbbf24"
-                   HorizontalTextAlignment="Center" />
+                   HorizontalTextAlignment="Center">
+                <Label.Shadow>
+                    <Shadow Brush="#fbbf24"
+                            Offset="0,0"
+                            Radius="20"
+                            Opacity="0.5" />
+                </Label.Shadow>
+            </Label>
 
-            <Label Text="📦"
-                   FontSize="80"
-                   HorizontalTextAlignment="Center" />
+            <!-- Pack icon with glow -->
+            <Border StrokeShape="RoundRectangle 24"
+                    BackgroundColor="#1e293b"
+                    Stroke="#f97316"
+                    StrokeThickness="3"
+                    Padding="30"
+                    HorizontalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="#f97316"
+                            Offset="0,0"
+                            Radius="30"
+                            Opacity="0.4" />
+                </Border.Shadow>
+                <Label Text="📦"
+                       FontSize="80"
+                       HorizontalTextAlignment="Center" />
+            </Border>
 
             <Button Text="Open Pack"
                     Command="{Binding OpenPackCommand}"
@@ -130,8 +250,15 @@
                     FontFamily="OrbitronBold"
                     FontSize="20"
                     CornerRadius="16"
-                    Padding="40,16"
-                    HorizontalOptions="Center" />
+                    Padding="50,18"
+                    HorizontalOptions="Center">
+                <Button.Shadow>
+                    <Shadow Brush="#f97316"
+                            Offset="0,4"
+                            Radius="15"
+                            Opacity="0.5" />
+                </Button.Shadow>
+            </Button>
 
             <Button Text="Go Back"
                     Command="{Binding GoBackCommand}"

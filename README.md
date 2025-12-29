@@ -2,17 +2,24 @@
 
 A .NET MAUI iOS app that replicates the HTML NBA Cards Archetype game. Collect basketball player cards, open packs, and generate unique AI-powered archetype crests for each player.
 
-## Status: PRODUCTION READY
+## Version: 1.1.0
 
-All core features from the HTML version have been implemented and are working.
+**Status: PRODUCTION READY**
+
+---
+
+## What's New in v1.1.0
+
+- **Sell All Button** - After opening packs, sell all cards at once
+- **Cool Pack Opening Animation** - Animated card stack with progress bar
+- **Smooth Loading Experience** - Dynamic messages during pack generation
+- **Improved UI** - Glow effects and shadows throughout
 
 ---
 
 ## Quick Start
 
 ### 1. Deploy Appwrite Functions
-
-Before the app will work, you need to deploy the Appwrite functions:
 
 ```bash
 # Install Appwrite CLI
@@ -21,11 +28,8 @@ npm install -g appwrite-cli
 # Login to Appwrite
 appwrite login
 
-# Navigate to functions folder
-cd appwrite/functions
-
 # Deploy generate-archetype function
-cd generate-archetype
+cd appwrite/functions/generate-archetype
 npm install
 appwrite functions createDeployment \
   --functionId="generate-archetype" \
@@ -43,7 +47,7 @@ appwrite functions createDeployment \
 
 ### 2. Set Appwrite Function Environment Variables
 
-In Appwrite Console, set these environment variables for `generate-archetype`:
+**For `generate-archetype`:**
 
 | Variable | Description |
 |----------|-------------|
@@ -52,9 +56,9 @@ In Appwrite Console, set these environment variables for `generate-archetype`:
 | `ARCHETYPES_COLLECTION_ID` | `archetypes` |
 | `CRESTS_BUCKET_ID` | `crests` |
 | `OPENAI_API_KEY` | Your OpenAI API key |
-| `MODELSLAB_API_KEY` | Your ModelsLab API key (optional, for cheaper images) |
+| `MODELSLAB_API_KEY` | Your ModelsLab API key (optional, cheaper images) |
 
-For `fetch-documents`:
+**For `fetch-documents`:**
 
 | Variable | Description |
 |----------|-------------|
@@ -67,7 +71,7 @@ For `fetch-documents`:
 # Build for iOS
 dotnet build -f net8.0-ios -c Release
 
-# Or use Codemagic (push to main branch)
+# Or push to main branch for Codemagic build
 git push origin main
 ```
 
@@ -77,11 +81,25 @@ git push origin main
 
 ### Core Gameplay
 - **Pack Store** - Purchase packs with coins (Standard, Premium, Elite, Legendary)
-- **Pack Opening** - Animated card reveal with rarity-based odds
+- **Pack Opening** - Smooth animated card reveal with progress indicator
 - **Card Collection** - View, filter, sort, and manage your collected players
+- **Sell Cards** - Sell individual cards or sell all cards from a pack
 - **Player Database** - Browse all 5,527+ players ranked by overall rating
 - **Statistics** - Track your collection progress and rarity breakdown
 - **Archetype Generation** - AI-generated unique crests for each player
+
+### Pack Opening Experience
+The pack opening features a polished loading experience:
+1. Animated card stack visual
+2. Progress bar with percentage
+3. Dynamic status messages:
+   - "Shuffling the deck..."
+   - "Selecting cards..."
+   - "Checking rarities..."
+   - "Applying luck bonus..."
+   - "Revealing your cards..."
+4. Glow effects and shadows
+5. Three action buttons: Close, Sell All, Open Another
 
 ### Rarity System
 | Rarity | Overall | Odds | Coin Value | Sell Value |
@@ -93,7 +111,7 @@ git push origin main
 | Uncommon | 72+ | 25% | 30 | 15 |
 | Common | <72 | 50% | 10 | 5 |
 
-*Note: GOAT rarity is exclusive to Michael Jordan and LeBron James*
+*GOAT rarity is exclusive to Michael Jordan and LeBron James*
 
 ### Pack Types
 | Pack | Cost | Cards | Special |
@@ -136,38 +154,31 @@ BasketballArchetypeCollector/
 │   ├── Era.cs              # Era classification
 │   ├── Pack.cs             # Pack definitions
 │   ├── GameState.cs        # Game state persistence
-│   ├── ArchetypeData.cs    # Archetype structure
-│   └── User.cs             # User model
+│   └── ArchetypeData.cs    # Archetype structure
 ├── ViewModels/
 │   ├── BaseViewModel.cs
-│   ├── MainViewModel.cs
 │   ├── PackStoreViewModel.cs
-│   ├── PackOpeningViewModel.cs
+│   ├── PackOpeningViewModel.cs  # With Sell All support
 │   ├── CollectionViewModel.cs
 │   ├── DatabaseViewModel.cs
 │   ├── StatsViewModel.cs
-│   ├── PlayerDetailViewModel.cs
-│   └── SignInViewModel.cs
+│   └── PlayerDetailViewModel.cs # With Sell Card support
 ├── Views/
-│   ├── HomePage.xaml
 │   ├── PackStorePage.xaml
-│   ├── PackOpeningPage.xaml
+│   ├── PackOpeningPage.xaml     # Animated loading UI
 │   ├── CollectionPage.xaml
 │   ├── DatabasePage.xaml
 │   ├── StatsPage.xaml
-│   ├── PlayerDetailPage.xaml
-│   └── SignInPage.xaml
+│   └── PlayerDetailPage.xaml
 ├── Services/
-│   ├── AppwriteService.cs  # Backend API integration
-│   ├── GameStateService.cs # Local + cloud state sync
-│   └── PlayerDataService.cs # CSV data loader
+│   ├── AppwriteService.cs       # Backend API integration
+│   ├── GameStateService.cs      # Local + cloud state sync
+│   └── PlayerDataService.cs     # CSV data loader
 ├── Controls/
 │   ├── CoinDisplay.xaml
-│   ├── PlayerCard.xaml
-│   └── PackCard.xaml
-├── Helpers/
-│   ├── OverallCalculator.cs
-│   └── Converters.cs
+│   └── PlayerCard.xaml
+├── Converters/
+│   └── ValueConverters.cs       # UI value converters
 ├── Resources/
 │   ├── Data/
 │   │   └── player_career_stats.csv
@@ -176,12 +187,8 @@ BasketballArchetypeCollector/
 │       └── Orbitron-*.ttf
 └── appwrite/
     └── functions/
-        ├── generate-archetype/
-        │   ├── package.json
-        │   └── src/main.js
-        └── fetch-documents/
-            ├── package.json
-            └── src/main.js
+        ├── generate-archetype/  # GPT + ModelsLab/DALL-E
+        └── fetch-documents/     # Bypass 25-doc limit
 ```
 
 ---
@@ -194,26 +201,23 @@ BasketballArchetypeCollector/
 - **Database ID:** `basketball-archetypes`
 
 ### Collections
-
 | Collection | Purpose |
 |------------|---------|
 | `players` | Player data (5,527 imported from CSV) |
 | `archetypes` | Generated archetype cache |
-| `user_collections` | User game state (coins, collection, stats) |
+| `user_collections` | User game state |
 | `pack_purchases` | Purchase history |
 
 ### Storage Buckets
-
 | Bucket | Purpose |
 |--------|---------|
 | `crests` | Generated crest images |
 
 ### Functions
-
 | Function | Purpose |
 |----------|---------|
-| `generate-archetype` | Generates archetype using GPT-4 + ModelsLab/DALL-E |
-| `fetch-documents` | Fetches all documents (bypasses 25-doc limit) |
+| `generate-archetype` | GPT-4 + ModelsLab/DALL-E |
+| `fetch-documents` | Bypass 25-doc limit |
 
 ---
 
@@ -230,30 +234,7 @@ BasketballArchetypeCollector/
 | `CERTIFICATE_PRIVATE_KEY_PASSWORD` | Text | Certificate password |
 | `PROVISIONING_PROFILE` | File | Distribution profile |
 
-### Build Trigger
-
 Push to `main` branch triggers iOS build and TestFlight upload.
-
----
-
-## Local Development
-
-### Prerequisites
-- .NET 8 SDK
-- Visual Studio 2022 or VS Code with .NET MAUI extension
-- Xcode 15+ (for iOS simulator)
-
-### Build Commands
-```bash
-# Restore packages
-dotnet restore
-
-# Build for iOS (Debug)
-dotnet build -f net8.0-ios -c Debug
-
-# Build for iOS (Release)
-dotnet build -f net8.0-ios -c Release
-```
 
 ---
 
@@ -265,6 +246,7 @@ dotnet build -f net8.0-ios -c Release
 | Daily Bonus | +100 |
 | Duplicate Card | +Full rarity value |
 | Sell Card | +50% of rarity value |
+| Sell All (after pack) | +50% of total pack value |
 | Standard Pack | -100 |
 | Premium Pack | -250 |
 | Elite Pack | -500 |
@@ -286,25 +268,15 @@ dotnet build -f net8.0-ios -c Release
 
 ---
 
-## Image Generation Cost Comparison
-
-| Provider | Cost per Image | Quality |
-|----------|----------------|---------|
-| ModelsLab | ~$0.002 | Good |
-| DALL-E 2 (256x256) | ~$0.016 | Better |
-
-The app uses ModelsLab first (8x cheaper), with DALL-E as fallback.
-
----
-
 ## Implementation Checklist
 
 ### Core Features - COMPLETE
 - [x] Pack purchasing with coins
-- [x] Pack opening with card reveal animation
+- [x] Pack opening with animated loading
 - [x] Rarity system (6 tiers)
 - [x] Card collection management
-- [x] Selling cards for coins
+- [x] Selling individual cards
+- [x] Sell All button after pack opening
 - [x] Duplicate detection and auto-sell
 - [x] Player statistics display
 - [x] Era classification
@@ -325,25 +297,22 @@ The app uses ModelsLab first (8x cheaper), with DALL-E as fallback.
 - [x] Collection page with filters
 - [x] Database page with pagination
 - [x] Stats page with rarity breakdown
-- [x] Player detail page
-- [x] Pack opening animation
+- [x] Player detail page with sell button
+- [x] Pack opening with progress animation
 - [x] Coin display component
 - [x] Player card component
 - [x] Rarity-based styling
-
-### CI/CD - COMPLETE
-- [x] Codemagic configuration
-- [x] iOS build pipeline
-- [x] TestFlight deployment
+- [x] Glow effects and shadows
 
 ---
 
 ## Notes
 
+- **Version:** 1.1.0 (Build 2)
 - **Player Data:** 5,527 total players, 5,042 with stats
 - **Bundle ID:** `com.basketballarchetype.app`
-- **Target:** iOS only (initial release)
-- **Minimum iOS:** 14.2
+- **Target:** iOS only
+- **Minimum iOS:** 15.0
 
 ---
 

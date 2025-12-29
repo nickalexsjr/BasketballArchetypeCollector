@@ -37,6 +37,15 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private bool _isNewCard;
 
+    [ObservableProperty]
+    private string _loadingMessage = "Opening pack...";
+
+    [ObservableProperty]
+    private double _loadingProgress;
+
+    [ObservableProperty]
+    private int _sellAllValue;
+
     public PackOpeningViewModel(GameStateService gameStateService)
     {
         _gameStateService = gameStateService;
@@ -60,22 +69,30 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         Cards.Clear();
         CurrentCardIndex = 0;
         AllRevealed = false;
+        LoadingProgress = 0;
+        LoadingMessage = "Shuffling the deck...";
 
         try
         {
+            // Animated loading sequence
+            await AnimateLoading();
+
             var cards = await _gameStateService.OpenPack(Pack);
+
+            // Calculate sell all value
+            SellAllValue = 0;
             foreach (var card in cards)
             {
                 Cards.Add(card);
+                SellAllValue += RarityConfig.GetSellValue(card.Rarity);
             }
 
             Coins = _gameStateService.CurrentState.Coins;
 
-            // Show first card
-            if (Cards.Count > 0)
-            {
-                await RevealNextCard();
-            }
+            // Final loading message
+            LoadingMessage = "Cards ready!";
+            LoadingProgress = 100;
+            await Task.Delay(300);
         }
         catch (Exception ex)
         {
@@ -85,6 +102,25 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         finally
         {
             IsOpening = false;
+        }
+    }
+
+    private async Task AnimateLoading()
+    {
+        var messages = new[]
+        {
+            ("Shuffling the deck...", 15),
+            ("Selecting cards...", 35),
+            ("Checking rarities...", 55),
+            ("Applying luck bonus...", 75),
+            ("Revealing your cards...", 90)
+        };
+
+        foreach (var (message, progress) in messages)
+        {
+            LoadingMessage = message;
+            LoadingProgress = progress;
+            await Task.Delay(400);
         }
     }
 
@@ -148,5 +184,38 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     {
         if (player == null) return;
         await Shell.Current.GoToAsync($"playerdetail?playerId={player.Id}");
+    }
+
+    [RelayCommand]
+    private async Task SellAll()
+    {
+        if (Cards.Count == 0) return;
+
+        var confirm = await Shell.Current.DisplayAlert(
+            "Sell All Cards",
+            $"Sell all {Cards.Count} cards for {SellAllValue} coins?",
+            "Sell All", "Cancel");
+
+        if (confirm)
+        {
+            try
+            {
+                foreach (var card in Cards.ToList())
+                {
+                    if (_gameStateService.OwnsCard(card.Id))
+                    {
+                        await _gameStateService.SellCard(card.Id);
+                    }
+                }
+
+                Coins = _gameStateService.CurrentState.Coins;
+                await Shell.Current.DisplayAlert("Sold!", $"You received {SellAllValue} coins.", "OK");
+                await Shell.Current.GoToAsync("..");
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+            }
+        }
     }
 }
