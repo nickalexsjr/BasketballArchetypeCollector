@@ -93,10 +93,15 @@
     <!-- ============================================ -->
     <Color x:Key="Primary">#DC143C</Color>
     <Color x:Key="PrimaryDark">#8B0000</Color>
+    <Color x:Key="PrimaryDarkText">#FFFFFF</Color>
     <Color x:Key="Secondary">#FFD700</Color>
+    <Color x:Key="SecondaryDarkText">#FFFFFF</Color>
     <Color x:Key="Tertiary">#9B59B6</Color>
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
+    <Color x:Key="OffBlack">#1a1a2e</Color>
+    <Color x:Key="MidnightBlue">#191970</Color>
+    <Color x:Key="Magenta">#FF00FF</Color>
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
     <Color x:Key="Gray300">#ACACAC</Color>
