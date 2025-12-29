@@ -1,0 +1,392 @@
+workflows:
+  ios-manual-signing:
+    name: Basketball Archetype Collector iOS (Manual Signing)
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+
+    environment:
+      xcode: 16.0
+      groups:
+        - io  # Contains: CERTIFICATE_P12, PROVISIONING_PROFILE, CERTIFICATE_PASSWORD, APP_STORE_API_KEY
+      vars:
+        BUNDLE_ID: "com.basketballarchetype.app"
+        APP_NAME: "BasketballArchetypeCollector"
+        # Appwrite Configuration
+        APPWRITE_ENDPOINT: "https://cloud.appwrite.io/v1"
+        APPWRITE_PROJECT_ID: "basketballarchetype"
+        APPWRITE_DATABASE_ID: "basketball-archetypes"
+
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+        - pattern: 'master'
+          include: true
+
+    scripts:
+      - name: Generate AppConfig.cs from secrets
+        script: |
+          echo "🔐 Generating AppConfig.cs from environment variables..."
+
+          cat > AppConfig.cs << EOF
+          namespace BasketballArchetypeCollector;
+
+          public static class AppConfig
+          {
+              // Appwrite Configuration (Sydney region)
+              public const string AppwriteEndpoint = "$APPWRITE_ENDPOINT";
+              public const string AppwriteProjectId = "$APPWRITE_PROJECT_ID";
+
+              // App Settings
+              public const int StartingCoins = 1000;
+              public const int MaxCrestImageSizeMb = 5;
+
+              // Appwrite Database ID
+              public const string DatabaseId = "$APPWRITE_DATABASE_ID";
+
+              // Appwrite Collection IDs
+              public const string PlayersCollection = "players";
+              public const string ArchetypesCollection = "archetypes";
+              public const string UserCollectionsCollection = "user_collections";
+              public const string PackPurchasesCollection = "pack_purchases";
+
+              // Appwrite Storage Bucket ID
+              public const string CrestsBucketId = "crests";
+
+              // Appwrite Function IDs
+              public const string GenerateArchetypeFunctionId = "generate-archetype";
+              public const string FetchDocumentsFunctionId = "fetch-documents";
+          }
+          EOF
+
+          echo "✅ AppConfig.cs generated"
+          cat AppConfig.cs
+
+      - name: Install .NET 9 SDK
+        script: |
+          echo "📦 Installing .NET 9 SDK..."
+          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 9.0.100
+
+          export DOTNET_ROOT=$HOME/.dotnet
+          export PATH=$PATH:$DOTNET_ROOT
+
+          echo "✅ .NET Version:"
+          $HOME/.dotnet/dotnet --version
+
+      - name: Install MAUI Workloads
+        script: |
+          export DOTNET_ROOT=$HOME/.dotnet
+          export PATH=$PATH:$DOTNET_ROOT
+
+          echo "📦 Installing MAUI workloads..."
+          $HOME/.dotnet/dotnet workload install maui
+
+          echo "✅ Installed workloads:"
+          $HOME/.dotnet/dotnet workload list
+
+      - name: Restore NuGet Packages
+        script: |
+          export DOTNET_ROOT=$HOME/.dotnet
+          export PATH=$PATH:$DOTNET_ROOT
+
+          echo "📦 Restoring packages for iOS..."
+          $HOME/.dotnet/dotnet restore BasketballArchetypeCollector.csproj /p:TargetFrameworks=net9.0-ios -r ios-arm64
+
+      - name: Verify Environment Variables
+        script: |
+          echo "🔍 Checking environment variables..."
+
+          if [ -z "$CERTIFICATE_P12" ]; then
+            echo "❌ CERTIFICATE_P12 is not set!"
+            exit 1
+          else
+            echo "✅ CERTIFICATE_P12 is set (length: ${#CERTIFICATE_P12})"
+          fi
+
+          if [ -z "$CERTIFICATE_PASSWORD" ]; then
+            echo "❌ CERTIFICATE_PASSWORD is not set!"
+            exit 1
+          else
+            echo "✅ CERTIFICATE_PASSWORD is set"
+          fi
+
+          if [ -z "$PROVISIONING_PROFILE" ]; then
+            echo "❌ PROVISIONING_PROFILE is not set!"
+            exit 1
+          else
+            echo "✅ PROVISIONING_PROFILE is set (length: ${#PROVISIONING_PROFILE})"
+          fi
+
+          echo "✅ All environment variables present!"
+
+      - name: Decode Signing Assets
+        script: |
+          echo "🔐 Decoding certificate..."
+          echo "$CERTIFICATE_P12" | base64 --decode > certificate.p12
+
+          if [ ! -f certificate.p12 ]; then
+            echo "❌ Failed to decode P12!"
+            exit 1
+          fi
+
+          echo "✅ P12 file created ($(stat -f%z certificate.p12) bytes)"
+          file certificate.p12
+
+          echo "🔐 Decoding provisioning profile..."
+          echo "$PROVISIONING_PROFILE" | base64 --decode > provisioning.mobileprovision
+
+          if [ ! -f provisioning.mobileprovision ]; then
+            echo "❌ Failed to decode provisioning profile!"
+            exit 1
+          fi
+
+          echo "✅ Provisioning profile created ($(stat -f%z provisioning.mobileprovision) bytes)"
+          file provisioning.mobileprovision
+
+      - name: Verify P12 Certificate
+        script: |
+          echo "🔍 Verifying P12 certificate..."
+
+          if openssl pkcs12 -info -in certificate.p12 -passin pass:"$CERTIFICATE_PASSWORD" -noout 2>/dev/null; then
+            echo "✅ P12 certificate is valid with provided password"
+          else
+            echo "❌ P12 certificate verification failed!"
+            echo "Check that CERTIFICATE_PASSWORD is correct"
+            exit 1
+          fi
+
+      - name: Convert P12 to Legacy Format
+        script: |
+          echo "🔄 Converting P12 to macOS-compatible format..."
+
+          # Extract certificate and key
+          openssl pkcs12 -in certificate.p12 -passin pass:"$CERTIFICATE_PASSWORD" -out temp.pem -nodes
+
+          # Re-create P12 with legacy format for macOS compatibility
+          openssl pkcs12 -export -in temp.pem -out certificate_fixed.p12 -passout pass:"$CERTIFICATE_PASSWORD" -legacy
+
+          # Replace original with fixed version
+          mv certificate_fixed.p12 certificate.p12
+          rm -f temp.pem
+
+          echo "✅ P12 converted to legacy format"
+
+      - name: Set Up Keychain & Import Certificate
+        script: |
+          echo "🔐 Setting up keychain..."
+
+          KEYCHAIN_NAME="build.keychain-db"
+          KEYCHAIN_PASSWORD="temporary_build_password"
+
+          # Delete keychain if it exists
+          security delete-keychain "$KEYCHAIN_NAME" 2>/dev/null || true
+
+          # Create new keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+
+          # Set as default keychain
+          security list-keychains -d user -s "$KEYCHAIN_NAME" $(security list-keychains -d user | sed s/\"//g)
+          security default-keychain -s "$KEYCHAIN_NAME"
+
+          echo "📥 Importing certificate..."
+          security import certificate.p12 \
+            -P "$CERTIFICATE_PASSWORD" \
+            -k "$KEYCHAIN_NAME" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security \
+            -A
+
+          if [ $? -eq 0 ]; then
+            echo "✅ Certificate imported successfully"
+          else
+            echo "❌ Certificate import failed!"
+            exit 1
+          fi
+
+          # Set partition list to allow codesign access
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+
+          # Allow codesign to access the keychain without prompt
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+
+          echo "🔍 Verifying certificate in keychain:"
+          security find-identity -v -p codesigning
+
+          echo "🔍 Extracting certificate identity..."
+          CERT_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_NAME" | grep "iPhone" | head -1 | grep -o '"[^"]*"' | sed 's/"//g')
+          echo "Certificate Identity: $CERT_IDENTITY"
+
+      - name: Install Provisioning Profile
+        script: |
+          echo "📥 Installing provisioning profile..."
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+
+          # Extract UUID from provisioning profile
+          PROVISIONING_UUID=$(grep -aA1 UUID provisioning.mobileprovision | grep -o "[-a-zA-Z0-9]\{36\}")
+
+          if [ -z "$PROVISIONING_UUID" ]; then
+            echo "❌ Failed to extract UUID from provisioning profile!"
+            exit 1
+          fi
+
+          echo "✅ Provisioning Profile UUID: $PROVISIONING_UUID"
+
+          # Export for use in later build steps
+          echo "export PROVISIONING_UUID=$PROVISIONING_UUID" >> ~/.bash_profile
+
+          # Copy to system location
+          cp provisioning.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/$PROVISIONING_UUID.mobileprovision
+
+          echo "✅ Provisioning profile installed"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Verify Entitlements
+        script: |
+          if [ ! -f "Platforms/iOS/Entitlements.plist" ]; then
+            echo "📝 Creating Entitlements.plist..."
+            cat > Platforms/iOS/Entitlements.plist <<'ENTITLEMENTS_EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+          </dict>
+          </plist>
+          ENTITLEMENTS_EOF
+          else
+            echo "✅ Entitlements.plist already exists"
+          fi
+
+          cat Platforms/iOS/Entitlements.plist
+
+      - name: Build iOS App (Release)
+        script: |
+          export DOTNET_ROOT=$HOME/.dotnet
+          export PATH=$PATH:$DOTNET_ROOT
+
+          echo "🔨 Building BasketballArchetypeCollector for iOS (Release)..."
+          $HOME/.dotnet/dotnet build BasketballArchetypeCollector.csproj \
+            -c Release \
+            -f net9.0-ios \
+            /p:TargetFrameworks=net9.0-ios \
+            /p:RuntimeIdentifier=ios-arm64 \
+            /p:EnableCodeSigning=false
+
+      - name: Publish & Create IPA
+        script: |
+          export DOTNET_ROOT=$HOME/.dotnet
+          export PATH=$PATH:$DOTNET_ROOT
+
+          # Load provisioning profile UUID from previous step
+          source ~/.bash_profile
+
+          # Find the certificate identity
+          echo "🔍 Looking for signing identity..."
+          CERT_IDENTITY=$(security find-identity -v -p codesigning | grep -o '"[^"]*"' | head -1 | tr -d '"')
+
+          if [ -z "$CERT_IDENTITY" ]; then
+            echo "❌ No signing identity found!"
+            echo "Available identities:"
+            security find-identity -v
+            exit 1
+          fi
+
+          echo "✅ Using certificate: $CERT_IDENTITY"
+          echo "✅ Using provisioning profile: $PROVISIONING_UUID"
+
+          echo "📦 Publishing iOS app and creating IPA..."
+          $HOME/.dotnet/dotnet publish BasketballArchetypeCollector.csproj \
+            -c Release \
+            -f net9.0-ios \
+            /p:TargetFrameworks=net9.0-ios \
+            /p:RuntimeIdentifier=ios-arm64 \
+            /p:ArchiveOnBuild=true \
+            /p:BuildIpa=true \
+            /p:CodesignKey="$CERT_IDENTITY" \
+            /p:CodesignProvision="$PROVISIONING_UUID" \
+            /p:EnableCodeSigning=true \
+            -o ./publish \
+            -v:normal
+
+          echo "✅ Build completed! Looking for IPA..."
+          IPA_FILES=$(find . -name "*.ipa" -type f)
+
+          if [ -z "$IPA_FILES" ]; then
+            echo "❌ ERROR: No IPA file was created!"
+            echo "This means the build/signing failed above."
+            exit 1
+          else
+            echo "✅ IPA FILES FOUND:"
+            echo "$IPA_FILES"
+            ls -lh $(find . -name "*.ipa" -type f)
+          fi
+
+      - name: Publish to TestFlight
+        script: |
+          if [ -z "$APP_STORE_API_KEY" ]; then
+            echo "⚠️  Skipping TestFlight upload - APP_STORE_API_KEY not set"
+            exit 0
+          fi
+
+          echo "📤 Publishing to TestFlight..."
+
+          # Find the IPA file
+          IPA_PATH=$(find . -name "*.ipa" -type f | head -1)
+
+          if [ -z "$IPA_PATH" ]; then
+            echo "❌ ERROR: No IPA file found to upload!"
+            exit 1
+          fi
+
+          echo "✅ Found IPA: $IPA_PATH"
+
+          # Decode App Store Connect API key and save to file
+          echo "🔐 Decoding App Store Connect API key..."
+          echo "$APP_STORE_API_KEY" | base64 --decode > app_store_api_key.p8
+
+          if [ ! -f app_store_api_key.p8 ]; then
+            echo "❌ ERROR: Failed to decode App Store Connect API key!"
+            exit 1
+          fi
+
+          echo "✅ API key decoded successfully"
+          echo "🚀 Starting TestFlight upload..."
+
+          # Run app-store-connect publish
+          app-store-connect publish \
+            --path "$IPA_PATH" \
+            --key-id T5GYWWVK2J \
+            --issuer-id 1bddcd89-b4a7-4318-bd7e-ba22b5588d71 \
+            --private-key @file:app_store_api_key.p8 \
+            --testflight \
+            --verbose
+
+          UPLOAD_EXIT_CODE=$?
+
+          # Clean up API key file
+          rm -f app_store_api_key.p8
+
+          if [ $UPLOAD_EXIT_CODE -eq 0 ]; then
+            echo "✅ TestFlight upload completed successfully!"
+          else
+            echo "❌ TestFlight upload failed with exit code: $UPLOAD_EXIT_CODE"
+            exit $UPLOAD_EXIT_CODE
+          fi
+
+    artifacts:
+      - publish/*.ipa
+      - bin/Release/**/*.ipa
+      - "**/*.ipa"
+
+    publishing:
+      email:
+        recipients:
+          - nick.alexs@najdevelopments.com.au
+        notify:
+          success: true
+          failure: true
