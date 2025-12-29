@@ -130,7 +130,8 @@ public partial class StatsViewModel : BaseViewModel
     [RelayCommand]
     private async Task SignIn()
     {
-        await Shell.Current.GoToAsync("signin");
+        // Navigate to login page without tabs
+        await Shell.Current.GoToAsync("//login");
     }
 
     [RelayCommand]
