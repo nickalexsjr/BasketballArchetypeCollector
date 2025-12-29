@@ -145,8 +145,9 @@
                             AlignItems="Start"
                             BindableLayout.ItemsSource="{Binding Cards}">
                     <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="models:Player">
-                            <controls:PlayerCard Player="{Binding}"
+                        <DataTemplate x:DataType="vm:CardItem">
+                            <controls:PlayerCard Player="{Binding Player}"
+                                                 CrestImageUrl="{Binding CrestImageUrl}"
                                                  CardSize="Medium"
                                                  Margin="8">
                                 <controls:PlayerCard.GestureRecognizers>

@@ -68,10 +68,13 @@ public class GameStateService
         {
             var json = JsonSerializer.Serialize(_currentState);
             await SecureStorage.SetAsync(LocalGameStateKey, json);
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Saved local state: {_currentState.Coins} coins, {_currentState.Collection.Count} cards");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[GameStateService] Error saving local state: {ex.Message}");
+            // Re-throw to surface the error to the caller
+            throw new InvalidOperationException($"Failed to save game state: {ex.Message}", ex);
         }
     }
 

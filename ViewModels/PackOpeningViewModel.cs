@@ -6,22 +6,39 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BasketballArchetypeCollector.ViewModels;
 
+// Wrapper to hold player + crest URL for display
+public partial class CardItem : ObservableObject
+{
+    [ObservableProperty]
+    private Player _player = null!;
+
+    [ObservableProperty]
+    private string? _crestImageUrl;
+
+    public CardItem(Player player, string? crestImageUrl = null)
+    {
+        Player = player;
+        CrestImageUrl = crestImageUrl;
+    }
+}
+
 public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 {
     private readonly GameStateService _gameStateService;
     private readonly PlayerDataService _playerDataService;
+    private readonly AppwriteService _appwriteService;
 
     [ObservableProperty]
     private Pack? _pack;
 
     [ObservableProperty]
-    private ObservableCollection<Player> _cards = new();
+    private ObservableCollection<CardItem> _cards = new();
 
     [ObservableProperty]
     private int _currentCardIndex;
 
     [ObservableProperty]
-    private Player? _currentCard;
+    private CardItem? _currentCard;
 
     [ObservableProperty]
     private bool _isOpening;
@@ -50,10 +67,11 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private int _sellAllValue;
 
-    public PackOpeningViewModel(GameStateService gameStateService, PlayerDataService playerDataService)
+    public PackOpeningViewModel(GameStateService gameStateService, PlayerDataService playerDataService, AppwriteService appwriteService)
     {
         _gameStateService = gameStateService;
         _playerDataService = playerDataService;
+        _appwriteService = appwriteService;
         Title = "Open Pack";
     }
 
@@ -83,17 +101,81 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             // Ensure players are loaded first
             await _playerDataService.LoadPlayersAsync();
 
-            // Animated loading sequence
-            await AnimateLoading();
+            // Initial loading animation
+            LoadingMessage = "Shuffling the deck...";
+            LoadingProgress = 10;
+            ProgressBarWidth = 25;
+            await Task.Delay(300);
 
-            var cards = await _gameStateService.OpenPack(Pack);
+            LoadingMessage = "Selecting cards...";
+            LoadingProgress = 20;
+            ProgressBarWidth = 50;
+            await Task.Delay(300);
+
+            // Open the pack and get cards
+            var players = await _gameStateService.OpenPack(Pack);
+
+            LoadingMessage = "Checking rarities...";
+            LoadingProgress = 30;
+            ProgressBarWidth = 75;
+            await Task.Delay(200);
 
             // Calculate sell all value
             SellAllValue = 0;
-            foreach (var card in cards)
+            foreach (var player in players)
             {
-                Cards.Add(card);
-                SellAllValue += RarityConfig.GetSellValue(card.Rarity);
+                SellAllValue += RarityConfig.GetSellValue(player.Rarity);
+            }
+
+            // Generate crests for each card (like the HTML version) and add to Cards collection
+            var totalCards = players.Count;
+            for (int i = 0; i < totalCards; i++)
+            {
+                var player = players[i];
+                var progressPercent = 30 + (int)((i + 1) / (float)totalCards * 60); // 30% to 90%
+
+                LoadingMessage = $"Creating crest for {player.FirstName} {player.LastName}...";
+                LoadingProgress = progressPercent;
+                ProgressBarWidth = progressPercent * 2.5;
+
+                string? crestUrl = null;
+
+                // Check if already has cached crest
+                var cached = _gameStateService.GetCachedArchetype(player.Id);
+                if (cached != null && cached.HasCrestImage)
+                {
+                    crestUrl = cached.CrestImageUrl;
+                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Using cached crest for {player.FullName}");
+                }
+                else
+                {
+                    // Generate new crest
+                    try
+                    {
+                        var archetype = await _appwriteService.GenerateArchetype(player);
+                        if (archetype != null)
+                        {
+                            await _gameStateService.CacheArchetype(archetype);
+                            crestUrl = archetype.CrestImageUrl;
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Generated crest for {player.FullName}: {archetype.ArchetypeName}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Failed to generate crest for {player.FullName}");
+                        }
+                    }
+                    catch (Exception crestEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest error for {player.FullName}: {crestEx.Message}");
+                        // Continue with next card, don't fail the whole pack
+                    }
+
+                    // Small delay between crest generations to avoid rate limits
+                    await Task.Delay(500);
+                }
+
+                // Add to Cards collection with crest URL
+                Cards.Add(new CardItem(player, crestUrl));
             }
 
             Coins = _gameStateService.CurrentState.Coins;
@@ -106,32 +188,13 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+            System.Diagnostics.Debug.WriteLine($"[PackOpening] Error: {ex.Message}");
+            await Shell.Current.DisplayAlert("Error", $"Pack opening failed: {ex.Message}", "OK");
             await Shell.Current.GoToAsync("..");
         }
         finally
         {
             IsOpening = false;
-        }
-    }
-
-    private async Task AnimateLoading()
-    {
-        var messages = new[]
-        {
-            ("Shuffling the deck...", 15),
-            ("Selecting cards...", 35),
-            ("Checking rarities...", 55),
-            ("Applying luck bonus...", 75),
-            ("Revealing your cards...", 90)
-        };
-
-        foreach (var (message, progress) in messages)
-        {
-            LoadingMessage = message;
-            LoadingProgress = progress;
-            ProgressBarWidth = progress * 2.5; // 250px max width
-            await Task.Delay(400);
         }
     }
 
@@ -146,7 +209,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 
         IsRevealing = true;
         CurrentCard = Cards[CurrentCardIndex];
-        IsNewCard = _gameStateService.OwnsCard(CurrentCard.Id);
+        IsNewCard = _gameStateService.OwnsCard(CurrentCard.Player.Id);
 
         // Animation delay
         await Task.Delay(500);
@@ -193,10 +256,10 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task ViewCard(Player player)
+    private async Task ViewCard(CardItem cardItem)
     {
-        if (player == null) return;
-        await Shell.Current.GoToAsync($"playerdetail?playerId={player.Id}");
+        if (cardItem?.Player == null) return;
+        await Shell.Current.GoToAsync($"playerdetail?playerId={cardItem.Player.Id}");
     }
 
     [RelayCommand]
@@ -213,11 +276,11 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         {
             try
             {
-                foreach (var card in Cards.ToList())
+                foreach (var cardItem in Cards.ToList())
                 {
-                    if (_gameStateService.OwnsCard(card.Id))
+                    if (_gameStateService.OwnsCard(cardItem.Player.Id))
                     {
-                        await _gameStateService.SellCard(card.Id);
+                        await _gameStateService.SellCard(cardItem.Player.Id);
                     }
                 }
 

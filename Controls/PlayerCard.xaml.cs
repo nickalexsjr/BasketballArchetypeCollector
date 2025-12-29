@@ -13,6 +13,9 @@ public partial class PlayerCard : ContentView
     public static readonly BindableProperty CardSizeProperty =
         BindableProperty.Create(nameof(CardSize), typeof(CardSizeOption), typeof(PlayerCard), CardSizeOption.Medium);
 
+    public static readonly BindableProperty CrestImageUrlProperty =
+        BindableProperty.Create(nameof(CrestImageUrl), typeof(string), typeof(PlayerCard), null, propertyChanged: OnCrestChanged);
+
     public Player? Player
     {
         get => (Player?)GetValue(PlayerProperty);
@@ -30,6 +33,14 @@ public partial class PlayerCard : ContentView
         get => (CardSizeOption)GetValue(CardSizeProperty);
         set => SetValue(CardSizeProperty, value);
     }
+
+    public string? CrestImageUrl
+    {
+        get => (string?)GetValue(CrestImageUrlProperty);
+        set => SetValue(CrestImageUrlProperty, value);
+    }
+
+    public bool HasCrest => !string.IsNullOrEmpty(CrestImageUrl);
 
     public string RarityColor => Player != null && RarityConfig.Info.TryGetValue(Player.Rarity, out var info)
         ? info.Color
@@ -63,6 +74,14 @@ public partial class PlayerCard : ContentView
         {
             card.OnPropertyChanged(nameof(RarityColor));
             card.OnPropertyChanged(nameof(EraColor));
+        }
+    }
+
+    private static void OnCrestChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is PlayerCard card)
+        {
+            card.OnPropertyChanged(nameof(HasCrest));
         }
     }
 }

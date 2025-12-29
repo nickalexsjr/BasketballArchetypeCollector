@@ -26,25 +26,42 @@
                        TextColor="White" />
             </Border>
 
-            <!-- Player Info -->
-            <VerticalStackLayout Grid.Row="1"
-                                 VerticalOptions="Center"
-                                 Spacing="2">
-                <Label Text="{Binding Player.FirstName, Source={x:Reference thisCard}}"
-                       FontFamily="InterRegular"
-                       FontSize="11"
-                       TextColor="#94a3b8"
-                       LineBreakMode="TailTruncation" />
-                <Label Text="{Binding Player.LastName, Source={x:Reference thisCard}}"
-                       FontFamily="InterBold"
-                       FontSize="14"
-                       TextColor="White"
-                       LineBreakMode="TailTruncation" />
-                <Label Text="{Binding Player.TeamAbbreviation, Source={x:Reference thisCard}}"
-                       FontFamily="InterRegular"
-                       FontSize="10"
-                       TextColor="#64748b" />
-            </VerticalStackLayout>
+            <!-- Crest Image or Player Info -->
+            <Grid Grid.Row="1" VerticalOptions="Center">
+                <!-- Crest Image (shown if available) -->
+                <Border StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#0f172a"
+                        IsVisible="{Binding HasCrest, Source={x:Reference thisCard}}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        HeightRequest="60"
+                        WidthRequest="60">
+                    <Image Source="{Binding CrestImageUrl, Source={x:Reference thisCard}}"
+                           Aspect="AspectFill"
+                           HeightRequest="60"
+                           WidthRequest="60" />
+                </Border>
+
+                <!-- Player Info (shown if no crest) -->
+                <VerticalStackLayout VerticalOptions="Center"
+                                     Spacing="2"
+                                     IsVisible="{Binding HasCrest, Source={x:Reference thisCard}, Converter={StaticResource InvertedBoolConverter}}">
+                    <Label Text="{Binding Player.FirstName, Source={x:Reference thisCard}}"
+                           FontFamily="InterRegular"
+                           FontSize="11"
+                           TextColor="#94a3b8"
+                           LineBreakMode="TailTruncation" />
+                    <Label Text="{Binding Player.LastName, Source={x:Reference thisCard}}"
+                           FontFamily="InterBold"
+                           FontSize="14"
+                           TextColor="White"
+                           LineBreakMode="TailTruncation" />
+                    <Label Text="{Binding Player.TeamAbbreviation, Source={x:Reference thisCard}}"
+                           FontFamily="InterRegular"
+                           FontSize="10"
+                           TextColor="#64748b" />
+                </VerticalStackLayout>
+            </Grid>
 
             <!-- Stats Row -->
             <Grid Grid.Row="2"
