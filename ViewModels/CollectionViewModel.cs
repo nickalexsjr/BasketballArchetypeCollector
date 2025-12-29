@@ -55,7 +55,7 @@ public partial class CollectionViewModel : BaseViewModel
 
     public List<string> OwnershipOptions { get; } = new()
     {
-        "All", "Owned", "Not Owned"
+        "Owned", "Not Owned"
     };
 
     public List<string> SortOptions { get; } = new()
@@ -119,6 +119,8 @@ public partial class CollectionViewModel : BaseViewModel
 
     private void ApplyFilters()
     {
+        System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] ApplyFilters: AllPlayers={_allPlayers.Count}, Ownership={SelectedOwnership}, OwnedCount={_gameStateService.CurrentState.Collection.Count}");
+
         var filtered = _allPlayers.AsEnumerable();
 
         // Search filter
@@ -180,6 +182,7 @@ public partial class CollectionViewModel : BaseViewModel
 
         // Update collection
         var list = filtered.Take(500).ToList(); // Limit for performance
+        System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] ApplyFilters result: {list.Count} players after filtering");
         Players.Clear();
         foreach (var player in list)
         {
