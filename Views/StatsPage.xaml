@@ -250,6 +250,139 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Account Section -->
+            <Label Text="Account"
+                   FontFamily="InterSemiBold"
+                   FontSize="16"
+                   TextColor="White"
+                   Margin="0,16,0,0" />
+
+            <!-- Logged In State -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16"
+                    IsVisible="{Binding IsLoggedIn}">
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="12">
+                        <Border StrokeShape="RoundRectangle 25"
+                                BackgroundColor="#3b82f6"
+                                WidthRequest="50"
+                                HeightRequest="50">
+                            <Label Text="👤"
+                                   FontSize="24"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="{Binding UserDisplayName}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="16"
+                                   TextColor="White" />
+                            <Label Text="{Binding UserEmail}"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <Button Text="Sign Out"
+                            Command="{Binding SignOutCommand}"
+                            BackgroundColor="#334155"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="8"
+                            HeightRequest="44" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Logged Out State -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16"
+                    IsVisible="{Binding IsLoggedIn, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Sign in to sync your collection across devices"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                    <Button Text="Sign In / Sign Up"
+                            Command="{Binding SignInCommand}"
+                            BackgroundColor="#3b82f6"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="8"
+                            HeightRequest="44" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Support Section -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16"
+                    Margin="0,8,0,0">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Need help?"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleSupportInfoCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <VerticalStackLayout Spacing="8" IsVisible="{Binding ShowSupportInfo}">
+                        <Label Text="Contact support:"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#64748b" />
+                        <Label Text="support@najdevelopments.com.au"
+                               FontFamily="InterSemiBold"
+                               FontSize="14"
+                               TextColor="#3b82f6">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CopyEmailCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                        <Label Text="Tap to copy"
+                               FontFamily="InterRegular"
+                               FontSize="10"
+                               TextColor="#475569" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Danger Zone (only when logged in) -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1c1917"
+                    Stroke="#7f1d1d"
+                    StrokeThickness="1"
+                    Padding="16"
+                    Margin="0,8,0,0"
+                    IsVisible="{Binding IsLoggedIn}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Danger Zone"
+                           FontFamily="InterSemiBold"
+                           FontSize="14"
+                           TextColor="#ef4444" />
+                    <Button Text="Delete Account"
+                            Command="{Binding DeleteAccountCommand}"
+                            BackgroundColor="#7f1d1d"
+                            TextColor="#fca5a5"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="8"
+                            HeightRequest="44" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- App Version -->
+            <Label Text="Version 1.2.6"
+                   FontFamily="InterRegular"
+                   FontSize="12"
+                   TextColor="#475569"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,16,0,8" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -129,6 +129,47 @@
                                IsVisible="{Binding IsBusy}"
                                Color="#3b82f6" />
 
+            <!-- Forgot Password / Help -->
+            <Label Text="Forgot your password?"
+                   FontFamily="InterRegular"
+                   FontSize="13"
+                   TextColor="#3b82f6"
+                   HorizontalTextAlignment="Center"
+                   IsVisible="{Binding IsSignUp, Converter={StaticResource InvertedBoolConverter}}">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ToggleSupportInfoCommand}" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <!-- Support Info Panel -->
+            <Border StrokeShape="RoundRectangle 10"
+                    BackgroundColor="#1e293b"
+                    Padding="16,12"
+                    IsVisible="{Binding ShowSupportInfo}"
+                    Margin="0,8,0,0">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Contact support for help:"
+                           FontFamily="InterRegular"
+                           FontSize="12"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="support@najdevelopments.com.au"
+                           FontFamily="InterSemiBold"
+                           FontSize="14"
+                           TextColor="#3b82f6"
+                           HorizontalTextAlignment="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding CopyEmailCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Text="Tap to copy"
+                           FontFamily="InterRegular"
+                           FontSize="10"
+                           TextColor="#475569"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- Cancel -->
             <Button Text="Continue without account"
                     Command="{Binding CancelCommand}"

@@ -27,11 +27,27 @@ public partial class SignInViewModel : BaseViewModel
     [ObservableProperty]
     private bool _hasError;
 
+    [ObservableProperty]
+    private bool _showSupportInfo;
+
     public SignInViewModel(AppwriteService appwriteService, GameStateService gameStateService)
     {
         _appwriteService = appwriteService;
         _gameStateService = gameStateService;
         Title = "Sign In";
+    }
+
+    [RelayCommand]
+    private void ToggleSupportInfo()
+    {
+        ShowSupportInfo = !ShowSupportInfo;
+    }
+
+    [RelayCommand]
+    private async Task CopyEmail()
+    {
+        await Clipboard.SetTextAsync("support@najdevelopments.com.au");
+        await Shell.Current.DisplayAlert("Copied", "Email copied to clipboard", "OK");
     }
 
     [RelayCommand]
