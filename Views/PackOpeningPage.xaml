@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
+             xmlns:models="clr-namespace:BasketballArchetypeCollector.Models"
+             x:Class="BasketballArchetypeCollector.Views.PackOpeningPage"
+             x:DataType="vm:PackOpeningViewModel"
+             BackgroundColor="#0a0a0a"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <!-- Loading State -->
+        <VerticalStackLayout IsVisible="{Binding IsOpening}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="20">
+            <Label Text="{Binding Pack.Name}"
+                   FontFamily="OrbitronBold"
+                   FontSize="24"
+                   TextColor="#fbbf24"
+                   HorizontalTextAlignment="Center" />
+
+            <ActivityIndicator IsRunning="True"
+                               Color="#fbbf24"
+                               HeightRequest="60"
+                               WidthRequest="60" />
+
+            <Label Text="Generating archetype crests..."
+                   FontFamily="InterRegular"
+                   FontSize="16"
+                   TextColor="#94a3b8"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="This may take 10-20 seconds..."
+                   FontFamily="InterRegular"
+                   FontSize="12"
+                   TextColor="#64748b"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <!-- Cards Revealed -->
+        <Grid IsVisible="{Binding IsOpening, Converter={StaticResource InvertedBoolConverter}}"
+              RowDefinitions="Auto,*,Auto"
+              Padding="16">
+
+            <!-- Pack Name -->
+            <Label Grid.Row="0"
+                   Text="{Binding Pack.Name}"
+                   FontFamily="OrbitronBold"
+                   FontSize="24"
+                   TextColor="#fbbf24"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,20,0,20" />
+
+            <!-- Cards -->
+            <ScrollView Grid.Row="1">
+                <FlexLayout Direction="Row"
+                            Wrap="Wrap"
+                            JustifyContent="Center"
+                            AlignItems="Start"
+                            BindableLayout.ItemsSource="{Binding Cards}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Player">
+                            <controls:PlayerCard Player="{Binding}"
+                                                 CardSize="Medium"
+                                                 Margin="8">
+                                <controls:PlayerCard.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PackOpeningViewModel}}, Path=ViewCardCommand}"
+                                                          CommandParameter="{Binding}" />
+                                </controls:PlayerCard.GestureRecognizers>
+                            </controls:PlayerCard>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+            </ScrollView>
+
+            <!-- Bottom Actions -->
+            <VerticalStackLayout Grid.Row="2" Spacing="12" Margin="0,20,0,0">
+                <Label Text="Click a card to view details"
+                       FontFamily="InterRegular"
+                       FontSize="12"
+                       TextColor="#64748b"
+                       HorizontalTextAlignment="Center" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Grid.Column="0"
+                            Text="Close"
+                            Command="{Binding GoBackCommand}"
+                            BackgroundColor="#334155"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="12"
+                            HeightRequest="50" />
+
+                    <Button Grid.Column="1"
+                            Text="{Binding Pack.Cost, StringFormat='Open Another ({0} coins)'}"
+                            Command="{Binding OpenAnotherCommand}"
+                            BackgroundColor="#f97316"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="12"
+                            HeightRequest="50" />
+                </Grid>
+
+                <controls:CoinDisplay Coins="{Binding Coins}"
+                                      HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Initial Open Button (before pack is opened) -->
+        <VerticalStackLayout IsVisible="{Binding Cards.Count, Converter={StaticResource ZeroToVisibleConverter}}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="20">
+            <Label Text="{Binding Pack.Name}"
+                   FontFamily="OrbitronBold"
+                   FontSize="28"
+                   TextColor="#fbbf24"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="📦"
+                   FontSize="80"
+                   HorizontalTextAlignment="Center" />
+
+            <Button Text="Open Pack"
+                    Command="{Binding OpenPackCommand}"
+                    BackgroundColor="#f97316"
+                    TextColor="White"
+                    FontFamily="OrbitronBold"
+                    FontSize="20"
+                    CornerRadius="16"
+                    Padding="40,16"
+                    HorizontalOptions="Center" />
+
+            <Button Text="Go Back"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#94a3b8"
+                    FontFamily="InterSemiBold"
+                    HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

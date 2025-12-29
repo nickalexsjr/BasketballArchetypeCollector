@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
+             xmlns:models="clr-namespace:BasketballArchetypeCollector.Models"
+             x:Class="BasketballArchetypeCollector.Views.PackStorePage"
+             x:DataType="vm:PackStoreViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="16" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Grid.Column="0">
+                <Label Text="PACK STORE"
+                       FontFamily="OrbitronBold"
+                       FontSize="24"
+                       TextColor="White" />
+                <Label Text="Open packs to collect cards"
+                       FontFamily="InterRegular"
+                       FontSize="12"
+                       TextColor="#94a3b8" />
+            </VerticalStackLayout>
+
+            <controls:CoinDisplay Grid.Column="1"
+                                  Coins="{Binding Coins}"
+                                  VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Packs Grid -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="16" Spacing="16">
+                <!-- Standard Pack -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="#1e293b"
+                        Stroke="#3b82f6"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPackCommand}"
+                                              CommandParameter="{Binding Packs[0]}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="📦"
+                               FontSize="48"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="16,0" VerticalOptions="Center">
+                            <Label Text="Standard Pack"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#3b82f6" />
+                            <Label Text="5 cards - Basic odds"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2"
+                                StrokeShape="RoundRectangle 8"
+                                BackgroundColor="#3b82f6"
+                                Padding="16,8"
+                                VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="🪙" FontSize="16" />
+                                <Label Text="100"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="16"
+                                       TextColor="White" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Premium Pack -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="#1e293b"
+                        Stroke="#a855f7"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPackCommand}"
+                                              CommandParameter="{Binding Packs[1]}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="🎁"
+                               FontSize="48"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="16,0" VerticalOptions="Center">
+                            <Label Text="Premium Pack"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#a855f7" />
+                            <Label Text="5 cards - 2x rare chance, guaranteed Uncommon+"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                            <HorizontalStackLayout Spacing="4" Margin="0,4,0,0">
+                                <Border StrokeShape="RoundRectangle 4"
+                                        BackgroundColor="#22c55e"
+                                        Padding="4,2">
+                                    <Label Text="Uncommon+"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="10"
+                                           TextColor="White" />
+                                </Border>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2"
+                                StrokeShape="RoundRectangle 8"
+                                BackgroundColor="#a855f7"
+                                Padding="16,8"
+                                VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="🪙" FontSize="16" />
+                                <Label Text="250"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="16"
+                                       TextColor="White" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Elite Pack -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="#1e293b"
+                        Stroke="#f97316"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPackCommand}"
+                                              CommandParameter="{Binding Packs[2]}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="👑"
+                               FontSize="48"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="16,0" VerticalOptions="Center">
+                            <Label Text="Elite Pack"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#f97316" />
+                            <Label Text="5 cards - 3x epic, 2x legendary, guaranteed Rare+"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                            <HorizontalStackLayout Spacing="4" Margin="0,4,0,0">
+                                <Border StrokeShape="RoundRectangle 4"
+                                        BackgroundColor="#3b82f6"
+                                        Padding="4,2">
+                                    <Label Text="Rare+"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="10"
+                                           TextColor="White" />
+                                </Border>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2"
+                                StrokeShape="RoundRectangle 8"
+                                BackgroundColor="#f97316"
+                                Padding="16,8"
+                                VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="🪙" FontSize="16" />
+                                <Label Text="500"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="16"
+                                       TextColor="White" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Legendary Pack -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="#1e293b"
+                        Stroke="#fbbf24"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPackCommand}"
+                                              CommandParameter="{Binding Packs[3]}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="⭐"
+                               FontSize="48"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="16,0" VerticalOptions="Center">
+                            <Label Text="Legendary Pack"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#fbbf24" />
+                            <Label Text="5 cards - 5x legendary, 2x GOAT chance, guaranteed Epic+"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                            <HorizontalStackLayout Spacing="4" Margin="0,4,0,0">
+                                <Border StrokeShape="RoundRectangle 4"
+                                        BackgroundColor="#a855f7"
+                                        Padding="4,2">
+                                    <Label Text="Epic+"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="10"
+                                           TextColor="White" />
+                                </Border>
+                                <Border StrokeShape="RoundRectangle 4"
+                                        BackgroundColor="#dc143c"
+                                        Padding="4,2">
+                                    <Label Text="GOAT possible!"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="10"
+                                           TextColor="White" />
+                                </Border>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2"
+                                StrokeShape="RoundRectangle 8"
+                                BackgroundColor="#fbbf24"
+                                Padding="16,8"
+                                VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="4">
+                                <Label Text="🪙" FontSize="16" />
+                                <Label Text="1000"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="16"
+                                       TextColor="#1e293b" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </Grid>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

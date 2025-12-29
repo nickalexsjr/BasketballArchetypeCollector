@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
+             x:Class="BasketballArchetypeCollector.Views.PlayerDetailPage"
+             x:DataType="vm:PlayerDetailViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Back Button -->
+            <HorizontalStackLayout>
+                <Button Text="← Back"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#94a3b8"
+                        FontFamily="InterSemiBold" />
+            </HorizontalStackLayout>
+
+            <!-- Player Card Header -->
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="{Binding RarityColor}"
+                    StrokeThickness="3"
+                    BackgroundColor="#1e293b"
+                    Padding="20">
+                <Grid ColumnDefinitions="Auto,*">
+                    <!-- Crest Image or Placeholder -->
+                    <Border Grid.Column="0"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#0f172a"
+                            HeightRequest="150"
+                            WidthRequest="150"
+                            Stroke="{Binding RarityColor}"
+                            StrokeThickness="2">
+                        <Grid>
+                            <Image Source="{Binding CrestImageUrl}"
+                                   Aspect="AspectFill"
+                                   IsVisible="{Binding HasArchetype}" />
+                            <Label Text="?"
+                                   FontSize="60"
+                                   TextColor="#475569"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding HasArchetype, Converter={StaticResource InvertedBoolConverter}}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Player Info -->
+                    <VerticalStackLayout Grid.Column="1" Margin="16,0,0,0" VerticalOptions="Center">
+                        <Label Text="{Binding Player.FullName}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="White" />
+                        <Label Text="{Binding Player.Position}"
+                               FontFamily="InterRegular"
+                               FontSize="14"
+                               TextColor="#94a3b8" />
+                        <Label Text="{Binding Player.TeamAbbreviation}"
+                               FontFamily="InterSemiBold"
+                               FontSize="14"
+                               TextColor="#64748b" />
+
+                        <HorizontalStackLayout Spacing="8" Margin="0,8,0,0">
+                            <Border StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="{Binding RarityColor}"
+                                    Padding="8,4">
+                                <Label Text="{Binding Player.Rarity}"
+                                       FontFamily="InterBold"
+                                       FontSize="12"
+                                       TextColor="White" />
+                            </Border>
+                            <Border StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="#334155"
+                                    Padding="8,4">
+                                <Label Text="{Binding Player.Overall, StringFormat='OVR {0}'}"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="12"
+                                       TextColor="White" />
+                            </Border>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Archetype Section -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16"
+                    IsVisible="{Binding HasArchetype}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Archetype"
+                           FontFamily="InterRegular"
+                           FontSize="12"
+                           TextColor="#64748b" />
+                    <Border StrokeShape="RoundRectangle 20"
+                            BackgroundColor="#667eea"
+                            Padding="12,6"
+                            HorizontalOptions="Start">
+                        <Label Text="{Binding ArchetypeName}"
+                               FontFamily="InterBold"
+                               FontSize="14"
+                               TextColor="White" />
+                    </Border>
+
+                    <Label Text="Play Style"
+                           FontFamily="InterRegular"
+                           FontSize="12"
+                           TextColor="#64748b"
+                           Margin="0,8,0,0" />
+                    <Label Text="{Binding ArchetypeDescription}"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Generate Archetype Button -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="20"
+                    IsVisible="{Binding HasArchetype, Converter={StaticResource InvertedBoolConverter}}">
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="🎨"
+                           FontSize="48"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Generate Archetype Crest"
+                           FontFamily="InterBold"
+                           FontSize="18"
+                           TextColor="White"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Create a unique archetype crest image"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+
+                    <Button Text="Generate Crest"
+                            Command="{Binding GenerateArchetypeCommand}"
+                            BackgroundColor="#667eea"
+                            TextColor="White"
+                            FontFamily="InterBold"
+                            CornerRadius="12"
+                            Padding="24,12"
+                            IsEnabled="{Binding IsLoadingArchetype, Converter={StaticResource InvertedBoolConverter}}" />
+
+                    <ActivityIndicator IsRunning="{Binding IsLoadingArchetype}"
+                                       IsVisible="{Binding IsLoadingArchetype}"
+                                       Color="#667eea" />
+                    <Label Text="This may take 10-20 seconds..."
+                           FontFamily="InterRegular"
+                           FontSize="12"
+                           TextColor="#64748b"
+                           HorizontalTextAlignment="Center"
+                           IsVisible="{Binding IsLoadingArchetype}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Stats Grid -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16">
+                <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto">
+                    <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Ppg, StringFormat='{0:F1}'}"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="PPG"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Rpg, StringFormat='{0:F1}'}"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="RPG"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Apg, StringFormat='{0:F1}'}"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="APG"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center">
+                        <Label Text="{Binding Player.Games}"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="GP"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Era Badge -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                <Border StrokeShape="RoundRectangle 8"
+                        BackgroundColor="{Binding EraColor}"
+                        Padding="12,6">
+                    <Label Text="{Binding Player.Era}"
+                           FontFamily="InterSemiBold"
+                           FontSize="12"
+                           TextColor="White" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#334155"
+                        Padding="12,6"
+                        IsVisible="{Binding Player.Rank, Converter={StaticResource NotNullConverter}}">
+                    <Label Text="{Binding Player.Rank, StringFormat='Rank #{0}'}"
+                           FontFamily="InterSemiBold"
+                           FontSize="12"
+                           TextColor="#fbbf24" />
+                </Border>
+            </HorizontalStackLayout>
+
+            <!-- Sell Button (if owned) -->
+            <Button Text="Sell Card"
+                    Command="{Binding SellCardCommand}"
+                    BackgroundColor="#7f1d1d"
+                    TextColor="#fca5a5"
+                    FontFamily="InterSemiBold"
+                    CornerRadius="12"
+                    Padding="16,12"
+                    IsVisible="{Binding IsOwned}"
+                    Margin="0,20,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

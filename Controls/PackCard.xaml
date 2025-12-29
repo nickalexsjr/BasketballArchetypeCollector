@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BasketballArchetypeCollector.Controls.PackCard"
+             x:Name="thisPack">
+
+    <Border StrokeShape="RoundRectangle 16"
+            StrokeThickness="3"
+            Stroke="{Binding PackColor, Source={x:Reference thisPack}}"
+            BackgroundColor="#1e293b"
+            Padding="16"
+            HeightRequest="220"
+            WidthRequest="160">
+
+        <Grid RowDefinitions="Auto,*,Auto,Auto,Auto">
+            <!-- Pack Name -->
+            <Label Grid.Row="0"
+                   Text="{Binding Pack.Name, Source={x:Reference thisPack}}"
+                   FontFamily="OrbitronBold"
+                   FontSize="16"
+                   TextColor="{Binding PackColor, Source={x:Reference thisPack}}"
+                   HorizontalTextAlignment="Center" />
+
+            <!-- Pack Icon -->
+            <Border Grid.Row="1"
+                    StrokeShape="RoundRectangle 12"
+                    BackgroundColor="{Binding PackColor, Source={x:Reference thisPack}}"
+                    Opacity="0.2"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    HeightRequest="60"
+                    WidthRequest="60">
+                <Label Text="📦"
+                       FontSize="32"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+
+            <!-- Cards Count -->
+            <Label Grid.Row="2"
+                   Text="{Binding Pack.Cards, Source={x:Reference thisPack}, StringFormat='{0} Cards'}"
+                   FontFamily="InterSemiBold"
+                   FontSize="14"
+                   TextColor="#94a3b8"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,8,0,0" />
+
+            <!-- Guaranteed Rarity -->
+            <HorizontalStackLayout Grid.Row="3"
+                                   HorizontalOptions="Center"
+                                   Spacing="4"
+                                   Margin="0,4,0,0"
+                                   IsVisible="{Binding HasGuaranteed, Source={x:Reference thisPack}}">
+                <Label Text="Guaranteed:"
+                       FontFamily="InterRegular"
+                       FontSize="10"
+                       TextColor="#64748b" />
+                <Label Text="{Binding GuaranteedText, Source={x:Reference thisPack}}"
+                       FontFamily="InterBold"
+                       FontSize="10"
+                       TextColor="{Binding GuaranteedColor, Source={x:Reference thisPack}}" />
+            </HorizontalStackLayout>
+
+            <!-- Price -->
+            <Border Grid.Row="4"
+                    StrokeShape="RoundRectangle 8"
+                    BackgroundColor="{Binding PackColor, Source={x:Reference thisPack}}"
+                    Padding="12,6"
+                    Margin="0,8,0,0"
+                    HorizontalOptions="Center">
+                <HorizontalStackLayout Spacing="4">
+                    <Label Text="🪙"
+                           FontSize="14" />
+                    <Label Text="{Binding Pack.Cost, Source={x:Reference thisPack}}"
+                           FontFamily="OrbitronBold"
+                           FontSize="16"
+                           TextColor="White" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Disabled Overlay -->
+            <Border Grid.RowSpan="5"
+                    BackgroundColor="#80000000"
+                    StrokeShape="RoundRectangle 16"
+                    IsVisible="{Binding IsDisabled, Source={x:Reference thisPack}}">
+                <Label Text="Not enough coins"
+                       FontFamily="InterSemiBold"
+                       FontSize="12"
+                       TextColor="#ef4444"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+        </Grid>
+    </Border>
+</ContentView>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="BasketballArchetypeCollector.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:BasketballArchetypeCollector.Views"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False"
+    Shell.TabBarBackgroundColor="#0f172a"
+    Shell.TabBarTitleColor="#f97316"
+    Shell.TabBarUnselectedColor="#64748b">
+
+    <TabBar>
+        <ShellContent Title="Home"
+                      Route="home"
+                      ContentTemplate="{DataTemplate views:HomePage}" />
+
+        <ShellContent Title="Packs"
+                      Route="packs"
+                      ContentTemplate="{DataTemplate views:PackStorePage}" />
+
+        <ShellContent Title="Collection"
+                      Route="collection"
+                      ContentTemplate="{DataTemplate views:CollectionPage}" />
+    </TabBar>
+
+</Shell>

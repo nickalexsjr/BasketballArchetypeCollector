@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ============================================ -->
+    <!-- BACKGROUND COLORS -->
+    <!-- ============================================ -->
+    <Color x:Key="BgDark">#0f172a</Color>
+    <Color x:Key="BgMid">#111827</Color>
+    <Color x:Key="BgBlack">#000000</Color>
+    <Color x:Key="BgCard">#1e1e32</Color>
+    <Color x:Key="BgCardHover">#2a2a42</Color>
+
+    <!-- ============================================ -->
+    <!-- RARITY COLORS -->
+    <!-- ============================================ -->
+    <!-- GOAT (Red) -->
+    <Color x:Key="GoatPrimary">#DC143C</Color>
+    <Color x:Key="GoatSecondary">#8B0000</Color>
+    <Color x:Key="GoatText">#FF6B6B</Color>
+
+    <!-- Legendary (Gold) -->
+    <Color x:Key="LegendaryPrimary">#FFD700</Color>
+    <Color x:Key="LegendarySecondary">#FF8C00</Color>
+    <Color x:Key="LegendaryText">#FFD700</Color>
+
+    <!-- Epic (Purple) -->
+    <Color x:Key="EpicPrimary">#9B59B6</Color>
+    <Color x:Key="EpicSecondary">#8E44AD</Color>
+    <Color x:Key="EpicText">#BB86FC</Color>
+
+    <!-- Rare (Blue) -->
+    <Color x:Key="RarePrimary">#3498DB</Color>
+    <Color x:Key="RareSecondary">#2980B9</Color>
+    <Color x:Key="RareText">#64B5F6</Color>
+
+    <!-- Uncommon (Green) -->
+    <Color x:Key="UncommonPrimary">#2ECC71</Color>
+    <Color x:Key="UncommonSecondary">#27AE60</Color>
+    <Color x:Key="UncommonText">#81C784</Color>
+
+    <!-- Common (Gray) -->
+    <Color x:Key="CommonPrimary">#7F8C8D</Color>
+    <Color x:Key="CommonSecondary">#95A5A6</Color>
+    <Color x:Key="CommonText">#BDBDBD</Color>
+
+    <!-- ============================================ -->
+    <!-- ERA BADGE COLORS -->
+    <!-- ============================================ -->
+    <Color x:Key="EraModern">#2ECC71</Color>
+    <Color x:Key="Era2010s">#3498DB</Color>
+    <Color x:Key="Era2000s">#9B59B6</Color>
+    <Color x:Key="Era90s">#E74C3C</Color>
+    <Color x:Key="Era80s">#F39C12</Color>
+    <Color x:Key="EraClassic">#1ABC9C</Color>
+    <Color x:Key="EraUnknown">#7F8C8D</Color>
+
+    <!-- ============================================ -->
+    <!-- TEXT COLORS -->
+    <!-- ============================================ -->
+    <Color x:Key="TextPrimary">#FFFFFF</Color>
+    <Color x:Key="TextSecondary">#FFFFFF99</Color>
+    <Color x:Key="TextMuted">#FFFFFF66</Color>
+    <Color x:Key="TextDisabled">#FFFFFF33</Color>
+
+    <!-- ============================================ -->
+    <!-- ACCENT & UI COLORS -->
+    <!-- ============================================ -->
+    <Color x:Key="Accent">#48dbfb</Color>
+    <Color x:Key="AccentDark">#0ABDE3</Color>
+    <Color x:Key="ArchetypeBadgeStart">#667eea</Color>
+    <Color x:Key="ArchetypeBadgeEnd">#764ba2</Color>
+    <Color x:Key="Success">#2ECC71</Color>
+    <Color x:Key="Warning">#F39C12</Color>
+    <Color x:Key="Error">#E74C3C</Color>
+    <Color x:Key="CoinGold">#FFD700</Color>
+
+    <!-- ============================================ -->
+    <!-- PACK GRADIENT COLORS -->
+    <!-- ============================================ -->
+    <Color x:Key="PackStandardStart">#475569</Color>
+    <Color x:Key="PackStandardEnd">#1e293b</Color>
+    <Color x:Key="PackPremiumStart">#2563eb</Color>
+    <Color x:Key="PackPremiumEnd">#3730a3</Color>
+    <Color x:Key="PackEliteStart">#9333ea</Color>
+    <Color x:Key="PackEliteEnd">#be185d</Color>
+    <Color x:Key="PackLegendaryStart">#f59e0b</Color>
+    <Color x:Key="PackLegendaryEnd">#c2410c</Color>
+
+    <!-- ============================================ -->
+    <!-- LEGACY/COMPATIBILITY COLORS -->
+    <!-- ============================================ -->
+    <Color x:Key="Primary">#DC143C</Color>
+    <Color x:Key="PrimaryDark">#8B0000</Color>
+    <Color x:Key="Secondary">#FFD700</Color>
+    <Color x:Key="Tertiary">#9B59B6</Color>
+    <Color x:Key="White">White</Color>
+    <Color x:Key="Black">Black</Color>
+    <Color x:Key="Gray100">#E1E1E1</Color>
+    <Color x:Key="Gray200">#C8C8C8</Color>
+    <Color x:Key="Gray300">#ACACAC</Color>
+    <Color x:Key="Gray400">#919191</Color>
+    <Color x:Key="Gray500">#6E6E6E</Color>
+    <Color x:Key="Gray600">#404040</Color>
+    <Color x:Key="Gray900">#212121</Color>
+    <Color x:Key="Gray950">#141414</Color>
+
+    <!-- ============================================ -->
+    <!-- BRUSHES -->
+    <!-- ============================================ -->
+    <SolidColorBrush x:Key="BgDarkBrush" Color="{StaticResource BgDark}"/>
+    <SolidColorBrush x:Key="BgMidBrush" Color="{StaticResource BgMid}"/>
+    <SolidColorBrush x:Key="BgBlackBrush" Color="{StaticResource BgBlack}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+
+</ResourceDictionary>

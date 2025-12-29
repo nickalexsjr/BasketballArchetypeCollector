@@ -1,0 +1,26 @@
+# Build outputs
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Secrets - NEVER commit these
+AppConfig.cs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (in functions)
+appwrite/functions/*/node_modules/
+
+# Packages are generated, not stored
+*.tar.gz
+
+# Temp files
+*.tmp
+*.log

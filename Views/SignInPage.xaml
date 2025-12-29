@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             x:Class="BasketballArchetypeCollector.Views.SignInPage"
+             x:DataType="vm:SignInViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="20" VerticalOptions="Center">
+
+            <!-- Logo/Title -->
+            <VerticalStackLayout HorizontalOptions="Center" Margin="0,40,0,20">
+                <Label Text="🏀"
+                       FontSize="60"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="BASKETBALL"
+                       FontFamily="OrbitronBlack"
+                       FontSize="24"
+                       TextColor="#f97316"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="ARCHETYPE COLLECTOR"
+                       FontFamily="OrbitronBold"
+                       FontSize="12"
+                       TextColor="#94a3b8"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Mode Toggle -->
+            <Grid ColumnDefinitions="*,*" HorizontalOptions="Center" WidthRequest="300">
+                <Button Grid.Column="0"
+                        Text="Sign In"
+                        BackgroundColor="{Binding IsSignUp, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#1e293b|#3b82f6'}"
+                        TextColor="White"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="8"
+                        Command="{Binding ToggleModeCommand}" />
+                <Button Grid.Column="1"
+                        Text="Sign Up"
+                        BackgroundColor="{Binding IsSignUp, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#3b82f6|#1e293b'}"
+                        TextColor="White"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="8"
+                        Command="{Binding ToggleModeCommand}" />
+            </Grid>
+
+            <!-- Error Message -->
+            <Border StrokeShape="RoundRectangle 8"
+                    BackgroundColor="#7f1d1d"
+                    Padding="12"
+                    IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}"
+                       FontFamily="InterRegular"
+                       FontSize="14"
+                       TextColor="#fca5a5"
+                       HorizontalTextAlignment="Center" />
+            </Border>
+
+            <!-- Email Field -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Email"
+                       FontFamily="InterSemiBold"
+                       FontSize="14"
+                       TextColor="#94a3b8" />
+                <Border StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#1e293b"
+                        Padding="12">
+                    <Entry Text="{Binding Email}"
+                           Placeholder="your@email.com"
+                           PlaceholderColor="#475569"
+                           TextColor="White"
+                           FontFamily="InterRegular"
+                           Keyboard="Email"
+                           BackgroundColor="Transparent" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Password Field -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Password"
+                       FontFamily="InterSemiBold"
+                       FontSize="14"
+                       TextColor="#94a3b8" />
+                <Border StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#1e293b"
+                        Padding="12">
+                    <Entry Text="{Binding Password}"
+                           Placeholder="••••••••"
+                           PlaceholderColor="#475569"
+                           TextColor="White"
+                           FontFamily="InterRegular"
+                           IsPassword="True"
+                           BackgroundColor="Transparent" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Confirm Password (Sign Up only) -->
+            <VerticalStackLayout Spacing="8" IsVisible="{Binding IsSignUp}">
+                <Label Text="Confirm Password"
+                       FontFamily="InterSemiBold"
+                       FontSize="14"
+                       TextColor="#94a3b8" />
+                <Border StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#1e293b"
+                        Padding="12">
+                    <Entry Text="{Binding ConfirmPassword}"
+                           Placeholder="••••••••"
+                           PlaceholderColor="#475569"
+                           TextColor="White"
+                           FontFamily="InterRegular"
+                           IsPassword="True"
+                           BackgroundColor="Transparent" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Submit Button -->
+            <Button Text="{Binding IsSignUp, Converter={StaticResource BoolToTextConverter}, ConverterParameter='Create Account|Sign In'}"
+                    Command="{Binding SubmitCommand}"
+                    BackgroundColor="#3b82f6"
+                    TextColor="White"
+                    FontFamily="InterBold"
+                    FontSize="16"
+                    CornerRadius="12"
+                    HeightRequest="50"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#3b82f6" />
+
+            <!-- Cancel -->
+            <Button Text="Continue without account"
+                    Command="{Binding CancelCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#64748b"
+                    FontFamily="InterRegular"
+                    FontSize="14" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

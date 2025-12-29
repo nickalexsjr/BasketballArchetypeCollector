@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
+             xmlns:models="clr-namespace:BasketballArchetypeCollector.Models"
+             x:Class="BasketballArchetypeCollector.Views.CollectionPage"
+             x:DataType="vm:CollectionViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Header -->
+        <Grid Grid.Row="0" Padding="16" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Grid.Column="0">
+                <Label Text="COLLECTION"
+                       FontFamily="OrbitronBold"
+                       FontSize="24"
+                       TextColor="White" />
+                <Label Text="{Binding CollectionCount, StringFormat='{0} cards owned'}"
+                       FontFamily="InterRegular"
+                       FontSize="12"
+                       TextColor="#94a3b8" />
+            </VerticalStackLayout>
+
+            <controls:CoinDisplay Grid.Column="1"
+                                  Coins="{Binding Coins}"
+                                  VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Filters -->
+        <VerticalStackLayout Grid.Row="1" Padding="16,0" Spacing="8">
+            <!-- Search -->
+            <Border StrokeShape="RoundRectangle 8"
+                    BackgroundColor="#1e293b"
+                    Padding="12,8">
+                <Entry Text="{Binding SearchQuery}"
+                       Placeholder="Search players..."
+                       PlaceholderColor="#64748b"
+                       TextColor="White"
+                       FontFamily="InterRegular"
+                       BackgroundColor="Transparent" />
+            </Border>
+
+            <!-- Filter Row -->
+            <ScrollView Orientation="Horizontal">
+                <HorizontalStackLayout Spacing="8">
+                    <!-- Rarity Filter -->
+                    <Border StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#1e293b"
+                            Padding="8,4">
+                        <Picker Title="Rarity"
+                                SelectedItem="{Binding SelectedRarity}"
+                                ItemsSource="{Binding RarityOptions}"
+                                TextColor="White"
+                                TitleColor="#64748b"
+                                FontFamily="InterRegular"
+                                BackgroundColor="Transparent" />
+                    </Border>
+
+                    <!-- Era Filter -->
+                    <Border StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#1e293b"
+                            Padding="8,4">
+                        <Picker Title="Era"
+                                SelectedItem="{Binding SelectedEra}"
+                                ItemsSource="{Binding EraOptions}"
+                                TextColor="White"
+                                TitleColor="#64748b"
+                                FontFamily="InterRegular"
+                                BackgroundColor="Transparent" />
+                    </Border>
+
+                    <!-- Ownership Filter -->
+                    <Border StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#1e293b"
+                            Padding="8,4">
+                        <Picker Title="Owned"
+                                SelectedItem="{Binding SelectedOwnership}"
+                                ItemsSource="{Binding OwnershipOptions}"
+                                TextColor="White"
+                                TitleColor="#64748b"
+                                FontFamily="InterRegular"
+                                BackgroundColor="Transparent" />
+                    </Border>
+
+                    <!-- Sort -->
+                    <Border StrokeShape="RoundRectangle 8"
+                            BackgroundColor="#1e293b"
+                            Padding="8,4">
+                        <HorizontalStackLayout Spacing="4">
+                            <Picker Title="Sort"
+                                    SelectedItem="{Binding SelectedSort}"
+                                    ItemsSource="{Binding SortOptions}"
+                                    TextColor="White"
+                                    TitleColor="#64748b"
+                                    FontFamily="InterRegular"
+                                    BackgroundColor="Transparent" />
+                            <Button Text="{Binding SortDescending, Converter={StaticResource SortDirectionConverter}}"
+                                    Command="{Binding ToggleSortOrderCommand}"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#94a3b8"
+                                    FontSize="16"
+                                    Padding="4" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </VerticalStackLayout>
+
+        <!-- Player Grid -->
+        <RefreshView Grid.Row="2"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding LoadPlayersCommand}"
+                     RefreshColor="#f97316">
+            <CollectionView ItemsSource="{Binding Players}"
+                            Margin="8">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="3"
+                                     HorizontalItemSpacing="8"
+                                     VerticalItemSpacing="8" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Player">
+                        <controls:PlayerCard Player="{Binding}"
+                                             CardSize="Small">
+                            <controls:PlayerCard.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CollectionViewModel}}, Path=NavigateToPlayerCommand}"
+                                                      CommandParameter="{Binding}" />
+                            </controls:PlayerCard.GestureRecognizers>
+                        </controls:PlayerCard>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Padding="40">
+                        <Label Text="No players found"
+                               FontFamily="InterSemiBold"
+                               FontSize="18"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Try adjusting your filters"
+                               FontFamily="InterRegular"
+                               FontSize="14"
+                               TextColor="#475569"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="#f97316"
+                           VerticalOptions="Center" />
+    </Grid>
+</ContentPage>

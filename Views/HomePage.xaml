@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
+             x:Class="BasketballArchetypeCollector.Views.HomePage"
+             x:DataType="vm:MainViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="20">
+
+            <!-- Header -->
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="BASKETBALL"
+                           FontFamily="OrbitronBlack"
+                           FontSize="24"
+                           TextColor="#f97316" />
+                    <Label Text="ARCHETYPE COLLECTOR"
+                           FontFamily="OrbitronBold"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           Margin="0,-4,0,0" />
+                </VerticalStackLayout>
+
+                <controls:CoinDisplay Grid.Column="1"
+                                      Coins="{Binding Coins}"
+                                      VerticalOptions="Center" />
+            </Grid>
+
+            <!-- User Status -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Text="{Binding Username, StringFormat='Welcome, {0}'}"
+                           FontFamily="InterSemiBold"
+                           FontSize="16"
+                           TextColor="White"
+                           IsVisible="{Binding IsLoggedIn}" />
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Text="Sign in to save progress"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           IsVisible="{Binding IsLoggedIn, Converter={StaticResource InvertedBoolConverter}}" />
+
+                    <Button Grid.Row="0" Grid.Column="1"
+                            Text="Sign In"
+                            Command="{Binding SignInCommand}"
+                            BackgroundColor="#3b82f6"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            IsVisible="{Binding IsLoggedIn, Converter={StaticResource InvertedBoolConverter}}" />
+
+                    <Button Grid.Row="0" Grid.Column="1"
+                            Text="Sign Out"
+                            Command="{Binding SignOutCommand}"
+                            BackgroundColor="#475569"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="8"
+                            Padding="16,8"
+                            IsVisible="{Binding IsLoggedIn}" />
+
+                    <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2"
+                                           Spacing="16"
+                                           Margin="0,12,0,0">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding CollectionCount}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="20"
+                                   TextColor="#22c55e" />
+                            <Label Text="Cards Owned"
+                                   FontFamily="InterRegular"
+                                   FontSize="11"
+                                   TextColor="#64748b" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout>
+                            <Label Text="{Binding TotalPlayers}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="20"
+                                   TextColor="#3b82f6" />
+                            <Label Text="Total Players"
+                                   FontFamily="InterRegular"
+                                   FontSize="11"
+                                   TextColor="#64748b" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout>
+                            <Label Text="{Binding PacksOpened}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="20"
+                                   TextColor="#f97316" />
+                            <Label Text="Packs Opened"
+                                   FontFamily="InterRegular"
+                                   FontSize="11"
+                                   TextColor="#64748b" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Quick Actions -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="🎴 Open Packs"
+                        Command="{Binding NavigateToPacksCommand}"
+                        BackgroundColor="#f97316"
+                        TextColor="White"
+                        FontFamily="InterBold"
+                        FontSize="16"
+                        CornerRadius="12"
+                        HeightRequest="60" />
+
+                <Button Grid.Column="1"
+                        Text="📚 Collection"
+                        Command="{Binding NavigateToCollectionCommand}"
+                        BackgroundColor="#3b82f6"
+                        TextColor="White"
+                        FontFamily="InterBold"
+                        FontSize="16"
+                        CornerRadius="12"
+                        HeightRequest="60" />
+            </Grid>
+
+            <!-- Daily Bonus (if logged in) -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#14532d"
+                    Stroke="#22c55e"
+                    StrokeThickness="1"
+                    Padding="16"
+                    IsVisible="{Binding IsLoggedIn}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Grid.Column="0">
+                        <Label Text="Daily Bonus"
+                               FontFamily="InterBold"
+                               FontSize="16"
+                               TextColor="#22c55e" />
+                        <Label Text="Claim 100 coins daily!"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#86efac" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1"
+                            Text="Claim"
+                            Command="{Binding ClaimDailyBonusCommand}"
+                            BackgroundColor="#22c55e"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="8"
+                            Padding="16,8" />
+                </Grid>
+            </Border>
+
+            <!-- Featured Players -->
+            <VerticalStackLayout Spacing="12">
+                <Label Text="TOP PLAYERS"
+                       FontFamily="OrbitronBold"
+                       FontSize="18"
+                       TextColor="White" />
+
+                <CollectionView ItemsSource="{Binding FeaturedPlayers}"
+                                HeightRequest="220">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal"
+                                           ItemSpacing="12" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <controls:PlayerCard Player="{Binding}"
+                                                 CardSize="Medium">
+                                <controls:PlayerCard.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=NavigateToPlayerCommand}"
+                                                          CommandParameter="{Binding}" />
+                                </controls:PlayerCard.GestureRecognizers>
+                            </controls:PlayerCard>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#f97316"
+                               HeightRequest="40" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

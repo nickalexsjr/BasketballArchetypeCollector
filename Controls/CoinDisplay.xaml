@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BasketballArchetypeCollector.Controls.CoinDisplay"
+             x:Name="thisDisplay">
+
+    <Border StrokeShape="RoundRectangle 20"
+            BackgroundColor="#1e293b"
+            Stroke="#334155"
+            StrokeThickness="1"
+            Padding="12,6">
+        <HorizontalStackLayout Spacing="6">
+            <Label Text="🪙"
+                   FontSize="18"
+                   VerticalOptions="Center" />
+            <Label Text="{Binding Coins, Source={x:Reference thisDisplay}, StringFormat='{0:N0}'}"
+                   FontFamily="OrbitronBold"
+                   FontSize="16"
+                   TextColor="#fbbf24"
+                   VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </Border>
+</ContentView>

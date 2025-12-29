@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+  <!-- Basketball with crest design -->
+  <circle cx="228" cy="228" r="200" fill="#DC143C" stroke="#FFD700" stroke-width="8"/>
+  <!-- Basketball lines -->
+  <path d="M28 228 Q228 128 428 228" fill="none" stroke="#8B0000" stroke-width="6"/>
+  <path d="M28 228 Q228 328 428 228" fill="none" stroke="#8B0000" stroke-width="6"/>
+  <line x1="228" y1="28" x2="228" y2="428" stroke="#8B0000" stroke-width="6"/>
+  <!-- Center emblem -->
+  <circle cx="228" cy="228" r="60" fill="#FFD700" stroke="#FFA500" stroke-width="4"/>
+  <text x="228" y="245" font-family="Arial Black" font-size="48" fill="#0f172a" text-anchor="middle" font-weight="bold">AC</text>
+</svg>
