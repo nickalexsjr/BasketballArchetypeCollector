@@ -1,8 +1,9 @@
 # Basketball Archetype Collector - Fixes Applied & TODO
 
 ## Current Version
-- **Version**: 1.3.6 (Build 19)
+- **Version**: 1.3.7 (Build 20)
 - **Target Framework**: net8.0-ios (builds on Codemagic, not local due to .NET 10 RC2 SDK)
+- **Last Updated**: 2025-12-30
 
 ---
 
@@ -157,8 +158,8 @@ Schema is correct with all required fields.
 - [x] **Fix schema mismatch** - Removed `createdAt`, added `imagePrompt`
 - [x] **Archetypes saving** - Confirmed archetypes collection now populates!
 - [x] **Collection filter fix** - Now defaults to "Owned", removed "All" option
-- [x] **Optimize function for speed** - DALL-E first (faster), ModelsLab fallback, reduced polling
-- [ ] **Redeploy generate-archetype function** - Upload new tar.gz with optimizations
+- [x] **Optimize function** - ModelsLab first (30s timeout), DALL-E fallback
+- [ ] **Redeploy generate-archetype function** - Upload new tar.gz ← DO THIS FIRST
 - [ ] **Test pack opening** - Verify crest images generate without timeout
 - [ ] **Verify loading page** - Should hide login flash on app launch
 - [ ] **Verify pack re-opening bug** - Going back from card detail shouldn't re-open pack
@@ -174,6 +175,36 @@ Schema is correct with all required fields.
 - [ ] Implement pull-to-refresh on collection page
 - [ ] Add search/filter on Database tab
 - [ ] Consider upgrading to net9.0-ios when Codemagic supports it
+
+---
+
+## Known Issues (To Test Tomorrow)
+
+### 1. Function Timeout (Previously 30s limit)
+**Status**: Should be fixed - function timeout set to 180s in Appwrite
+**New Logic**:
+- ModelsLab first (30s max) → DALL-E fallback (~15-20s)
+- Total max: ~60-70s, well within 180s limit
+
+### 2. Pack Navigation Glitch
+**Issue**: Clicking back from card detail didn't show the pack just opened
+**Possible Cause**: May be related to Appwrite function issues or page navigation
+**Status**: Need to test after function fix
+
+### 3. Collection Page Shows "No Players Found"
+**Issue**: Collection was defaulting to show all players, not owned
+**Fix Applied**: Changed default filter to "Owned", removed "All" option
+**Status**: Need to verify fix works
+
+### 4. pack_purchases Collection Empty
+**Issue**: No rows in pack_purchases collection
+**Cause**: App doesn't save to this collection yet - would need to add to GameStateService.OpenPack()
+**Status**: Not implemented - low priority
+
+### 5. Storage Bucket (crests) Empty
+**Issue**: No files in crests storage bucket
+**Cause**: Function uses external image URLs (ModelsLab/DALL-E hosted), doesn't upload to Appwrite Storage
+**Status**: Working as designed - images are hosted externally
 
 ---
 
