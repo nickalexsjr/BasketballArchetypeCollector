@@ -11,17 +11,33 @@
     Shell.TabBarUnselectedColor="#64748b">
 
     <TabBar>
-        <ShellContent Title="Home"
-                      Route="home"
-                      ContentTemplate="{DataTemplate views:HomePage}" />
+        <Tab Title="Packs" Route="packs">
+            <Tab.Icon>
+                <FontImageSource Glyph="📦" FontFamily="InterRegular" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:PackStorePage}" />
+        </Tab>
 
-        <ShellContent Title="Packs"
-                      Route="packs"
-                      ContentTemplate="{DataTemplate views:PackStorePage}" />
+        <Tab Title="Collection" Route="collection">
+            <Tab.Icon>
+                <FontImageSource Glyph="🃏" FontFamily="InterRegular" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:CollectionPage}" />
+        </Tab>
 
-        <ShellContent Title="Collection"
-                      Route="collection"
-                      ContentTemplate="{DataTemplate views:CollectionPage}" />
+        <Tab Title="Database" Route="database">
+            <Tab.Icon>
+                <FontImageSource Glyph="📊" FontFamily="InterRegular" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:DatabasePage}" />
+        </Tab>
+
+        <Tab Title="Stats" Route="stats">
+            <Tab.Icon>
+                <FontImageSource Glyph="📈" FontFamily="InterRegular" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:StatsPage}" />
+        </Tab>
     </TabBar>
 
 </Shell>

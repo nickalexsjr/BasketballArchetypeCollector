@@ -65,10 +65,10 @@ workflows:
           echo "✅ AppConfig.cs generated"
           cat AppConfig.cs
 
-      - name: Install .NET 9 SDK
+      - name: Install .NET 8 SDK
         script: |
-          echo "📦 Installing .NET 9 SDK..."
-          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 9.0.100
+          echo "📦 Installing .NET 8 SDK..."
+          curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 8.0.100
 
           export DOTNET_ROOT=$HOME/.dotnet
           export PATH=$PATH:$DOTNET_ROOT
@@ -93,7 +93,7 @@ workflows:
           export PATH=$PATH:$DOTNET_ROOT
 
           echo "📦 Restoring packages for iOS..."
-          $HOME/.dotnet/dotnet restore BasketballArchetypeCollector.csproj /p:TargetFrameworks=net9.0-ios -r ios-arm64
+          $HOME/.dotnet/dotnet restore BasketballArchetypeCollector.csproj /p:TargetFrameworks=net8.0-ios -r ios-arm64
 
       - name: Verify Environment Variables
         script: |
@@ -272,8 +272,8 @@ workflows:
           echo "🔨 Building BasketballArchetypeCollector for iOS (Release)..."
           $HOME/.dotnet/dotnet build BasketballArchetypeCollector.csproj \
             -c Release \
-            -f net9.0-ios \
-            /p:TargetFrameworks=net9.0-ios \
+            -f net8.0-ios \
+            /p:TargetFrameworks=net8.0-ios \
             /p:RuntimeIdentifier=ios-arm64 \
             /p:EnableCodeSigning=false
 
@@ -302,8 +302,8 @@ workflows:
           echo "📦 Publishing iOS app and creating IPA..."
           $HOME/.dotnet/dotnet publish BasketballArchetypeCollector.csproj \
             -c Release \
-            -f net9.0-ios \
-            /p:TargetFrameworks=net9.0-ios \
+            -f net8.0-ios \
+            /p:TargetFrameworks=net8.0-ios \
             /p:RuntimeIdentifier=ios-arm64 \
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \

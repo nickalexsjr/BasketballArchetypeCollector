@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="BasketballArchetypeCollector.Views.StatsPage"
+             x:DataType="vm:StatsViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False"
+             ios:Page.UseSafeArea="True">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Header -->
+            <VerticalStackLayout>
+                <Label Text="STATS"
+                       FontFamily="OrbitronBlack"
+                       FontSize="24"
+                       TextColor="#f97316" />
+                <Label Text="Your collection statistics"
+                       FontFamily="InterRegular"
+                       FontSize="12"
+                       TextColor="#94a3b8" />
+            </VerticalStackLayout>
+
+            <!-- Main Stats Grid -->
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                <!-- Coins -->
+                <Border Grid.Row="0" Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1e293b"
+                        Padding="16">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding Coins}"
+                               FontFamily="OrbitronBold"
+                               FontSize="28"
+                               TextColor="#facc15"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Coins"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Packs Opened -->
+                <Border Grid.Row="0" Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1e293b"
+                        Padding="16">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding PacksOpened}"
+                               FontFamily="OrbitronBold"
+                               FontSize="28"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Packs Opened"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Cards Collected -->
+                <Border Grid.Row="1" Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1e293b"
+                        Padding="16">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding CardsCollected}"
+                               FontFamily="OrbitronBold"
+                               FontSize="28"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Cards Collected"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Crests Generated -->
+                <Border Grid.Row="1" Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1e293b"
+                        Padding="16">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding CrestsGenerated}"
+                               FontFamily="OrbitronBold"
+                               FontSize="28"
+                               TextColor="#a855f7"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Crests Generated"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- Rarity Breakdown -->
+            <Label Text="Rarity Breakdown"
+                   FontFamily="InterSemiBold"
+                   FontSize="16"
+                   TextColor="White"
+                   Margin="0,8,0,0" />
+
+            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                <!-- GOAT -->
+                <Border Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#DC143C33"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding GoatCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#DC143C"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="GOAT"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#DC143C"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Legendary -->
+                <Border Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#FFD70033"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding LegendaryCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#FFD700"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Legendary"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#FFD700"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Epic -->
+                <Border Grid.Column="2"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#9B59B633"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding EpicCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#9B59B6"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Epic"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#9B59B6"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Rare -->
+                <Border Grid.Column="3"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#3498DB33"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding RareCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#3498DB"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Rare"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#3498DB"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- Second Row Rarities -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <!-- Uncommon -->
+                <Border Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#2ECC7133"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding UncommonCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#2ECC71"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Uncommon"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#2ECC71"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Common -->
+                <Border Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#7F8C8D33"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding CommonCount}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#7F8C8D"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Common"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#7F8C8D"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- Database Info -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#111827"
+                    Padding="16"
+                    Margin="0,8,0,0">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Database Info"
+                           FontFamily="InterSemiBold"
+                           FontSize="14"
+                           TextColor="#64748b" />
+                    <Label Text="{Binding TotalPlayers, StringFormat='Total Players: {0}'}"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="White" />
+                    <Label Text="{Binding CollectionPercent, StringFormat='Collection Progress: {0:F1}%'}"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

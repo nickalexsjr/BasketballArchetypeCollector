@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="BasketballArchetypeCollector.Views.DatabasePage"
+             x:DataType="vm:DatabaseViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False"
+             ios:Page.UseSafeArea="True">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Padding="16,16,16,8">
+            <Label Text="DATABASE"
+                   FontFamily="OrbitronBlack"
+                   FontSize="24"
+                   TextColor="#f97316" />
+            <Label Text="All players ranked by overall"
+                   FontFamily="InterRegular"
+                   FontSize="12"
+                   TextColor="#94a3b8" />
+        </VerticalStackLayout>
+
+        <!-- Search Bar -->
+        <Border Grid.Row="1"
+                StrokeShape="RoundRectangle 8"
+                BackgroundColor="#1e293b"
+                Margin="16,0,16,8"
+                Padding="12,8">
+            <Entry Text="{Binding SearchQuery}"
+                   Placeholder="Search players..."
+                   PlaceholderColor="#64748b"
+                   TextColor="White"
+                   FontFamily="InterRegular"
+                   BackgroundColor="Transparent" />
+        </Border>
+
+        <!-- Filters -->
+        <HorizontalStackLayout Grid.Row="2"
+                               Padding="16,0,16,8"
+                               Spacing="8">
+            <!-- Rarity Filter -->
+            <Border StrokeShape="RoundRectangle 8"
+                    BackgroundColor="#1e293b"
+                    Padding="8,4">
+                <Picker Title="Rarity"
+                        SelectedItem="{Binding SelectedRarity}"
+                        TextColor="White"
+                        TitleColor="#64748b"
+                        BackgroundColor="Transparent">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>All</x:String>
+                            <x:String>GOAT</x:String>
+                            <x:String>Legendary</x:String>
+                            <x:String>Epic</x:String>
+                            <x:String>Rare</x:String>
+                            <x:String>Uncommon</x:String>
+                            <x:String>Common</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+
+            <!-- Unlocked Filter -->
+            <Border StrokeShape="RoundRectangle 8"
+                    BackgroundColor="#1e293b"
+                    Padding="8,4">
+                <Picker Title="Status"
+                        SelectedItem="{Binding SelectedStatus}"
+                        TextColor="White"
+                        TitleColor="#64748b"
+                        BackgroundColor="Transparent">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>All</x:String>
+                            <x:String>Unlocked</x:String>
+                            <x:String>Locked</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+
+            <Label Text="{Binding FilteredCount, StringFormat='{0} players'}"
+                   FontFamily="InterRegular"
+                   FontSize="12"
+                   TextColor="#64748b"
+                   VerticalOptions="Center"
+                   Margin="8,0,0,0" />
+        </HorizontalStackLayout>
+
+        <!-- Player List -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding FilteredPlayers}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding PlayerSelectedCommand}"
+                        SelectionChangedCommandParameter="{Binding SelectedItem, Source={RelativeSource Self}}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:DatabasePlayerItem">
+                    <Border StrokeShape="RoundRectangle 0"
+                            BackgroundColor="{Binding RowBackgroundColor}"
+                            Padding="12,8"
+                            Margin="0,0,0,1">
+                        <Grid ColumnDefinitions="40,50,*,50,50,50,Auto">
+                            <!-- Rank -->
+                            <Label Grid.Column="0"
+                                   Text="{Binding Rank, StringFormat='#{0}'}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="12"
+                                   TextColor="#facc15"
+                                   VerticalOptions="Center" />
+
+                            <!-- Overall -->
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 4"
+                                    BackgroundColor="{Binding RarityColor}"
+                                    Padding="4,2"
+                                    HorizontalOptions="Start"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding Overall}"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="11"
+                                       TextColor="White"
+                                       HorizontalTextAlignment="Center" />
+                            </Border>
+
+                            <!-- Name -->
+                            <VerticalStackLayout Grid.Column="2"
+                                                 VerticalOptions="Center"
+                                                 Spacing="-2">
+                                <Label Text="{Binding Name}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="13"
+                                       TextColor="White"
+                                       LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding Team}"
+                                       FontFamily="InterRegular"
+                                       FontSize="10"
+                                       TextColor="#64748b" />
+                            </VerticalStackLayout>
+
+                            <!-- PPG -->
+                            <VerticalStackLayout Grid.Column="3"
+                                                 HorizontalOptions="Center"
+                                                 VerticalOptions="Center">
+                                <Label Text="{Binding Ppg, StringFormat='{0:F1}'}"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="11"
+                                       TextColor="White"
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="PPG"
+                                       FontFamily="InterRegular"
+                                       FontSize="8"
+                                       TextColor="#64748b"
+                                       HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+
+                            <!-- RPG -->
+                            <VerticalStackLayout Grid.Column="4"
+                                                 HorizontalOptions="Center"
+                                                 VerticalOptions="Center">
+                                <Label Text="{Binding Rpg, StringFormat='{0:F1}'}"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="11"
+                                       TextColor="White"
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="RPG"
+                                       FontFamily="InterRegular"
+                                       FontSize="8"
+                                       TextColor="#64748b"
+                                       HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+
+                            <!-- APG -->
+                            <VerticalStackLayout Grid.Column="5"
+                                                 HorizontalOptions="Center"
+                                                 VerticalOptions="Center">
+                                <Label Text="{Binding Apg, StringFormat='{0:F1}'}"
+                                       FontFamily="OrbitronBold"
+                                       FontSize="11"
+                                       TextColor="White"
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="APG"
+                                       FontFamily="InterRegular"
+                                       FontSize="8"
+                                       TextColor="#64748b"
+                                       HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+
+                            <!-- Rarity Badge -->
+                            <Border Grid.Column="6"
+                                    StrokeShape="RoundRectangle 4"
+                                    BackgroundColor="{Binding RarityColor}"
+                                    Padding="6,2"
+                                    VerticalOptions="Center">
+                                <Label Text="{Binding RarityLabel}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="9"
+                                       TextColor="White" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Pagination -->
+        <Grid Grid.Row="4"
+              ColumnDefinitions="Auto,*,Auto"
+              Padding="16"
+              BackgroundColor="#111827">
+            <Button Grid.Column="0"
+                    Text="◀ Prev"
+                    Command="{Binding PreviousPageCommand}"
+                    BackgroundColor="#1e293b"
+                    TextColor="White"
+                    FontFamily="InterSemiBold"
+                    CornerRadius="8"
+                    Padding="16,8" />
+
+            <Label Grid.Column="1"
+                   Text="{Binding PageInfo}"
+                   FontFamily="InterRegular"
+                   FontSize="14"
+                   TextColor="#94a3b8"
+                   HorizontalTextAlignment="Center"
+                   VerticalOptions="Center" />
+
+            <Button Grid.Column="2"
+                    Text="Next ▶"
+                    Command="{Binding NextPageCommand}"
+                    BackgroundColor="#1e293b"
+                    TextColor="White"
+                    FontFamily="InterSemiBold"
+                    CornerRadius="8"
+                    Padding="16,8" />
+        </Grid>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="3"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           Color="#f97316"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center" />
+    </Grid>
+</ContentPage>
