@@ -44,6 +44,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     private double _loadingProgress;
 
     [ObservableProperty]
+    private double _progressBarWidth;
+
+    [ObservableProperty]
     private int _sellAllValue;
 
     public PackOpeningViewModel(GameStateService gameStateService)
@@ -70,6 +73,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         CurrentCardIndex = 0;
         AllRevealed = false;
         LoadingProgress = 0;
+        ProgressBarWidth = 0;
         LoadingMessage = "Shuffling the deck...";
 
         try
@@ -92,6 +96,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             // Final loading message
             LoadingMessage = "Cards ready!";
             LoadingProgress = 100;
+            ProgressBarWidth = 250;
             await Task.Delay(300);
         }
         catch (Exception ex)
@@ -120,6 +125,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         {
             LoadingMessage = message;
             LoadingProgress = progress;
+            ProgressBarWidth = progress * 2.5; // 250px max width
             await Task.Delay(400);
         }
     }

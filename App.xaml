@@ -18,7 +18,6 @@
             <converters:SortDirectionConverter x:Key="SortDirectionConverter" />
             <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
             <converters:BoolToTextConverter x:Key="BoolToTextConverter" />
-            <converters:ProgressToWidthConverter x:Key="ProgressToWidthConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

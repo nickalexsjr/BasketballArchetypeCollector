@@ -97,7 +97,7 @@
                             BackgroundColor="#f97316"
                             HeightRequest="8"
                             HorizontalOptions="Start"
-                            WidthRequest="{Binding LoadingProgress, Converter={StaticResource ProgressToWidthConverter}}">
+                            WidthRequest="{Binding ProgressBarWidth}">
                         <Border.Shadow>
                             <Shadow Brush="#f97316"
                                     Offset="0,0"

@@ -2,11 +2,16 @@
 
 A .NET MAUI iOS app that replicates the HTML NBA Cards Archetype game. Collect basketball player cards, open packs, and generate unique AI-powered archetype crests for each player.
 
-## Version: 1.1.0
+## Version: 1.1.1
 
 **Status: PRODUCTION READY**
 
 ---
+
+## What's New in v1.1.1
+
+- **Bugfix** - Fixed crash on app launch
+- **Upgraded to .NET 9** - Now targeting net9.0-ios with MAUI 9.0.40
 
 ## What's New in v1.1.0
 
@@ -69,7 +74,7 @@ appwrite functions createDeployment \
 
 ```bash
 # Build for iOS
-dotnet build -f net8.0-ios -c Release
+dotnet build -f net9.0-ios -c Release
 
 # Or push to main branch for Codemagic build
 git push origin main
@@ -308,7 +313,8 @@ Push to `main` branch triggers iOS build and TestFlight upload.
 
 ## Notes
 
-- **Version:** 1.1.0 (Build 2)
+- **Version:** 1.1.1 (Build 3)
+- **Framework:** .NET 9 MAUI
 - **Player Data:** 5,527 total players, 5,042 with stats
 - **Bundle ID:** `com.basketballarchetype.app`
 - **Target:** iOS only
