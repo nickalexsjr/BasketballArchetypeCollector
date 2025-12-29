@@ -128,7 +128,10 @@ public partial class DatabaseViewModel : BaseViewModel
         int rank = CurrentPage * PageSize + 1;
         foreach (var player in pagedPlayers)
         {
-            var rarityInfo = RarityConfig.Info[player.Rarity];
+            if (!RarityConfig.Info.TryGetValue(player.Rarity, out var rarityInfo))
+            {
+                rarityInfo = RarityConfig.Info[Rarity.Common]; // Fallback
+            }
             var isOwned = gameState.Collection.Contains(player.Id);
 
             FilteredPlayers.Add(new DatabasePlayerItem
@@ -206,7 +209,10 @@ public partial class DatabaseViewModel : BaseViewModel
         int rank = CurrentPage * PageSize + 1;
         foreach (var player in pagedPlayers)
         {
-            var rarityInfo = RarityConfig.Info[player.Rarity];
+            if (!RarityConfig.Info.TryGetValue(player.Rarity, out var rarityInfo))
+            {
+                rarityInfo = RarityConfig.Info[Rarity.Common]; // Fallback
+            }
             var isOwned = gameState.Collection.Contains(player.Id);
 
             FilteredPlayers.Add(new DatabasePlayerItem

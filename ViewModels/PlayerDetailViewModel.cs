@@ -154,6 +154,13 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
         await Shell.Current.GoToAsync("..");
     }
 
-    public string RarityColor => RarityConfig.Info[Player?.Rarity ?? Rarity.Common].Color;
+    public string RarityColor
+    {
+        get
+        {
+            var rarity = Player?.Rarity ?? Rarity.Common;
+            return RarityConfig.Info.TryGetValue(rarity, out var info) ? info.Color : "#6b7280";
+        }
+    }
     public string EraColor => EraConfig.GetColor(Player?.Era ?? Era.Modern);
 }

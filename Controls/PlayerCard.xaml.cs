@@ -31,7 +31,9 @@ public partial class PlayerCard : ContentView
         set => SetValue(CardSizeProperty, value);
     }
 
-    public string RarityColor => Player != null ? RarityConfig.Info[Player.Rarity].Color : "#6b7280";
+    public string RarityColor => Player != null && RarityConfig.Info.TryGetValue(Player.Rarity, out var info)
+        ? info.Color
+        : "#6b7280";
     public string EraColor => Player != null ? EraConfig.GetColor(Player.Era) : "#6b7280";
 
     public double CardWidth => CardSize switch
