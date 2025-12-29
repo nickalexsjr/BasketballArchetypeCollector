@@ -1,15 +1,57 @@
 # Basketball Archetype Collector - Fixes Applied & TODO
 
 ## Current Version
-- **Version**: 1.3.7 (Build 20)
+- **Version**: 1.3.8 (Build 21)
 - **Target Framework**: net8.0-ios (builds on Codemagic, not local due to .NET 10 RC2 SDK)
 - **Last Updated**: 2025-12-30
 
 ---
 
-## Issues Fixed (This Session)
+## Issues Fixed (This Session - 2025-12-30)
 
-### 1. Login Page Flash on App Launch
+### 1. Pack Navigation Issue - Cards Blank After Viewing Detail
+**Problem**: After opening a pack, tapping a card to view details, then going back - all cards would disappear/be blank.
+
+**Root Cause**: MAUI creates a new `PackOpeningPage` and `PackOpeningViewModel` instance when navigating back, losing the pack results stored in the previous ViewModel's `Cards` collection.
+
+**Solution**: Changed card viewing to use a modal overlay instead of navigating to a separate page:
+- Added `ShowCardDetail` and `SelectedCardForDetail` properties to `PackOpeningViewModel`
+- Added `ViewCard`, `CloseCardDetail`, and `ViewFullDetail` commands
+- Added card detail modal overlay to `PackOpeningPage.xaml`
+- Tapping a card now shows a modal with stats; "Full Details" button navigates to full page if needed
+
+**Files Changed**:
+- `ViewModels/PackOpeningViewModel.cs` - Added modal state and commands
+- `Views/PackOpeningPage.xaml` - Added modal overlay UI
+
+### 2. pack_purchases Collection Now Used
+**Problem**: `pack_purchases` collection in Appwrite was defined but never used.
+
+**Solution**: Integrated pack purchase tracking:
+- Created `Models/PackPurchase.cs` model
+- Added CRUD methods to `AppwriteService.cs` for pack_purchases
+- `GameStateService.OpenPack()` now records purchases to Appwrite
+- Stats page shows pack purchase statistics (visible when logged in)
+
+### 3. Account Deletion Now Works
+**Problem**: "Delete Account" button only signed out, didn't actually delete data.
+
+**Solution**: Implemented proper account deletion using Appwrite's `UpdateStatus()`:
+- Deletes user's `user_collections` document
+- Deletes all user's `pack_purchases` documents
+- Marks account as blocked/deleted in Appwrite
+- Clears local session data
+
+### 4. Crests Bucket Documented
+**Problem**: `crests` storage bucket appeared unused but purpose was unclear.
+
+**Solution**: Added comment in `AppConfig.cs` explaining it's intentionally unused - crest images are stored as external URLs from ModelsLab/DALL-E for cost optimization.
+
+---
+
+## Previous Fixes
+
+### 5. Login Page Flash on App Launch
 **Problem**: Users with existing sessions briefly saw the login page before being redirected to main.
 
 **Solution**: Added a LoadingPage that shows while checking session status.
@@ -194,7 +236,7 @@ Schema is correct with all required fields.
 
 ### 2. Pack Navigation Glitch
 **Issue**: Opening a pack, viewing card detail, then going back - pack results disappear
-**Status**: UNRESOLVED - need to investigate PackOpeningPage navigation
+**Status**: ✅ FIXED - Card details now shown in modal overlay instead of navigating away
 
 ### 3. Collection Page UI Issues
 **Issue**:
@@ -203,9 +245,9 @@ Schema is correct with all required fields.
 - Cards need better rarity visuals (make whole card the rarity color)
 **Status**: PARTIALLY FIXED - removed "All" filter, need UI improvements
 
-### 4. pack_purchases Collection Empty
-**Cause**: Intentionally not used - all data is in `user_collections`
-**Status**: NOT A BUG - can delete this collection
+### 4. pack_purchases Collection
+**Previous Status**: Was intentionally unused
+**Status**: ✅ NOW USED - Pack purchases are tracked and displayed in Stats page
 
 ### 5. Storage Bucket (crests) Empty
 **Cause**: Images hosted externally by ModelsLab/DALL-E

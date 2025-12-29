@@ -75,6 +75,13 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private bool _hasError;
 
+    // Card detail modal properties
+    [ObservableProperty]
+    private bool _showCardDetail;
+
+    [ObservableProperty]
+    private CardItem? _selectedCardForDetail;
+
     // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
     private bool _hasOpenedPack;
 
@@ -279,10 +286,30 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task ViewCard(CardItem cardItem)
+    private void ViewCard(CardItem cardItem)
     {
         if (cardItem?.Player == null) return;
-        await Shell.Current.GoToAsync($"playerdetail?playerId={cardItem.Player.Id}");
+
+        // Show card detail as modal overlay instead of navigating away
+        // This prevents the issue of losing pack results when navigating back
+        SelectedCardForDetail = cardItem;
+        ShowCardDetail = true;
+    }
+
+    [RelayCommand]
+    private void CloseCardDetail()
+    {
+        ShowCardDetail = false;
+        SelectedCardForDetail = null;
+    }
+
+    [RelayCommand]
+    private async Task ViewFullDetail()
+    {
+        // For when user wants to navigate to the full detail page (e.g., to sell)
+        if (SelectedCardForDetail?.Player == null) return;
+        ShowCardDetail = false;
+        await Shell.Current.GoToAsync($"playerdetail?playerId={SelectedCardForDetail.Player.Id}");
     }
 
     [RelayCommand]

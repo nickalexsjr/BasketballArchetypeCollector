@@ -240,5 +240,133 @@
             </VerticalStackLayout>
         </Grid>
 
+        <!-- Card Detail Modal Overlay -->
+        <Grid IsVisible="{Binding ShowCardDetail}"
+              BackgroundColor="#000000CC"
+              ZIndex="200">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseCardDetailCommand}" />
+            </Grid.GestureRecognizers>
+
+            <!-- Modal Content -->
+            <Border StrokeShape="RoundRectangle 20"
+                    BackgroundColor="#1e293b"
+                    Stroke="{Binding SelectedCardForDetail.RarityColor}"
+                    StrokeThickness="3"
+                    Padding="20"
+                    Margin="24"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    MaximumWidthRequest="350">
+                <Border.Shadow>
+                    <Shadow Brush="{Binding SelectedCardForDetail.RarityColor}"
+                            Offset="0,0"
+                            Radius="30"
+                            Opacity="0.6" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer /> <!-- Prevent tap-through to close -->
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="16">
+                    <!-- Close button -->
+                    <Label Text="✕"
+                           FontSize="24"
+                           TextColor="#94a3b8"
+                           HorizontalOptions="End"
+                           Margin="0,-8,-8,0">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding CloseCardDetailCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <!-- Player Card -->
+                    <controls:PlayerCard Player="{Binding SelectedCardForDetail.Player}"
+                                         CrestImageUrl="{Binding SelectedCardForDetail.CrestImageUrl}"
+                                         CardSize="Large"
+                                         HorizontalOptions="Center" />
+
+                    <!-- Player Info -->
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Label Text="{Binding SelectedCardForDetail.Player.FullName}"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding SelectedCardForDetail.Player.Rarity}"
+                               FontFamily="InterSemiBold"
+                               FontSize="14"
+                               TextColor="{Binding SelectedCardForDetail.RarityColor}"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding SelectedCardForDetail.Player.Position}"
+                               FontFamily="InterRegular"
+                               FontSize="12"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- Stats Row -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                        <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                            <Label Text="{Binding SelectedCardForDetail.Player.Ppg, StringFormat='{0:F1}'}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#f97316"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="PPG"
+                                   FontFamily="InterRegular"
+                                   FontSize="10"
+                                   TextColor="#64748b"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                            <Label Text="{Binding SelectedCardForDetail.Player.Rpg, StringFormat='{0:F1}'}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#3b82f6"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="RPG"
+                                   FontFamily="InterRegular"
+                                   FontSize="10"
+                                   TextColor="#64748b"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
+                            <Label Text="{Binding SelectedCardForDetail.Player.Apg, StringFormat='{0:F1}'}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#22c55e"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="APG"
+                                   FontFamily="InterRegular"
+                                   FontSize="10"
+                                   TextColor="#64748b"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Action Buttons -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Grid.Column="0"
+                                Text="Close"
+                                Command="{Binding CloseCardDetailCommand}"
+                                BackgroundColor="#334155"
+                                TextColor="White"
+                                FontFamily="InterSemiBold"
+                                CornerRadius="10"
+                                HeightRequest="44" />
+                        <Button Grid.Column="1"
+                                Text="Full Details"
+                                Command="{Binding ViewFullDetailCommand}"
+                                BackgroundColor="#f97316"
+                                TextColor="White"
+                                FontFamily="InterSemiBold"
+                                CornerRadius="10"
+                                HeightRequest="44" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
     </Grid>
 </ContentPage>
