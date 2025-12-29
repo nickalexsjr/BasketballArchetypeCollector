@@ -235,7 +235,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     }
 
     [RelayCommand]
-    private async Task SkipToEnd()
+    private void SkipToEnd()
     {
         if (Cards.Count == 0) return;
 

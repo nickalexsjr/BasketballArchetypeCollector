@@ -708,7 +708,7 @@ public class AppwriteService
                         doc.TryGetProperty("$databaseId", out var dbId) ? dbId.GetString()! : AppConfig.DatabaseId,
                         doc.TryGetProperty("$createdAt", out var created) ? created.GetString()! : DateTime.UtcNow.ToString("o"),
                         doc.TryGetProperty("$updatedAt", out var updated) ? updated.GetString()! : DateTime.UtcNow.ToString("o"),
-                        new List<object>(),
+                        new List<string>(),
                         docData
                     ));
                 }
