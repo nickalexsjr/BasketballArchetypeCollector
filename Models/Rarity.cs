@@ -40,7 +40,14 @@ public static class RarityConfig
         return Rarity.Common;
     }
 
-    public static int GetSellValue(Rarity rarity) => Info[rarity].CoinValue / 2;
+    public static int GetSellValue(Rarity rarity) =>
+        Info.TryGetValue(rarity, out var info) ? info.CoinValue / 2 : 5; // Fallback to 5 coins
+
+    public static string GetLabel(Rarity rarity) =>
+        Info.TryGetValue(rarity, out var info) ? info.Label : "COMMON";
+
+    public static RarityInfo GetInfo(Rarity rarity) =>
+        Info.TryGetValue(rarity, out var info) ? info : Info[Rarity.Common];
 }
 
 public class RarityInfo

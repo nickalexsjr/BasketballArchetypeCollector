@@ -98,7 +98,7 @@ public partial class DatabaseViewModel : BaseViewModel
         if (SelectedRarity != "All")
         {
             filtered = filtered.Where(p =>
-                RarityConfig.Info[p.Rarity].Label.Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
+                RarityConfig.GetLabel(p.Rarity).Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
         }
 
         // Status filter (owned vs not owned)
@@ -128,10 +128,7 @@ public partial class DatabaseViewModel : BaseViewModel
         int rank = CurrentPage * PageSize + 1;
         foreach (var player in pagedPlayers)
         {
-            if (!RarityConfig.Info.TryGetValue(player.Rarity, out var rarityInfo))
-            {
-                rarityInfo = RarityConfig.Info[Rarity.Common]; // Fallback
-            }
+            var rarityInfo = RarityConfig.GetInfo(player.Rarity);
             var isOwned = gameState.Collection.Contains(player.Id);
 
             FilteredPlayers.Add(new DatabasePlayerItem
@@ -186,7 +183,7 @@ public partial class DatabaseViewModel : BaseViewModel
         if (SelectedRarity != "All")
         {
             filtered = filtered.Where(p =>
-                RarityConfig.Info[p.Rarity].Label.Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
+                RarityConfig.GetLabel(p.Rarity).Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
         }
 
         var gameState = _gameStateService.CurrentState;
@@ -209,10 +206,7 @@ public partial class DatabaseViewModel : BaseViewModel
         int rank = CurrentPage * PageSize + 1;
         foreach (var player in pagedPlayers)
         {
-            if (!RarityConfig.Info.TryGetValue(player.Rarity, out var rarityInfo))
-            {
-                rarityInfo = RarityConfig.Info[Rarity.Common]; // Fallback
-            }
+            var rarityInfo = RarityConfig.GetInfo(player.Rarity);
             var isOwned = gameState.Collection.Contains(player.Id);
 
             FilteredPlayers.Add(new DatabasePlayerItem

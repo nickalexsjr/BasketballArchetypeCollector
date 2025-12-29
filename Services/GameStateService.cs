@@ -231,7 +231,8 @@ public class GameStateService
 
         foreach (var rarity in rarityOrder)
         {
-            var baseChance = RarityConfig.Info[rarity].Chance;
+            var rarityInfo = RarityConfig.GetInfo(rarity);
+            var baseChance = rarityInfo.Chance;
             var boost = pack.Boosts.TryGetValue(rarity, out var b) ? b : 1f;
 
             // GOAT inherits legendary boost * 0.5 if no specific goat boost
