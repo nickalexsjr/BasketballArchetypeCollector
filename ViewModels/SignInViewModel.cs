@@ -88,25 +88,27 @@ public partial class SignInViewModel : BaseViewModel
 
         try
         {
-            bool success;
+            string? errorMessage;
             if (IsSignUp)
             {
-                success = await _appwriteService.SignUp(Email, Password);
+                errorMessage = await _appwriteService.SignUp(Email, Password);
             }
             else
             {
-                success = await _appwriteService.Login(Email, Password);
+                errorMessage = await _appwriteService.Login(Email, Password);
             }
 
-            if (success)
+            if (errorMessage == null)
             {
+                // Success
                 var session = await _appwriteService.GetCurrentSession();
                 await _gameStateService.InitializeAsync(session?.UserId);
                 await Shell.Current.GoToAsync("//main/packs");
             }
             else
             {
-                ShowError(IsSignUp ? "Failed to create account." : "Invalid email or password.");
+                // Show the actual error message from Appwrite
+                ShowError(errorMessage);
             }
         }
         catch (Exception ex)

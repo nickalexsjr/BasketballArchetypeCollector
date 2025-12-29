@@ -206,32 +206,49 @@ public class AppwriteService
         }
     }
 
-    // Simplified auth methods for ViewModels
-    public async Task<bool> SignUp(string email, string password)
+    // Simplified auth methods for ViewModels - return error message or null on success
+    public async Task<string?> SignUp(string email, string password)
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SignUp attempt for: {email}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Endpoint: {AppConfig.AppwriteEndpoint}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] ProjectId: {AppConfig.AppwriteProjectId}");
+
             await SignUpWithEmail(email, password, email.Split('@')[0]);
-            return true;
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] SignUp SUCCESS");
+            return null; // Success
+        }
+        catch (Appwrite.AppwriteException aex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SignUp AppwriteException: {aex.Message}, Code: {aex.Code}, Type: {aex.Type}");
+            return aex.Message;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"SignUp error: {ex.Message}");
-            return false;
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SignUp error: {ex.GetType().Name}: {ex.Message}");
+            return ex.Message;
         }
     }
 
-    public async Task<bool> Login(string email, string password)
+    public async Task<string?> Login(string email, string password)
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Login attempt for: {email}");
             await SignInWithEmail(email, password);
-            return true;
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] Login SUCCESS");
+            return null; // Success
+        }
+        catch (Appwrite.AppwriteException aex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Login AppwriteException: {aex.Message}, Code: {aex.Code}, Type: {aex.Type}");
+            return aex.Message;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Login error: {ex.Message}");
-            return false;
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Login error: {ex.GetType().Name}: {ex.Message}");
+            return ex.Message;
         }
     }
 
