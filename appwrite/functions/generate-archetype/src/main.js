@@ -38,8 +38,8 @@ function stableSeed(text) {
     return Math.abs(hash).toString(16).substring(0, 16);
 }
 
-// Generate image using ModelsLab API with shorter timeout
-async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 60000) {
+// Generate image using ModelsLab API with timeout
+async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 30000) {
     const url = 'https://modelslab.com/api/v6/images/text2img';
     const startTime = Date.now();
 
@@ -47,16 +47,16 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
 
     const payload = {
         key: apiKey,
-        model_id: "flux",  // Use Flux model - faster
+        model_id: "sdxl",  // SDXL model
         prompt: enhancedPrompt,
         negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality",
         width: "512",
         height: "512",
         samples: "1",
-        num_inference_steps: "20",  // Reduced for speed
+        num_inference_steps: "25",
         guidance_scale: 7.5,
         safety_checker: "no",
-        enhance_prompt: "no",  // Disabled for speed
+        enhance_prompt: "yes",
         seed: null,
         webhook: null,
         track_id: null
@@ -81,19 +81,26 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
         throw new Error(`ModelsLab error: ${result.message || result.messege || 'Unknown error'}`);
     }
 
-    // Handle async processing with timeout
+    // Handle async processing with strict timeout
     if (result.status === 'processing') {
-        log(`Image processing, ETA: ${result.eta} seconds`);
+        log(`Image processing, ETA: ${result.eta}s (max wait: ${maxWaitMs/1000}s)`);
         const fetchUrl = result.fetch_result;
 
-        // Wait initial ETA (capped at 30s)
-        const initialWait = Math.min((result.eta || 10) * 1000, 30000);
+        // Initial wait - min of ETA or remaining time, capped at 15s
+        const remainingMs = maxWaitMs - (Date.now() - startTime);
+        const initialWait = Math.min((result.eta || 10) * 1000, 15000, remainingMs);
+
+        if (initialWait <= 0) {
+            throw new Error('ModelsLab timeout: no time remaining');
+        }
+
         await new Promise(resolve => setTimeout(resolve, initialWait));
 
-        // Poll with timeout check
-        for (let attempt = 0; attempt < 6; attempt++) {
-            if (Date.now() - startTime > maxWaitMs) {
-                throw new Error('ModelsLab timeout: exceeded max wait time');
+        // Poll with strict timeout check
+        for (let attempt = 0; attempt < 4; attempt++) {
+            const elapsed = Date.now() - startTime;
+            if (elapsed > maxWaitMs) {
+                throw new Error(`ModelsLab timeout: ${elapsed}ms > ${maxWaitMs}ms limit`);
             }
 
             const pollResponse = await fetch(fetchUrl, {
@@ -103,9 +110,10 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
             });
 
             const pollResult = await pollResponse.json();
-            log(`Poll attempt ${attempt + 1}: ${pollResult.status}`);
+            log(`Poll ${attempt + 1}: ${pollResult.status} (${Math.round(elapsed/1000)}s elapsed)`);
 
             if (pollResult.status === 'success' && pollResult.output && pollResult.output.length > 0) {
+                log(`ModelsLab completed in ${Math.round(elapsed/1000)}s`);
                 return pollResult.output[0];
             }
 
@@ -113,11 +121,16 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
                 throw new Error(`ModelsLab polling error: ${pollResult.message}`);
             }
 
-            // Wait 5 seconds before next poll
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            // Check if we have time for another poll (3s wait + buffer)
+            if (Date.now() - startTime + 4000 > maxWaitMs) {
+                throw new Error('ModelsLab timeout: not enough time for next poll');
+            }
+
+            // Wait 3 seconds before next poll
+            await new Promise(resolve => setTimeout(resolve, 3000));
         }
 
-        throw new Error('ModelsLab timeout: Image generation took too long');
+        throw new Error('ModelsLab timeout: max poll attempts reached');
     }
 
     // Immediate result
@@ -232,40 +245,43 @@ Important:
 
         log(`Archetype generated: ${archetypeData.archetype}`);
 
-        // Step 2: Generate crest image - try DALL-E first (faster, more reliable), then ModelsLab
+        // Step 2: Generate crest image - try ModelsLab first (cheaper!), fallback to DALL-E after 30s
         let crestImageUrl = null;
         if (archetypeData.image_prompt) {
-            // Try DALL-E first (more reliable, ~15-20 seconds)
-            log(`Generating crest image with DALL-E...`);
-            try {
-                const imageResponse = await openai.images.generate({
-                    model: 'dall-e-2',
-                    prompt: `Premium holographic trading card crest design. ${archetypeData.image_prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
-                    n: 1,
-                    size: '256x256'
-                });
+            // Try ModelsLab first (much cheaper: ~$0.002/image vs $0.016/image)
+            if (modelsLabApiKey) {
+                log(`Generating crest image with ModelsLab (30s timeout)...`);
+                try {
+                    crestImageUrl = await generateImageWithModelsLab(
+                        archetypeData.image_prompt,
+                        modelsLabApiKey,
+                        log,
+                        error,
+                        30000  // 30 second max wait, then fallback to DALL-E
+                    );
+                    log(`ModelsLab image generated successfully`);
+                } catch (mlErr) {
+                    error(`ModelsLab error: ${mlErr.message}`);
+                    // Fall through to DALL-E
+                }
+            }
 
-                crestImageUrl = imageResponse.data[0].url;
-                log(`DALL-E image generated successfully`);
-            } catch (dalleErr) {
-                error(`DALL-E error: ${dalleErr.message}`);
+            // Fallback to DALL-E if ModelsLab fails or times out
+            if (!crestImageUrl) {
+                log(`Generating crest image with DALL-E (fallback)...`);
+                try {
+                    const imageResponse = await openai.images.generate({
+                        model: 'dall-e-2',
+                        prompt: `Premium holographic trading card crest design. ${archetypeData.image_prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
+                        n: 1,
+                        size: '256x256'
+                    });
 
-                // Fallback to ModelsLab if DALL-E fails
-                if (modelsLabApiKey) {
-                    log(`Trying ModelsLab as fallback...`);
-                    try {
-                        crestImageUrl = await generateImageWithModelsLab(
-                            archetypeData.image_prompt,
-                            modelsLabApiKey,
-                            log,
-                            error,
-                            60000  // 60 second max wait
-                        );
-                        log(`ModelsLab image generated successfully`);
-                    } catch (mlErr) {
-                        error(`ModelsLab error: ${mlErr.message}`);
-                        // Continue without image - we'll still save archetype data
-                    }
+                    crestImageUrl = imageResponse.data[0].url;
+                    log(`DALL-E image generated successfully`);
+                } catch (imgErr) {
+                    error(`DALL-E error: ${imgErr.message}`);
+                    // Continue without image - we'll still save archetype data
                 }
             }
         }
