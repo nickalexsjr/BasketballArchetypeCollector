@@ -376,7 +376,7 @@
             </Border>
 
             <!-- App Version -->
-            <Label Text="Version 1.2.6"
+            <Label Text="Version 1.3.0"
                    FontFamily="InterRegular"
                    FontSize="12"
                    TextColor="#475569"

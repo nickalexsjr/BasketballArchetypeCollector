@@ -46,6 +46,7 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error) {
 
     const payload = {
         key: apiKey,
+        model_id: "sdxl",  // Use SDXL model - stable and widely available
         prompt: enhancedPrompt,
         negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality",
         width: "512",

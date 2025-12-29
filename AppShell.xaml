@@ -10,7 +10,13 @@
     Shell.TabBarTitleColor="#f97316"
     Shell.TabBarUnselectedColor="#64748b">
 
-    <TabBar>
+    <!-- Login/Signup screen - no tabs visible -->
+    <ShellItem Route="login" FlyoutItemIsVisible="False">
+        <ShellContent ContentTemplate="{DataTemplate views:SignInPage}" />
+    </ShellItem>
+
+    <!-- Main app with tabs -->
+    <TabBar Route="main">
         <Tab Title="Packs" Route="packs">
             <Tab.Icon>
                 <FontImageSource Glyph="📦" FontFamily="InterRegular" />

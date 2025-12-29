@@ -142,7 +142,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 var player = players[i];
                 var progressPercent = 30 + (int)((i + 1) / (float)totalCards * 60); // 30% to 90%
 
-                LoadingMessage = $"Creating crest for {player.FirstName} {player.LastName}...";
+                LoadingMessage = $"Creating crest {i + 1} of {totalCards}...";
                 LoadingProgress = progressPercent;
                 ProgressBarWidth = progressPercent * 2.5;
 

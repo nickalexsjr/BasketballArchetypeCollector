@@ -102,7 +102,7 @@ public partial class SignInViewModel : BaseViewModel
             {
                 var session = await _appwriteService.GetCurrentSession();
                 await _gameStateService.InitializeAsync(session?.UserId);
-                await Shell.Current.GoToAsync("//home");
+                await Shell.Current.GoToAsync("//main/packs");
             }
             else
             {
@@ -128,6 +128,8 @@ public partial class SignInViewModel : BaseViewModel
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("..");
+        // Continue as guest - initialize game state without user ID
+        await _gameStateService.InitializeAsync(null);
+        await Shell.Current.GoToAsync("//main/packs");
     }
 }
