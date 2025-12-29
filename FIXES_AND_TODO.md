@@ -178,33 +178,51 @@ Schema is correct with all required fields.
 
 ---
 
-## Known Issues (To Test Tomorrow)
+## Known Issues (Active)
 
-### 1. Function Timeout (Previously 30s limit)
-**Status**: Should be fixed - function timeout set to 180s in Appwrite
-**New Logic**:
-- ModelsLab first (30s max) → DALL-E fallback (~15-20s)
-- Total max: ~60-70s, well within 180s limit
+### 1. CRITICAL: Function Timeout at 30s Despite 180s/200s Setting
+**Issue**: Function fails at exactly 30 seconds even with Appwrite timeout set to 180s/200s
+**Symptoms**:
+- Error: "Synchronous function execution timed out. Error Code: 408"
+- No function logs appear (function may not be starting)
+- ModelsLab works when it responds quickly (~11s)
+**Possible Causes**:
+- Appwrite may need function redeployment after timeout change
+- Runtime issue
+- Appwrite Cloud limitation?
+**Status**: UNRESOLVED - try redeploying function after changing timeout setting
 
 ### 2. Pack Navigation Glitch
-**Issue**: Clicking back from card detail didn't show the pack just opened
-**Possible Cause**: May be related to Appwrite function issues or page navigation
-**Status**: Need to test after function fix
+**Issue**: Opening a pack, viewing card detail, then going back - pack results disappear
+**Status**: UNRESOLVED - need to investigate PackOpeningPage navigation
 
-### 3. Collection Page Shows "No Players Found"
-**Issue**: Collection was defaulting to show all players, not owned
-**Fix Applied**: Changed default filter to "Owned", removed "All" option
-**Status**: Need to verify fix works
+### 3. Collection Page UI Issues
+**Issue**:
+- Shows "No players found" on first load (works after playing with filters)
+- UI looks cramped
+- Cards need better rarity visuals (make whole card the rarity color)
+**Status**: PARTIALLY FIXED - removed "All" filter, need UI improvements
 
 ### 4. pack_purchases Collection Empty
-**Issue**: No rows in pack_purchases collection
-**Cause**: Collection defined but intentionally not used - all needed data is in `user_collections`
-**Status**: NOT A BUG - can delete this collection from Appwrite if desired
+**Cause**: Intentionally not used - all data is in `user_collections`
+**Status**: NOT A BUG - can delete this collection
 
 ### 5. Storage Bucket (crests) Empty
-**Issue**: No files in crests storage bucket
-**Cause**: Function uses external image URLs (ModelsLab/DALL-E hosted), doesn't upload to Appwrite Storage
-**Status**: Working as designed - images are hosted externally
+**Cause**: Images hosted externally by ModelsLab/DALL-E
+**Status**: Working as designed
+
+---
+
+## UI Improvements Needed
+
+### Collection Page
+- [ ] Fix cramped layout
+- [ ] Make cards show full rarity color (not just border)
+- [ ] Fix first-load "no players found" issue
+
+### Pack Opening Page
+- [ ] Better rarity highlighting on cards
+- [ ] Fix navigation back issue
 
 ---
 
