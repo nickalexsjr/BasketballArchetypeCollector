@@ -10,6 +10,25 @@
              Shell.NavBarIsVisible="False">
 
     <Grid>
+        <!-- Error Banner (shown at top when errors occur) -->
+        <Border IsVisible="{Binding HasError}"
+                BackgroundColor="#7f1d1d"
+                Padding="16"
+                VerticalOptions="Start"
+                ZIndex="100">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Error"
+                       FontFamily="InterBold"
+                       FontSize="16"
+                       TextColor="#fca5a5" />
+                <Label Text="{Binding ErrorMessage}"
+                       FontFamily="InterRegular"
+                       FontSize="14"
+                       TextColor="#fecaca"
+                       LineBreakMode="WordWrap" />
+            </VerticalStackLayout>
+        </Border>
+
         <!-- Cool Loading State -->
         <Grid IsVisible="{Binding IsOpening}"
               VerticalOptions="Center"

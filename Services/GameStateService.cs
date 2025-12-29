@@ -49,15 +49,32 @@ public class GameStateService
         try
         {
             var json = await SecureStorage.GetAsync(LocalGameStateKey);
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] LoadLocalState - Raw JSON: {json ?? "null"}");
+
             if (!string.IsNullOrEmpty(json))
             {
-                _currentState = JsonSerializer.Deserialize<GameState>(json) ?? new GameState();
-                System.Diagnostics.Debug.WriteLine($"[GameStateService] Loaded local state: {_currentState.Coins} coins, {_currentState.Collection.Count} cards");
+                var loadedState = JsonSerializer.Deserialize<GameState>(json);
+                if (loadedState != null)
+                {
+                    _currentState = loadedState;
+                    System.Diagnostics.Debug.WriteLine($"[GameStateService] Loaded local state: {_currentState.Coins} coins, {_currentState.Collection.Count} cards");
+                    System.Diagnostics.Debug.WriteLine($"[GameStateService] Collection IDs: [{string.Join(", ", _currentState.Collection.Take(10))}]{(_currentState.Collection.Count > 10 ? "..." : "")}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[GameStateService] Deserialized to null, using default state");
+                    _currentState = new GameState();
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[GameStateService] No saved state found, using default");
+                _currentState = new GameState();
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[GameStateService] Error loading local state: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Error loading local state: {ex.Message}\n{ex.StackTrace}");
             _currentState = new GameState();
         }
     }
@@ -67,14 +84,14 @@ public class GameStateService
         try
         {
             var json = JsonSerializer.Serialize(_currentState);
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Saving state JSON: {json.Substring(0, Math.Min(200, json.Length))}...");
             await SecureStorage.SetAsync(LocalGameStateKey, json);
-            System.Diagnostics.Debug.WriteLine($"[GameStateService] Saved local state: {_currentState.Coins} coins, {_currentState.Collection.Count} cards");
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Saved local state: {_currentState.Coins} coins, {_currentState.Collection.Count} cards, Collection IDs: [{string.Join(", ", _currentState.Collection.Take(5))}...]");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[GameStateService] Error saving local state: {ex.Message}");
-            // Re-throw to surface the error to the caller
-            throw new InvalidOperationException($"Failed to save game state: {ex.Message}", ex);
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Error saving local state: {ex.Message}\n{ex.StackTrace}");
+            // Don't re-throw - just log the error so pack opening doesn't fail
         }
     }
 
@@ -172,6 +189,9 @@ public class GameStateService
             throw new InvalidOperationException("Not enough coins");
         }
 
+        System.Diagnostics.Debug.WriteLine($"[GameStateService] Opening pack: {pack.Name}, Cost: {pack.Cost}");
+        System.Diagnostics.Debug.WriteLine($"[GameStateService] Before: Coins={_currentState.Coins}, Collection.Count={_currentState.Collection.Count}");
+
         // Deduct coins
         _currentState.Coins -= pack.Cost;
         _currentState.Stats.PacksOpened++;
@@ -190,14 +210,18 @@ public class GameStateService
                 _currentState.Collection.Add(player.Id);
                 _currentState.Stats.CardsCollected++;
                 _currentState.Stats.IncrementRarityCount(player.Rarity);
+                System.Diagnostics.Debug.WriteLine($"[GameStateService] Added NEW card: {player.FullName} (ID: {player.Id})");
             }
             else
             {
                 // Duplicate - give half coin value
                 var sellValue = RarityConfig.GetSellValue(player.Rarity);
                 _currentState.Coins += sellValue;
+                System.Diagnostics.Debug.WriteLine($"[GameStateService] DUPLICATE card: {player.FullName}, +{sellValue} coins");
             }
         }
+
+        System.Diagnostics.Debug.WriteLine($"[GameStateService] After: Coins={_currentState.Coins}, Collection.Count={_currentState.Collection.Count}");
 
         await SaveAndSync();
         return cards;

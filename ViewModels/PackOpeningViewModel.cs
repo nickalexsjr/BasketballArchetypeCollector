@@ -67,6 +67,12 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private int _sellAllValue;
 
+    [ObservableProperty]
+    private string? _errorMessage;
+
+    [ObservableProperty]
+    private bool _hasError;
+
     public PackOpeningViewModel(GameStateService gameStateService, PlayerDataService playerDataService, AppwriteService appwriteService)
     {
         _gameStateService = gameStateService;
@@ -95,6 +101,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         LoadingProgress = 0;
         ProgressBarWidth = 0;
         LoadingMessage = "Shuffling the deck...";
+        ErrorMessage = null;
+        HasError = false;
 
         try
         {
@@ -149,29 +157,30 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 }
                 else
                 {
-                    // Generate new crest
+                    // Generate new crest - fail silently, don't block pack opening
                     try
                     {
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Calling GenerateArchetype for {player.FullName}...");
                         var archetype = await _appwriteService.GenerateArchetype(player);
                         if (archetype != null)
                         {
                             await _gameStateService.CacheArchetype(archetype);
                             crestUrl = archetype.CrestImageUrl;
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Generated crest for {player.FullName}: {archetype.ArchetypeName}");
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: Generated crest for {player.FullName}: {archetype.ArchetypeName}, URL: {crestUrl ?? "null"}");
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Failed to generate crest for {player.FullName}");
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] GenerateArchetype returned null for {player.FullName}");
                         }
                     }
                     catch (Exception crestEx)
                     {
+                        // Crest generation fails silently - don't show error to user
                         System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest error for {player.FullName}: {crestEx.Message}");
-                        // Continue with next card, don't fail the whole pack
                     }
 
                     // Small delay between crest generations to avoid rate limits
-                    await Task.Delay(500);
+                    await Task.Delay(300);
                 }
 
                 // Add to Cards collection with crest URL
@@ -188,8 +197,10 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[PackOpening] Error: {ex.Message}");
-            await Shell.Current.DisplayAlert("Error", $"Pack opening failed: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[PackOpening] CRITICAL Error: {ex.Message}\n{ex.StackTrace}");
+            HasError = true;
+            ErrorMessage = $"Pack opening failed: {ex.Message}";
+            await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
             await Shell.Current.GoToAsync("..");
         }
         finally

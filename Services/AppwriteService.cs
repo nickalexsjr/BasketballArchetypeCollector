@@ -457,14 +457,30 @@ public class AppwriteService
 
     public async Task<ArchetypeData?> GenerateArchetype(string playerId, string playerName, string statHints)
     {
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype called for: {playerName} (ID: {playerId})");
+
         try
         {
+            // First, verify we have an active session for function calls
+            try
+            {
+                var session = await _account.GetSession("current");
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Active session found: {session.UserId}");
+            }
+            catch (Exception sessionEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] No active session for function call: {sessionEx.Message}");
+                // Functions may still work if configured with "Any" execute permission
+            }
+
             var payload = System.Text.Json.JsonSerializer.Serialize(new
             {
                 playerId,
                 playerName,
                 statHints
             });
+
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Calling function '{AppConfig.GenerateArchetypeFunctionId}' with payload: {payload}");
 
             var execution = await _functions.CreateExecution(
                 functionId: AppConfig.GenerateArchetypeFunctionId,
@@ -473,11 +489,15 @@ public class AppwriteService
                 method: Appwrite.Enums.ExecutionMethod.POST
             );
 
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function response status: {execution.Status}, ResponseBody length: {execution.ResponseBody?.Length ?? 0}");
+
             if (string.IsNullOrEmpty(execution.ResponseBody))
             {
                 System.Diagnostics.Debug.WriteLine("[AppwriteService] Empty response from generate-archetype function");
                 return null;
             }
+
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] ResponseBody: {execution.ResponseBody.Substring(0, Math.Min(500, execution.ResponseBody.Length))}...");
 
             var response = System.Text.Json.JsonDocument.Parse(execution.ResponseBody);
 
@@ -497,6 +517,7 @@ public class AppwriteService
                         CreatedAt = DateTime.UtcNow
                     };
 
+                    System.Diagnostics.Debug.WriteLine($"[AppwriteService] SUCCESS: Archetype={archetype.Archetype}, CrestUrl={archetype.CrestImageUrl ?? "null"}");
                     return archetype;
                 }
             }
@@ -507,7 +528,7 @@ public class AppwriteService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype EXCEPTION: {ex.Message}\n{ex.StackTrace}");
             return null;
         }
     }
