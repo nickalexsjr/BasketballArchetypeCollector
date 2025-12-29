@@ -11,6 +11,7 @@ public class GameStats
 {
     public int PacksOpened { get; set; }
     public int CardsCollected { get; set; }
+    public int CrestsGenerated { get; set; }
     public int GoatCount { get; set; }
     public int LegendaryCount { get; set; }
     public int EpicCount { get; set; }

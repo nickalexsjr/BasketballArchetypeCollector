@@ -57,15 +57,15 @@ public partial class StatsViewModel : BaseViewModel
     private async Task LoadStats()
     {
         var gameState = _gameStateService.CurrentState;
-        var allPlayers = await _playerDataService.GetAllPlayersAsync();
+        await _playerDataService.LoadPlayersAsync();
+        var allPlayers = _playerDataService.Players;
 
         Coins = gameState.Coins;
         PacksOpened = gameState.Stats.PacksOpened;
         CardsCollected = gameState.Collection.Count;
 
-        // Count crests generated
-        CrestsGenerated = allPlayers.Count(p =>
-            p.Archetype != null && !string.IsNullOrEmpty(p.Archetype.CrestImageUrl));
+        // Count crests generated (from game state)
+        CrestsGenerated = gameState.Stats.CrestsGenerated;
 
         TotalPlayers = allPlayers.Count;
 
@@ -77,7 +77,7 @@ public partial class StatsViewModel : BaseViewModel
         // Count by rarity in collection
         var collectedPlayers = allPlayers.Where(p => gameState.Collection.Contains(p.Id)).ToList();
 
-        GoatCount = collectedPlayers.Count(p => p.Rarity == Rarity.GOAT);
+        GoatCount = collectedPlayers.Count(p => p.Rarity == Rarity.Goat);
         LegendaryCount = collectedPlayers.Count(p => p.Rarity == Rarity.Legendary);
         EpicCount = collectedPlayers.Count(p => p.Rarity == Rarity.Epic);
         RareCount = collectedPlayers.Count(p => p.Rarity == Rarity.Rare);

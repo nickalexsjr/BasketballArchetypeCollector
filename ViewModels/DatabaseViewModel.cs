@@ -19,7 +19,6 @@ public partial class DatabasePlayerItem : ObservableObject
     public string RarityLabel { get; set; } = string.Empty;
     public string RarityColor { get; set; } = "#7F8C8D";
     public bool IsOwned { get; set; }
-    public bool HasArchetype { get; set; }
     public string RowBackgroundColor => IsOwned ? "#1a3a1a" : "#0f172a";
 }
 
@@ -71,7 +70,8 @@ public partial class DatabaseViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            _allPlayers = await _playerDataService.GetAllPlayersAsync();
+            await _playerDataService.LoadPlayersAsync();
+            _allPlayers = _playerDataService.Players.ToList();
             ApplyFilters();
         }
         finally
@@ -98,19 +98,18 @@ public partial class DatabaseViewModel : BaseViewModel
         if (SelectedRarity != "All")
         {
             filtered = filtered.Where(p =>
-                RarityConfig.GetInfo(p.Rarity).Label.Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
+                RarityConfig.Info[p.Rarity].Label.Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Status filter (owned/archetype)
+        // Status filter (owned vs not owned)
         var gameState = _gameStateService.CurrentState;
         if (SelectedStatus == "Unlocked")
         {
-            // Has archetype generated
-            filtered = filtered.Where(p => p.Archetype != null && !string.IsNullOrEmpty(p.Archetype.CrestImageUrl));
+            filtered = filtered.Where(p => gameState.Collection.Contains(p.Id));
         }
         else if (SelectedStatus == "Locked")
         {
-            filtered = filtered.Where(p => p.Archetype == null || string.IsNullOrEmpty(p.Archetype.CrestImageUrl));
+            filtered = filtered.Where(p => !gameState.Collection.Contains(p.Id));
         }
 
         // Sort by overall descending
@@ -129,7 +128,7 @@ public partial class DatabaseViewModel : BaseViewModel
         int rank = CurrentPage * PageSize + 1;
         foreach (var player in pagedPlayers)
         {
-            var rarityInfo = RarityConfig.GetInfo(player.Rarity);
+            var rarityInfo = RarityConfig.Info[player.Rarity];
             var isOwned = gameState.Collection.Contains(player.Id);
 
             FilteredPlayers.Add(new DatabasePlayerItem
@@ -144,8 +143,7 @@ public partial class DatabaseViewModel : BaseViewModel
                 Apg = player.Apg,
                 RarityLabel = rarityInfo.Label,
                 RarityColor = rarityInfo.PrimaryColor,
-                IsOwned = isOwned,
-                HasArchetype = player.Archetype != null
+                IsOwned = isOwned
             });
         }
     }
@@ -185,17 +183,17 @@ public partial class DatabaseViewModel : BaseViewModel
         if (SelectedRarity != "All")
         {
             filtered = filtered.Where(p =>
-                RarityConfig.GetInfo(p.Rarity).Label.Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
+                RarityConfig.Info[p.Rarity].Label.Equals(SelectedRarity, StringComparison.OrdinalIgnoreCase));
         }
 
         var gameState = _gameStateService.CurrentState;
         if (SelectedStatus == "Unlocked")
         {
-            filtered = filtered.Where(p => p.Archetype != null && !string.IsNullOrEmpty(p.Archetype.CrestImageUrl));
+            filtered = filtered.Where(p => gameState.Collection.Contains(p.Id));
         }
         else if (SelectedStatus == "Locked")
         {
-            filtered = filtered.Where(p => p.Archetype == null || string.IsNullOrEmpty(p.Archetype.CrestImageUrl));
+            filtered = filtered.Where(p => !gameState.Collection.Contains(p.Id));
         }
 
         var sortedList = filtered.OrderByDescending(p => p.Overall).ThenByDescending(p => p.Ppg).ToList();
@@ -208,7 +206,7 @@ public partial class DatabaseViewModel : BaseViewModel
         int rank = CurrentPage * PageSize + 1;
         foreach (var player in pagedPlayers)
         {
-            var rarityInfo = RarityConfig.GetInfo(player.Rarity);
+            var rarityInfo = RarityConfig.Info[player.Rarity];
             var isOwned = gameState.Collection.Contains(player.Id);
 
             FilteredPlayers.Add(new DatabasePlayerItem
@@ -223,8 +221,7 @@ public partial class DatabaseViewModel : BaseViewModel
                 Apg = player.Apg,
                 RarityLabel = rarityInfo.Label,
                 RarityColor = rarityInfo.PrimaryColor,
-                IsOwned = isOwned,
-                HasArchetype = player.Archetype != null
+                IsOwned = isOwned
             });
         }
     }
