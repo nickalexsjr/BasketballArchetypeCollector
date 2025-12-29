@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<!-- IMPORTANT: Keep this at net8.0-ios. Do not upgrade to net9.0. -->
 		<TargetFrameworks>net8.0-ios</TargetFrameworks>
 
 		<OutputType>Exe</OutputType>

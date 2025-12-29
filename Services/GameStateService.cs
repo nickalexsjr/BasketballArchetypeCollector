@@ -224,6 +224,21 @@ public class GameStateService
         System.Diagnostics.Debug.WriteLine($"[GameStateService] After: Coins={_currentState.Coins}, Collection.Count={_currentState.Collection.Count}");
 
         await SaveAndSync();
+
+        // Record pack purchase to Appwrite (if logged in)
+        if (!string.IsNullOrEmpty(_currentUserId))
+        {
+            var purchase = new PackPurchase
+            {
+                UserId = _currentUserId,
+                PackId = pack.Id,
+                Cost = pack.Cost,
+                PurchasedAt = DateTime.UtcNow,
+                PlayersReceived = cards.Select(c => c.Id).ToList()
+            };
+            await _appwriteService.SavePackPurchase(_currentUserId, purchase);
+        }
+
         return cards;
     }
 

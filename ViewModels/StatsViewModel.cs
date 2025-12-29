@@ -47,6 +47,25 @@ public partial class StatsViewModel : BaseViewModel
     [ObservableProperty]
     private double _collectionPercent;
 
+    // Pack purchase statistics
+    [ObservableProperty]
+    private int _standardPacksBought;
+
+    [ObservableProperty]
+    private int _premiumPacksBought;
+
+    [ObservableProperty]
+    private int _elitePacksBought;
+
+    [ObservableProperty]
+    private int _legendaryPacksBought;
+
+    [ObservableProperty]
+    private int _totalCoinsSpent;
+
+    [ObservableProperty]
+    private string _favoritePackType = string.Empty;
+
     // Account properties
     [ObservableProperty]
     private bool _isLoggedIn;
@@ -101,6 +120,50 @@ public partial class StatsViewModel : BaseViewModel
 
         // Load account info
         await LoadAccountInfo();
+
+        // Load pack purchase stats (if logged in)
+        await LoadPackPurchaseStats();
+    }
+
+    private async Task LoadPackPurchaseStats()
+    {
+        try
+        {
+            var user = await _appwriteService.GetCurrentUser();
+            if (user != null)
+            {
+                var stats = await _appwriteService.GetUserPackPurchaseStats(user.Id);
+                StandardPacksBought = stats.StandardPacksBought;
+                PremiumPacksBought = stats.PremiumPacksBought;
+                ElitePacksBought = stats.ElitePacksBought;
+                LegendaryPacksBought = stats.LegendaryPacksBought;
+                TotalCoinsSpent = stats.TotalCoinsSpent;
+
+                // Format favorite pack type for display
+                FavoritePackType = stats.FavoritePackType switch
+                {
+                    "standard" => "Standard",
+                    "premium" => "Premium",
+                    "elite" => "Elite",
+                    "legendary" => "Legendary",
+                    _ => "None yet"
+                };
+            }
+            else
+            {
+                // Clear stats if not logged in
+                StandardPacksBought = 0;
+                PremiumPacksBought = 0;
+                ElitePacksBought = 0;
+                LegendaryPacksBought = 0;
+                TotalCoinsSpent = 0;
+                FavoritePackType = "Sign in to track";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[StatsViewModel] LoadPackPurchaseStats error: {ex.Message}");
+        }
     }
 
     private async Task LoadAccountInfo()
@@ -176,17 +239,28 @@ public partial class StatsViewModel : BaseViewModel
         {
             var doubleConfirm = await Shell.Current.DisplayAlert(
                 "Final Confirmation",
-                "Type 'DELETE' to confirm account deletion.\n\nThis action is permanent.",
+                "This will permanently delete:\n• Your account\n• Your collection data\n• Your pack purchase history\n\nThis action is permanent.",
                 "I Understand, Delete", "Cancel");
 
             if (doubleConfirm)
             {
                 try
                 {
-                    // TODO: Implement account deletion in AppwriteService
-                    await _appwriteService.SignOut();
+                    // Delete account and all associated data
+                    await _appwriteService.DeleteAccount();
                     IsLoggedIn = false;
-                    await Shell.Current.DisplayAlert("Account Deleted", "Your account has been deleted.", "OK");
+                    UserEmail = string.Empty;
+                    UserDisplayName = string.Empty;
+
+                    // Clear pack purchase stats
+                    StandardPacksBought = 0;
+                    PremiumPacksBought = 0;
+                    ElitePacksBought = 0;
+                    LegendaryPacksBought = 0;
+                    TotalCoinsSpent = 0;
+                    FavoritePackType = "Sign in to track";
+
+                    await Shell.Current.DisplayAlert("Account Deleted", "Your account and all data have been deleted.", "OK");
                 }
                 catch (Exception ex)
                 {

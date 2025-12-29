@@ -229,6 +229,115 @@
                 </Border>
             </Grid>
 
+            <!-- Pack Purchase Stats (only when logged in) -->
+            <Label Text="Pack Purchases"
+                   FontFamily="InterSemiBold"
+                   FontSize="16"
+                   TextColor="White"
+                   Margin="0,8,0,0"
+                   IsVisible="{Binding IsLoggedIn}" />
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8"
+                  IsVisible="{Binding IsLoggedIn}">
+                <!-- Standard Packs -->
+                <Border Grid.Row="0" Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#47556933"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding StandardPacksBought}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Standard"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#94a3b8"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Premium Packs -->
+                <Border Grid.Row="0" Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#2563eb33"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding PremiumPacksBought}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#3b82f6"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Premium"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#3b82f6"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Elite Packs -->
+                <Border Grid.Row="1" Grid.Column="0"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#9333ea33"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding ElitePacksBought}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#a855f7"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Elite"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#a855f7"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Legendary Packs -->
+                <Border Grid.Row="1" Grid.Column="1"
+                        StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#f59e0b33"
+                        Padding="12">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label Text="{Binding LegendaryPacksBought}"
+                               FontFamily="OrbitronBold"
+                               FontSize="22"
+                               TextColor="#f59e0b"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Legendary"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="#f59e0b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- Purchase Summary -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#111827"
+                    Padding="16"
+                    Margin="0,8,0,0"
+                    IsVisible="{Binding IsLoggedIn}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Purchase Summary"
+                           FontFamily="InterSemiBold"
+                           FontSize="14"
+                           TextColor="#64748b" />
+                    <Label Text="{Binding TotalCoinsSpent, StringFormat='Total Coins Spent: {0:N0}'}"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#facc15" />
+                    <Label Text="{Binding FavoritePackType, StringFormat='Favorite Pack: {0}'}"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
             <!-- Database Info -->
             <Border StrokeShape="RoundRectangle 12"
                     BackgroundColor="#111827"

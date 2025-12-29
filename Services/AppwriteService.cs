@@ -818,6 +818,249 @@ public class AppwriteService
 
     #endregion
 
+    #region Pack Purchases
+
+    /// <summary>
+    /// Records a pack purchase to the pack_purchases collection.
+    /// </summary>
+    public async Task SavePackPurchase(string userId, Models.PackPurchase purchase)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SavePackPurchase: userId={userId}, packId={purchase.PackId}, cost={purchase.Cost}");
+
+            var data = new Dictionary<string, object>
+            {
+                { "userId", userId },
+                { "packId", purchase.PackId },
+                { "cost", purchase.Cost },
+                { "purchasedAt", purchase.PurchasedAt.ToString("o") },
+                { "playersReceived", System.Text.Json.JsonSerializer.Serialize(purchase.PlayersReceived) }
+            };
+
+            await _databases.CreateDocument(
+                databaseId: AppConfig.DatabaseId,
+                collectionId: AppConfig.PackPurchasesCollection,
+                documentId: ID.Unique(),
+                data: data,
+                permissions: new List<string>
+                {
+                    Permission.Read(Role.User(userId)),
+                    Permission.Write(Role.User(userId)),
+                    Permission.Delete(Role.User(userId))
+                }
+            );
+
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] SavePackPurchase SUCCESS");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SavePackPurchase error: {ex.Message}");
+            // Don't throw - pack purchase tracking is secondary to gameplay
+        }
+    }
+
+    /// <summary>
+    /// Gets all pack purchases for a user.
+    /// </summary>
+    public async Task<List<Models.PackPurchase>> GetUserPackPurchases(string userId)
+    {
+        var purchases = new List<Models.PackPurchase>();
+
+        try
+        {
+            var result = await _databases.ListDocuments(
+                databaseId: AppConfig.DatabaseId,
+                collectionId: AppConfig.PackPurchasesCollection,
+                queries: new List<string>
+                {
+                    Query.Equal("userId", userId),
+                    Query.Limit(MaxQueryLimit),
+                    Query.OrderDesc("purchasedAt")
+                }
+            );
+
+            foreach (var doc in result.Documents)
+            {
+                purchases.Add(MapPackPurchaseFromDocument(doc));
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: found {purchases.Count} purchases");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases error: {ex.Message}");
+        }
+
+        return purchases;
+    }
+
+    /// <summary>
+    /// Gets aggregated pack purchase statistics for a user.
+    /// </summary>
+    public async Task<Models.PackPurchaseStats> GetUserPackPurchaseStats(string userId)
+    {
+        var stats = new Models.PackPurchaseStats();
+
+        try
+        {
+            var purchases = await GetUserPackPurchases(userId);
+
+            foreach (var purchase in purchases)
+            {
+                stats.TotalCoinsSpent += purchase.Cost;
+
+                switch (purchase.PackId.ToLower())
+                {
+                    case "standard":
+                        stats.StandardPacksBought++;
+                        break;
+                    case "premium":
+                        stats.PremiumPacksBought++;
+                        break;
+                    case "elite":
+                        stats.ElitePacksBought++;
+                        break;
+                    case "legendary":
+                        stats.LegendaryPacksBought++;
+                        break;
+                }
+            }
+
+            // Determine last pack type
+            if (purchases.Count > 0)
+            {
+                stats.LastPackType = purchases[0].PackId;
+            }
+
+            // Determine favorite pack (most purchased)
+            var packCounts = new Dictionary<string, int>
+            {
+                { "standard", stats.StandardPacksBought },
+                { "premium", stats.PremiumPacksBought },
+                { "elite", stats.ElitePacksBought },
+                { "legendary", stats.LegendaryPacksBought }
+            };
+
+            var maxCount = packCounts.Max(x => x.Value);
+            if (maxCount > 0)
+            {
+                stats.FavoritePackType = packCounts.FirstOrDefault(x => x.Value == maxCount).Key;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchaseStats error: {ex.Message}");
+        }
+
+        return stats;
+    }
+
+    private Models.PackPurchase MapPackPurchaseFromDocument(Document doc)
+    {
+        var playersJson = doc.Data.GetValueOrDefault("playersReceived")?.ToString() ?? "[]";
+        List<string> players;
+        try
+        {
+            players = System.Text.Json.JsonSerializer.Deserialize<List<string>>(playersJson) ?? new List<string>();
+        }
+        catch
+        {
+            players = new List<string>();
+        }
+
+        return new Models.PackPurchase
+        {
+            Id = doc.Id,
+            UserId = doc.Data.GetValueOrDefault("userId")?.ToString() ?? "",
+            PackId = doc.Data.GetValueOrDefault("packId")?.ToString() ?? "",
+            Cost = int.TryParse(doc.Data.GetValueOrDefault("cost")?.ToString(), out var cost) ? cost : 0,
+            PurchasedAt = TryParseDateTime(doc.Data.GetValueOrDefault("purchasedAt")?.ToString()),
+            PlayersReceived = players
+        };
+    }
+
+    /// <summary>
+    /// Deletes all pack purchases for a user (used during account deletion).
+    /// </summary>
+    public async Task DeleteUserPackPurchases(string userId)
+    {
+        try
+        {
+            var purchases = await GetUserPackPurchases(userId);
+            foreach (var purchase in purchases)
+            {
+                await _databases.DeleteDocument(
+                    databaseId: AppConfig.DatabaseId,
+                    collectionId: AppConfig.PackPurchasesCollection,
+                    documentId: purchase.Id
+                );
+            }
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Deleted {purchases.Count} pack purchases for user {userId}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] DeleteUserPackPurchases error: {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Account Deletion
+
+    /// <summary>
+    /// Deletes the user's account and all associated data.
+    /// Uses Appwrite's UpdateStatus() to mark the account as blocked/deleted.
+    /// </summary>
+    public async Task DeleteAccount()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] DeleteAccount: Starting account deletion...");
+
+            // Get current user ID before deleting
+            var user = await _account.Get();
+            var userId = user.Id;
+
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] DeleteAccount: Deleting data for user {userId}");
+
+            // Delete user's collection data
+            try
+            {
+                await _databases.DeleteDocument(
+                    databaseId: AppConfig.DatabaseId,
+                    collectionId: AppConfig.UserCollectionsCollection,
+                    documentId: userId
+                );
+                System.Diagnostics.Debug.WriteLine("[AppwriteService] DeleteAccount: Deleted user_collections document");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] DeleteAccount: user_collections delete failed: {ex.Message}");
+            }
+
+            // Delete pack purchases
+            await DeleteUserPackPurchases(userId);
+
+            // Mark the Appwrite account as blocked/deleted
+            // This is how Appwrite handles user deletion from client-side
+            await _account.UpdateStatus();
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] DeleteAccount: Account status updated (blocked/deleted)");
+
+            // Clear cached session info
+            ClearCachedUser();
+
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] DeleteAccount: SUCCESS");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] DeleteAccount error: {ex.Message}");
+            throw; // Re-throw so UI can show error
+        }
+    }
+
+    #endregion
+
     #region Helpers
 
     private static DateTime TryParseDateTime(string? dateStr)
