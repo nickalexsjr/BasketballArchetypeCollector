@@ -25,6 +25,9 @@ public class AppwriteService
 
     public AppwriteService()
     {
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] Initializing with Endpoint: {AppConfig.AppwriteEndpoint}");
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] Project ID: {AppConfig.AppwriteProjectId}");
+
         _client = new Client()
             .SetEndpoint(AppConfig.AppwriteEndpoint)
             .SetProject(AppConfig.AppwriteProjectId);
@@ -33,6 +36,8 @@ public class AppwriteService
         _databases = new Databases(_client);
         _storage = new Storage(_client);
         _functions = new Functions(_client);
+
+        System.Diagnostics.Debug.WriteLine("[AppwriteService] Client initialized successfully");
     }
 
     #region Authentication
