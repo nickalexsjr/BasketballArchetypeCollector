@@ -73,6 +73,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private bool _hasError;
 
+    // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
+    private bool _hasOpenedPack;
+
     public PackOpeningViewModel(GameStateService gameStateService, PlayerDataService playerDataService, AppwriteService appwriteService)
     {
         _gameStateService = gameStateService;
@@ -85,6 +88,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     {
         if (query.TryGetValue("packId", out var packIdObj) && packIdObj is string packId)
         {
+            // Reset state for new pack
+            _hasOpenedPack = false;
+            Cards.Clear();
             Pack = PackConfig.GetPackById(packId);
         }
     }
@@ -92,8 +98,10 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task OpenPackAsync()
     {
-        if (Pack == null || IsOpening) return;
+        // Don't open if: no pack, already opening, or already opened this pack
+        if (Pack == null || IsOpening || _hasOpenedPack) return;
 
+        _hasOpenedPack = true;
         IsOpening = true;
         Cards.Clear();
         CurrentCardIndex = 0;
@@ -257,6 +265,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             return;
         }
 
+        // Reset flag to allow opening another pack
+        _hasOpenedPack = false;
         await OpenPackAsync();
     }
 
