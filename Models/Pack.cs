@@ -41,7 +41,7 @@ public static class PackConfig
         {
             Id = "premium",
             Name = "Premium Pack",
-            Cards = 5,
+            Cards = 3,
             Cost = 250,
             Description = "Better odds",
             GradientStart = "#2563eb",
@@ -59,7 +59,7 @@ public static class PackConfig
         {
             Id = "elite",
             Name = "Elite Pack",
-            Cards = 5,
+            Cards = 3,
             Cost = 500,
             Description = "Guaranteed Rare+",
             GradientStart = "#9333ea",
