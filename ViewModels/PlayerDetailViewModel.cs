@@ -35,6 +35,9 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private string? _crestImageUrl;
 
+    [ObservableProperty]
+    private string _debugInfo = string.Empty;
+
     public PlayerDetailViewModel(
         GameStateService gameStateService,
         PlayerDataService playerDataService,
@@ -79,25 +82,27 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 Coins = _gameStateService.CurrentState.Coins;
 
                 // Check for cached archetype locally first
-                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Looking up archetype for PlayerId: '{Player.Id}'");
-                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Archetype cache has {_gameStateService.ArchetypeCache.Count} entries");
+                var cacheCount = _gameStateService.ArchetypeCache.Count;
+                DebugInfo = $"ID: {Player.Id} | Cache: {cacheCount}";
+
                 var cached = _gameStateService.GetCachedArchetype(Player.Id);
                 if (cached != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Found local cached archetype for {Player.FullName}: {cached.ArchetypeName}");
+                    DebugInfo = $"✓ Local cache | {cached.ArchetypeName}";
                     SetArchetype(cached);
                     return;
                 }
-                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] No local cache found for '{Player.Id}'");
+
+                DebugInfo = $"ID: {Player.Id} | Cache: {cacheCount} | Not in local";
 
                 // Try to fetch from Appwrite if not cached locally
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Checking Appwrite for archetype: {Player.Id}");
+                    DebugInfo = $"ID: {Player.Id} | Checking Appwrite...";
                     var cloudArchetype = await _appwriteService.GetCachedArchetype(Player.Id);
                     if (cloudArchetype != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Found Appwrite archetype for {Player.FullName}");
+                        DebugInfo = $"✓ Appwrite | {cloudArchetype.ArchetypeName}";
                         SetArchetype(cloudArchetype);
                         // Cache it locally for next time
                         await _gameStateService.CacheArchetype(cloudArchetype);
@@ -106,11 +111,11 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype from Appwrite: {ex.Message}");
+                    DebugInfo = $"✗ Appwrite error: {ex.Message}";
                 }
 
-                // No archetype found - log for debugging
-                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] No archetype found for {Player.FullName} (IsOwned: {IsOwned})");
+                // No archetype found
+                DebugInfo = $"✗ No archetype | ID: {Player.Id} | Cache: {cacheCount} | Owned: {IsOwned}";
             }
             else
             {
