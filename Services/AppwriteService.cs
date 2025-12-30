@@ -935,6 +935,8 @@ public class AppwriteService
 
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: querying for userId={userId}");
+
             var result = await _databases.ListDocuments(
                 databaseId: AppConfig.DatabaseId,
                 collectionId: AppConfig.PackPurchasesCollection,
@@ -946,12 +948,16 @@ public class AppwriteService
                 }
             );
 
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: query returned {result.Documents.Count} documents, total={result.Total}");
+
             foreach (var doc in result.Documents)
             {
-                purchases.Add(MapPackPurchaseFromDocument(doc));
+                var mapped = MapPackPurchaseFromDocument(doc);
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Mapped purchase: packId={mapped.PackId}, cost={mapped.Cost}");
+                purchases.Add(mapped);
             }
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: found {purchases.Count} purchases for user {userId}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: returning {purchases.Count} purchases for user {userId}");
         }
         catch (Appwrite.AppwriteException aex)
         {
