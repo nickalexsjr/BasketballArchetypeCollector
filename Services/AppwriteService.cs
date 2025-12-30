@@ -834,6 +834,69 @@ public class AppwriteService
         return await GenerateArchetype(player.Id, player.FullName, statHints);
     }
 
+    /// <summary>
+    /// Pre-warms the generate-archetype function container.
+    /// This costs nothing - just wakes up the serverless container so subsequent calls are faster.
+    /// Call this on app startup or before opening packs.
+    /// </summary>
+    public async Task PreWarmArchetypeFunction()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] Pre-warming archetype function...");
+
+            var payload = System.Text.Json.JsonSerializer.Serialize(new { warmup = true });
+
+            // Fire and forget - don't wait for response, just wake up the container
+            _ = _functions.CreateExecution(
+                functionId: AppConfig.GenerateArchetypeFunctionId,
+                body: payload,
+                xasync: true,
+                method: Appwrite.Enums.ExecutionMethod.POST
+            );
+
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] Pre-warm request sent");
+        }
+        catch (Exception ex)
+        {
+            // Silently ignore - pre-warming is best-effort
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Pre-warm failed (non-critical): {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Generates archetypes for multiple players in parallel.
+    /// Much faster than sequential generation for pack openings.
+    /// </summary>
+    public async Task<Dictionary<string, ArchetypeData?>> GenerateArchetypesParallel(IEnumerable<Player> players)
+    {
+        var results = new Dictionary<string, ArchetypeData?>();
+        var playerList = players.ToList();
+
+        if (playerList.Count == 0)
+            return results;
+
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] Starting parallel generation for {playerList.Count} players");
+
+        // Start all generations in parallel
+        var tasks = playerList.Select(async player =>
+        {
+            var archetype = await GenerateArchetype(player);
+            return (player.Id, archetype);
+        }).ToList();
+
+        // Wait for all to complete
+        var completedTasks = await Task.WhenAll(tasks);
+
+        foreach (var (playerId, archetype) in completedTasks)
+        {
+            results[playerId] = archetype;
+        }
+
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] Parallel generation complete: {results.Count(r => r.Value != null)} succeeded");
+        return results;
+    }
+
     #endregion
 
     #region Crest Image Storage

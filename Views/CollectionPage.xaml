@@ -180,7 +180,7 @@
                     <GridItemsLayout Orientation="Vertical"
                                      Span="3"
                                      HorizontalItemSpacing="8"
-                                     VerticalItemSpacing="16" />
+                                     VerticalItemSpacing="12" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Player">

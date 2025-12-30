@@ -1,5 +1,9 @@
 /**
- * Generate Archetype Function v3
+ * Generate Archetype Function v4
+ *
+ * v4 changes:
+ * - Added pre-warm endpoint (warmup=true) to wake up AI services without cost
+ * - Supports parallel generation requests
  *
  * v3 changes:
  * - Stronger no-text enforcement in prompts (DALL-E and ModelsLab)
@@ -236,8 +240,27 @@ module.exports = async function (context) {
     const { req, res, log, error } = context;
 
     log('='.repeat(60));
-    log('GENERATE-ARCHETYPE v2 (native fetch, no OpenAI SDK)');
+    log('GENERATE-ARCHETYPE v4 (parallel support, pre-warm)');
     log('='.repeat(60));
+
+    // Parse request body early for warmup check
+    let body;
+    if (typeof req.body === 'string') {
+        try {
+            body = JSON.parse(req.body);
+        } catch {
+            body = {};
+        }
+    } else {
+        body = req.body || {};
+    }
+
+    // Pre-warm endpoint - returns immediately, costs nothing
+    // Just wakes up the function container and establishes connections
+    if (body.warmup === true) {
+        log('Pre-warm request received - returning immediately');
+        return res.json({ success: true, warmup: true, message: 'Function warmed up' });
+    }
 
     // Initialize clients
     const client = new Client()
@@ -255,14 +278,7 @@ module.exports = async function (context) {
     const openaiApiKey = process.env.OPENAI_API_KEY;
 
     try {
-        // Parse request body
-        let body;
-        if (typeof req.body === 'string') {
-            body = JSON.parse(req.body);
-        } else {
-            body = req.body;
-        }
-
+        // Body already parsed above for warmup check
         const { playerId, playerName, statHints } = body;
 
         if (!playerId || !playerName) {

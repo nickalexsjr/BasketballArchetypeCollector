@@ -30,6 +30,10 @@ public partial class LoadingPage : ContentPage
 
         try
         {
+            // Pre-warm the archetype function in background (fire and forget)
+            // This costs nothing and speeds up first crest generation
+            _ = _appwriteService.PreWarmArchetypeFunction();
+
             // Check if user has an active session
             var user = await _appwriteService.GetCurrentUser();
             if (user != null)
