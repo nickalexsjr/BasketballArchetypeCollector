@@ -345,12 +345,43 @@ public class AppwriteService
                 documentId: userId
             );
 
-            return new GameState
+            var state = new GameState
             {
                 Coins = doc.Data.ContainsKey("coins") && int.TryParse(doc.Data["coins"]?.ToString(), out var coins) ? coins : AppConfig.StartingCoins,
                 Collection = ParseStringList(doc.Data.GetValueOrDefault("playerIds")),
                 Stats = ParseGameStats(doc.Data)
             };
+
+            // Parse mini-game cooldowns from JSON
+            var cooldownsJson = doc.Data.GetValueOrDefault("lastMiniGameUtc")?.ToString();
+            if (!string.IsNullOrEmpty(cooldownsJson))
+            {
+                try
+                {
+                    var cooldowns = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(cooldownsJson);
+                    if (cooldowns != null)
+                    {
+                        if (cooldowns.TryGetValue("luckySpin", out var ls) && DateTime.TryParse(ls, out var lsDate))
+                            state.LastLuckySpinUtc = lsDate;
+                        if (cooldowns.TryGetValue("mysteryBox", out var mb) && DateTime.TryParse(mb, out var mbDate))
+                            state.LastMysteryBoxUtc = mbDate;
+                        if (cooldowns.TryGetValue("coinFlip", out var cf) && DateTime.TryParse(cf, out var cfDate))
+                            state.LastCoinFlipUtc = cfDate;
+                        if (cooldowns.TryGetValue("trivia", out var tr) && DateTime.TryParse(tr, out var trDate))
+                            state.LastTriviaUtc = trDate;
+                        if (cooldowns.TryGetValue("dailyClaim", out var dc) && DateTime.TryParse(dc, out var dcDate))
+                            state.LastDailyClaimUtc = dcDate;
+                        if (cooldowns.TryGetValue("dailyStreak", out var ds) && int.TryParse(ds, out var dsVal))
+                            state.DailyStreak = dsVal;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AppwriteService] Failed to parse cooldowns: {ex.Message}");
+                }
+            }
+
+            return state;
         }
         catch
         {
@@ -363,6 +394,20 @@ public class AppwriteService
     {
         System.Diagnostics.Debug.WriteLine($"[AppwriteService] SaveUserGameState for {userId}: Coins={state.Coins}, Cards={state.Collection.Count}, PacksOpened={state.Stats.PacksOpened}");
 
+        // Serialize mini-game cooldowns as JSON
+        var cooldowns = new Dictionary<string, string>();
+        if (state.LastLuckySpinUtc.HasValue)
+            cooldowns["luckySpin"] = state.LastLuckySpinUtc.Value.ToString("o");
+        if (state.LastMysteryBoxUtc.HasValue)
+            cooldowns["mysteryBox"] = state.LastMysteryBoxUtc.Value.ToString("o");
+        if (state.LastCoinFlipUtc.HasValue)
+            cooldowns["coinFlip"] = state.LastCoinFlipUtc.Value.ToString("o");
+        if (state.LastTriviaUtc.HasValue)
+            cooldowns["trivia"] = state.LastTriviaUtc.Value.ToString("o");
+        if (state.LastDailyClaimUtc.HasValue)
+            cooldowns["dailyClaim"] = state.LastDailyClaimUtc.Value.ToString("o");
+        cooldowns["dailyStreak"] = state.DailyStreak.ToString();
+
         var data = new Dictionary<string, object>
         {
             { "userId", userId },
@@ -374,7 +419,8 @@ public class AppwriteService
             { "goatCount", state.Stats.GoatCount },
             { "legendaryCount", state.Stats.LegendaryCount },
             { "epicCount", state.Stats.EpicCount },
-            { "rareCount", state.Stats.RareCount }
+            { "rareCount", state.Stats.RareCount },
+            { "lastMiniGameUtc", System.Text.Json.JsonSerializer.Serialize(cooldowns) }
         };
 
         try

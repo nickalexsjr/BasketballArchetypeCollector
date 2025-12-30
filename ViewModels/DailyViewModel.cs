@@ -204,6 +204,8 @@ public partial class DailyViewModel : BaseViewModel
     [RelayCommand]
     private async Task OpenLuckySpin()
     {
+        if (!await CheckLoggedInForMiniGame()) return;
+
         if (!CanLuckySpin)
         {
             await Shell.Current.DisplayAlert("Cooldown Active", LuckySpinStatus, "OK");
@@ -218,6 +220,8 @@ public partial class DailyViewModel : BaseViewModel
     [RelayCommand]
     private async Task OpenMysteryBox()
     {
+        if (!await CheckLoggedInForMiniGame()) return;
+
         if (!CanMysteryBox)
         {
             await Shell.Current.DisplayAlert("Cooldown Active", MysteryBoxStatus, "OK");
@@ -232,6 +236,8 @@ public partial class DailyViewModel : BaseViewModel
     [RelayCommand]
     private async Task OpenCoinFlip()
     {
+        if (!await CheckLoggedInForMiniGame()) return;
+
         if (!CanCoinFlip)
         {
             await Shell.Current.DisplayAlert("Cooldown Active", CoinFlipStatus, "OK");
@@ -246,6 +252,8 @@ public partial class DailyViewModel : BaseViewModel
     [RelayCommand]
     private async Task OpenTrivia()
     {
+        if (!await CheckLoggedInForMiniGame()) return;
+
         if (!CanTrivia)
         {
             await Shell.Current.DisplayAlert("Cooldown Active", TriviaStatus, "OK");
@@ -255,5 +263,16 @@ public partial class DailyViewModel : BaseViewModel
         var popup = new TriviaPopup(_miniGameService);
         await Shell.Current.Navigation.PushModalAsync(popup);
         Refresh();
+    }
+
+    private async Task<bool> CheckLoggedInForMiniGame()
+    {
+        if (_gameStateService.IsLoggedIn) return true;
+
+        await Shell.Current.DisplayAlert(
+            "Sign In Required",
+            "Create an account or sign in to play mini-games and save your progress!",
+            "OK");
+        return false;
     }
 }

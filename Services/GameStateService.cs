@@ -18,6 +18,7 @@ public class GameStateService
     public GameState CurrentState => _currentState;
     public IReadOnlyDictionary<string, ArchetypeData> ArchetypeCache => _archetypeCache;
     public int CrestImageCount => _archetypeCache.Values.Count(a => a.HasCrestImage);
+    public bool IsLoggedIn => !string.IsNullOrEmpty(_currentUserId);
 
     public event EventHandler? StateChanged;
 
@@ -135,10 +136,14 @@ public class GameStateService
             var cloudState = await _appwriteService.GetUserGameState(userId);
             if (cloudState != null)
             {
-                // Merge: use cloud state but keep higher values
-                _currentState.Coins = Math.Max(_currentState.Coins, cloudState.Coins);
+                // For coins: use CLOUD value (prevents local manipulation)
+                // Only keep local if cloud is 0 (new account)
+                if (cloudState.Coins > 0)
+                {
+                    _currentState.Coins = cloudState.Coins;
+                }
 
-                // Merge collections
+                // Merge collections (keep both local and cloud cards)
                 foreach (var id in cloudState.Collection)
                 {
                     if (!_currentState.Collection.Contains(id))
@@ -154,6 +159,15 @@ public class GameStateService
                 _currentState.Stats.LegendaryCount = Math.Max(_currentState.Stats.LegendaryCount, cloudState.Stats.LegendaryCount);
                 _currentState.Stats.EpicCount = Math.Max(_currentState.Stats.EpicCount, cloudState.Stats.EpicCount);
                 _currentState.Stats.RareCount = Math.Max(_currentState.Stats.RareCount, cloudState.Stats.RareCount);
+
+                // Mini-game cooldowns: use the LATER (more recent) timestamp to prevent exploitation
+                // If cloud says you played at 10am, and local says never, use 10am (cloud wins)
+                _currentState.LastLuckySpinUtc = GetLaterDate(_currentState.LastLuckySpinUtc, cloudState.LastLuckySpinUtc);
+                _currentState.LastMysteryBoxUtc = GetLaterDate(_currentState.LastMysteryBoxUtc, cloudState.LastMysteryBoxUtc);
+                _currentState.LastCoinFlipUtc = GetLaterDate(_currentState.LastCoinFlipUtc, cloudState.LastCoinFlipUtc);
+                _currentState.LastTriviaUtc = GetLaterDate(_currentState.LastTriviaUtc, cloudState.LastTriviaUtc);
+                _currentState.LastDailyClaimUtc = GetLaterDate(_currentState.LastDailyClaimUtc, cloudState.LastDailyClaimUtc);
+                _currentState.DailyStreak = cloudState.DailyStreak; // Use cloud streak
 
                 await SaveLocalState();
                 System.Diagnostics.Debug.WriteLine("[GameStateService] Synced with cloud state");
@@ -171,6 +185,13 @@ public class GameStateService
         {
             System.Diagnostics.Debug.WriteLine($"[GameStateService] Error syncing with cloud: {ex.Message}");
         }
+    }
+
+    private DateTime? GetLaterDate(DateTime? local, DateTime? cloud)
+    {
+        if (!local.HasValue) return cloud;
+        if (!cloud.HasValue) return local;
+        return local.Value > cloud.Value ? local : cloud;
     }
 
     public bool CanAfford(int cost) => _currentState.Coins >= cost;
