@@ -463,6 +463,8 @@ public class AppwriteService
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype querying for playerId: '{playerId}'");
+
             // Query by playerId field
             var result = await _databases.ListDocuments(
                 databaseId: AppConfig.DatabaseId,
@@ -470,16 +472,21 @@ public class AppwriteService
                 queries: new List<string> { Query.Equal("playerId", playerId), Query.Limit(1) }
             );
 
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype found {result.Documents.Count} documents");
+
             if (result.Documents.Count > 0)
             {
-                return MapArchetypeFromDocument(result.Documents[0]);
+                var archetype = MapArchetypeFromDocument(result.Documents[0]);
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype mapped: {archetype.Archetype}, URL: {archetype.CrestImageUrl ?? "null"}");
+                return archetype;
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"GetCachedArchetype error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype error: {ex.Message}");
         }
 
+        System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype returning null for '{playerId}'");
         return null;
     }
 
@@ -654,6 +661,21 @@ public class AppwriteService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype EXCEPTION: {ex.Message}\n{ex.StackTrace}");
+            // Fallback: check if archetype was saved to DB despite exception
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Checking DB after exception for {playerId}...");
+                var dbArchetype = await GetCachedArchetype(playerId);
+                if (dbArchetype != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AppwriteService] Found archetype in DB after exception: {dbArchetype.Archetype}");
+                    return dbArchetype;
+                }
+            }
+            catch (Exception dbEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] DB fallback also failed: {dbEx.Message}");
+            }
             return null;
         }
     }

@@ -196,8 +196,18 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                     {
                         try
                         {
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Checking Appwrite DB for {player.FullName}...");
+                            // Small delay to allow Appwrite DB to sync after function save
+                            await Task.Delay(500);
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Checking Appwrite DB for {player.FullName} (ID: {player.Id})...");
                             archetype = await _appwriteService.GetCachedArchetype(player.Id);
+                            if (archetype != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[PackOpening] Found in DB: {archetype.ArchetypeName}");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[PackOpening] NOT found in DB for ID: {player.Id}");
+                            }
                         }
                         catch (Exception dbEx)
                         {
