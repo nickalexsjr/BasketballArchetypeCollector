@@ -70,7 +70,7 @@ public partial class PlayerCard : ContentView
 
     public double CardWidth => CardSize switch
     {
-        CardSizeOption.Small => 105,   // Slightly wider for 3 cards per row
+        CardSizeOption.Small => 95,    // Narrower for 3 cards per row on smaller screens
         CardSizeOption.Medium => 130,
         CardSizeOption.Large => 170,
         _ => 130
@@ -78,7 +78,7 @@ public partial class PlayerCard : ContentView
 
     public double CardHeight => CardSize switch
     {
-        CardSizeOption.Small => 155,   // Taller to fit crest + name on small cards
+        CardSizeOption.Small => 140,   // Proportionally shorter
         CardSizeOption.Medium => 210,
         CardSizeOption.Large => 280,
         _ => 210
