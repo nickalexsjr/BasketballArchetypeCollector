@@ -914,9 +914,14 @@ public class AppwriteService
 
             System.Diagnostics.Debug.WriteLine("[AppwriteService] SavePackPurchase SUCCESS");
         }
+        catch (Appwrite.AppwriteException aex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SavePackPurchase Appwrite error: {aex.Message}, Code: {aex.Code}, Type: {aex.Type}");
+            // Don't throw - pack purchase tracking is secondary to gameplay
+        }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SavePackPurchase error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] SavePackPurchase error: {ex.Message}\n{ex.StackTrace}");
             // Don't throw - pack purchase tracking is secondary to gameplay
         }
     }
@@ -946,7 +951,11 @@ public class AppwriteService
                 purchases.Add(MapPackPurchaseFromDocument(doc));
             }
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: found {purchases.Count} purchases");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: found {purchases.Count} purchases for user {userId}");
+        }
+        catch (Appwrite.AppwriteException aex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases Appwrite error: {aex.Message}, Code: {aex.Code}");
         }
         catch (Exception ex)
         {

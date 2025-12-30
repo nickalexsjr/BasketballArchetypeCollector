@@ -130,9 +130,13 @@ public partial class StatsViewModel : BaseViewModel
         try
         {
             var user = await _appwriteService.GetCurrentUser();
+            System.Diagnostics.Debug.WriteLine($"[StatsViewModel] LoadPackPurchaseStats: user={user?.Id ?? "null"}");
+
             if (user != null)
             {
                 var stats = await _appwriteService.GetUserPackPurchaseStats(user.Id);
+                System.Diagnostics.Debug.WriteLine($"[StatsViewModel] Stats loaded: Standard={stats.StandardPacksBought}, Premium={stats.PremiumPacksBought}, Elite={stats.ElitePacksBought}, Legendary={stats.LegendaryPacksBought}, TotalSpent={stats.TotalCoinsSpent}");
+
                 StandardPacksBought = stats.StandardPacksBought;
                 PremiumPacksBought = stats.PremiumPacksBought;
                 ElitePacksBought = stats.ElitePacksBought;
