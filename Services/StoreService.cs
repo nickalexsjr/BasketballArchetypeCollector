@@ -121,9 +121,10 @@ public class StoreService
                     result.ErrorMessage = "Failed to complete purchase. Please contact support.";
                 }
             }
-            else if (purchase.State == PurchaseState.Pending)
+            else if (purchase.State == PurchaseState.Deferred)
             {
-                result.ErrorMessage = "Purchase is pending. Coins will be added once payment is confirmed.";
+                // Deferred = pending parental approval or similar
+                result.ErrorMessage = "Purchase is pending approval. Coins will be added once confirmed.";
             }
             else
             {
