@@ -120,8 +120,9 @@
                                    FontSize="12"
                                    VerticalOptions="Center" />
                             <Picker Title="Era"
-                                    SelectedItem="{Binding SelectedEra}"
                                     ItemsSource="{Binding EraOptions}"
+                                    SelectedIndex="0"
+                                    SelectedItem="{Binding SelectedEra}"
                                     TextColor="White"
                                     TitleColor="#94a3b8"
                                     FontFamily="InterSemiBold"

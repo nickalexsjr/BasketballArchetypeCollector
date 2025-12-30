@@ -66,36 +66,50 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
 
     private async void LoadPlayer(string playerId)
     {
-        Player = _playerDataService.GetPlayerById(playerId);
-        if (Player != null)
+        try
         {
-            Title = Player.FullName;
-            IsOwned = _gameStateService.OwnsCard(Player.Id);
-            Coins = _gameStateService.CurrentState.Coins;
+            // Ensure player data is loaded first (critical for Collection and Pack views)
+            await _playerDataService.LoadPlayersAsync();
 
-            // Check for cached archetype locally first
-            var cached = _gameStateService.GetCachedArchetype(Player.Id);
-            if (cached != null)
+            Player = _playerDataService.GetPlayerById(playerId);
+            if (Player != null)
             {
-                SetArchetype(cached);
-                return;
-            }
+                Title = Player.FullName;
+                IsOwned = _gameStateService.OwnsCard(Player.Id);
+                Coins = _gameStateService.CurrentState.Coins;
 
-            // Try to fetch from Appwrite if not cached locally
-            try
-            {
-                var cloudArchetype = await _appwriteService.GetCachedArchetype(Player.Id);
-                if (cloudArchetype != null)
+                // Check for cached archetype locally first
+                var cached = _gameStateService.GetCachedArchetype(Player.Id);
+                if (cached != null)
                 {
-                    SetArchetype(cloudArchetype);
-                    // Cache it locally for next time
-                    await _gameStateService.CacheArchetype(cloudArchetype);
+                    SetArchetype(cached);
+                    return;
+                }
+
+                // Try to fetch from Appwrite if not cached locally
+                try
+                {
+                    var cloudArchetype = await _appwriteService.GetCachedArchetype(Player.Id);
+                    if (cloudArchetype != null)
+                    {
+                        SetArchetype(cloudArchetype);
+                        // Cache it locally for next time
+                        await _gameStateService.CacheArchetype(cloudArchetype);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype: {ex.Message}");
                 }
             }
-            catch (Exception ex)
+            else
             {
-                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Player not found: {playerId}");
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] LoadPlayer error: {ex.Message}");
         }
     }
 
