@@ -110,24 +110,25 @@ async function callDallEWithFetch(apiKey, prompt, log) {
  * Generate image using ModelsLab API with timeout.
  * ModelsLab works 100% - this is the cheaper option (~$0.002/image vs $0.016/image).
  */
-async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 60000) {
+async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 45000) {
     const url = 'https://modelslab.com/api/v6/images/text2img';
     const startTime = Date.now();
 
-    const enhancedPrompt = `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents, high quality, detailed.`;
+    const enhancedPrompt = `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents, high quality.`;
 
+    // Optimized for speed while maintaining quality
     const payload = {
         key: apiKey,
         model_id: "sdxl",
         prompt: enhancedPrompt,
-        negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality",
+        negative_prompt: "text, words, letters, signature, watermark, human, person, face, blurry",
         width: "512",
         height: "512",
         samples: "1",
-        num_inference_steps: "25",
-        guidance_scale: 7.5,
+        num_inference_steps: "20",  // Reduced from 25 for faster generation
+        guidance_scale: 7,          // Slightly lower for speed
         safety_checker: "no",
-        enhance_prompt: "yes",
+        enhance_prompt: "no",       // Skip prompt enhancement for speed
         seed: null,
         webhook: null,
         track_id: null
@@ -192,13 +193,13 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
                 throw new Error(`ModelsLab polling error: ${pollResult.message}`);
             }
 
-            // Check if we have time for another poll (3s wait + buffer)
-            if (Date.now() - startTime + 4000 > maxWaitMs) {
+            // Check if we have time for another poll (2s wait + buffer)
+            if (Date.now() - startTime + 3000 > maxWaitMs) {
                 throw new Error('ModelsLab timeout: not enough time for next poll');
             }
 
-            // Wait 3 seconds before next poll
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // Wait 2 seconds before next poll (reduced from 3s)
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
         throw new Error('ModelsLab timeout: max poll attempts reached');
@@ -316,16 +317,16 @@ Important:
         let crestImageUrl = null;
         if (archetypeData.image_prompt) {
             // Try ModelsLab first (much cheaper: ~$0.002/image vs $0.016/image)
-            // ModelsLab works 100%!
+            // Optimized settings: 20 steps, no prompt enhancement
             if (modelsLabApiKey) {
-                log(`Generating crest image with ModelsLab (60s timeout)...`);
+                log(`Generating crest image with ModelsLab (45s timeout)...`);
                 try {
                     crestImageUrl = await generateImageWithModelsLab(
                         archetypeData.image_prompt,
                         modelsLabApiKey,
                         log,
                         error,
-                        60000  // 60 second max wait for ModelsLab
+                        45000  // 45 second max wait for ModelsLab (reduced from 60s)
                     );
                     log(`ModelsLab image generated successfully`);
                 } catch (mlErr) {
