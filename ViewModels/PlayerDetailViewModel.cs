@@ -82,6 +82,7 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 var cached = _gameStateService.GetCachedArchetype(Player.Id);
                 if (cached != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Found local cached archetype for {Player.FullName}");
                     SetArchetype(cached);
                     return;
                 }
@@ -89,17 +90,40 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 // Try to fetch from Appwrite if not cached locally
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Checking Appwrite for archetype: {Player.Id}");
                     var cloudArchetype = await _appwriteService.GetCachedArchetype(Player.Id);
                     if (cloudArchetype != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Found Appwrite archetype for {Player.FullName}");
                         SetArchetype(cloudArchetype);
                         // Cache it locally for next time
                         await _gameStateService.CacheArchetype(cloudArchetype);
+                        return;
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype from Appwrite: {ex.Message}");
+                }
+
+                // If player is owned but no archetype exists, generate one now
+                if (IsOwned)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] No archetype found, generating for owned player: {Player.FullName}");
+                    try
+                    {
+                        var newArchetype = await _appwriteService.GenerateArchetype(Player);
+                        if (newArchetype != null)
+                        {
+                            await _gameStateService.CacheArchetype(newArchetype);
+                            SetArchetype(newArchetype);
+                            System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Generated archetype for {Player.FullName}: {newArchetype.ArchetypeName}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to generate archetype: {ex.Message}");
+                    }
                 }
             }
             else
