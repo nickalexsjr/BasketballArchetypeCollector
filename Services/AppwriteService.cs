@@ -468,16 +468,31 @@ public class AppwriteService
     {
         if (value == null) return new List<string>();
 
+        // Handle List<object> (common from Appwrite SDK)
         if (value is List<object> list)
         {
             return list.Select(x => x?.ToString() ?? "").Where(x => !string.IsNullOrEmpty(x)).ToList();
         }
 
-        if (value is string str)
+        // Handle IEnumerable<object>
+        if (value is System.Collections.IEnumerable enumerable && value is not string)
+        {
+            var result = new List<string>();
+            foreach (var item in enumerable)
+            {
+                var str = item?.ToString();
+                if (!string.IsNullOrEmpty(str))
+                    result.Add(str);
+            }
+            return result;
+        }
+
+        // Handle JSON string
+        if (value is string jsonStr)
         {
             try
             {
-                var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(str);
+                var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(jsonStr);
                 return parsed ?? new List<string>();
             }
             catch

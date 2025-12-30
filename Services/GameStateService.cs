@@ -164,29 +164,32 @@ public class GameStateService
             var cloudState = await _appwriteService.GetUserGameState(userId);
             if (cloudState != null)
             {
-                // For coins: use CLOUD value (prevents local manipulation)
-                // Only keep local if cloud is 0 (new account)
-                if (cloudState.Coins > 0)
-                {
-                    _currentState.Coins = cloudState.Coins;
-                }
+                // Use CLOUD values (authoritative source after login)
+                _currentState.Coins = cloudState.Coins;
 
-                // Merge collections (keep both local and cloud cards)
-                foreach (var id in cloudState.Collection)
+                // Use cloud collection directly (after login, cloud is authoritative)
+                // Merge only if local has cards that cloud doesn't (edge case)
+                if (cloudState.Collection.Count > 0 || _currentState.Collection.Count == 0)
                 {
-                    if (!_currentState.Collection.Contains(id))
+                    // Cloud has data or local is empty - use cloud as base
+                    var mergedCollection = new List<string>(cloudState.Collection);
+                    foreach (var id in _currentState.Collection)
                     {
-                        _currentState.Collection.Add(id);
+                        if (!mergedCollection.Contains(id))
+                        {
+                            mergedCollection.Add(id);
+                        }
                     }
+                    _currentState.Collection = mergedCollection;
                 }
 
-                // Use higher stats
-                _currentState.Stats.PacksOpened = Math.Max(_currentState.Stats.PacksOpened, cloudState.Stats.PacksOpened);
-                _currentState.Stats.CardsCollected = Math.Max(_currentState.Stats.CardsCollected, cloudState.Stats.CardsCollected);
-                _currentState.Stats.GoatCount = Math.Max(_currentState.Stats.GoatCount, cloudState.Stats.GoatCount);
-                _currentState.Stats.LegendaryCount = Math.Max(_currentState.Stats.LegendaryCount, cloudState.Stats.LegendaryCount);
-                _currentState.Stats.EpicCount = Math.Max(_currentState.Stats.EpicCount, cloudState.Stats.EpicCount);
-                _currentState.Stats.RareCount = Math.Max(_currentState.Stats.RareCount, cloudState.Stats.RareCount);
+                // Use cloud stats (authoritative after login)
+                _currentState.Stats.PacksOpened = cloudState.Stats.PacksOpened;
+                _currentState.Stats.CardsCollected = cloudState.Stats.CardsCollected;
+                _currentState.Stats.GoatCount = cloudState.Stats.GoatCount;
+                _currentState.Stats.LegendaryCount = cloudState.Stats.LegendaryCount;
+                _currentState.Stats.EpicCount = cloudState.Stats.EpicCount;
+                _currentState.Stats.RareCount = cloudState.Stats.RareCount;
 
                 // Mini-game cooldowns: use the LATER (more recent) timestamp to prevent exploitation
                 // If cloud says you played at 10am, and local says never, use 10am (cloud wins)
@@ -198,7 +201,7 @@ public class GameStateService
                 _currentState.DailyStreak = cloudState.DailyStreak; // Use cloud streak
 
                 await SaveLocalState();
-                System.Diagnostics.Debug.WriteLine("[GameStateService] Synced with cloud state");
+                StateChanged?.Invoke(this, EventArgs.Empty);
             }
 
             // Load cloud archetype cache
