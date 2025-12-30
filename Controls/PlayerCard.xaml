@@ -44,8 +44,8 @@
                            TextColor="White" />
                 </Border>
 
-                <!-- Crest Image or Player Info -->
-                <Grid Grid.Row="1" VerticalOptions="Center">
+                <!-- Crest Image and Player Name -->
+                <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="6">
                     <!-- Crest Image (shown if available) -->
                     <Border StrokeShape="RoundRectangle 10"
                             BackgroundColor="#0f172a80"
@@ -63,29 +63,22 @@
                                WidthRequest="66" />
                     </Border>
 
-                    <!-- Player Info (shown if no crest) -->
-                    <VerticalStackLayout VerticalOptions="Center"
-                                         Spacing="2"
-                                         IsVisible="{Binding HasCrest, Source={x:Reference thisCard}, Converter={StaticResource InvertedBoolConverter}}">
+                    <!-- Player Name (always shown) -->
+                    <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
                         <Label Text="{Binding Player.FirstName, Source={x:Reference thisCard}}"
                                FontFamily="InterRegular"
-                               FontSize="11"
+                               FontSize="10"
                                TextColor="#cbd5e1"
                                LineBreakMode="TailTruncation"
                                HorizontalTextAlignment="Center" />
                         <Label Text="{Binding Player.LastName, Source={x:Reference thisCard}}"
                                FontFamily="OrbitronBold"
-                               FontSize="14"
+                               FontSize="12"
                                TextColor="White"
                                LineBreakMode="TailTruncation"
                                HorizontalTextAlignment="Center" />
-                        <Label Text="{Binding Player.TeamAbbreviation, Source={x:Reference thisCard}}"
-                               FontFamily="InterSemiBold"
-                               FontSize="10"
-                               TextColor="#94a3b8"
-                               HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
-                </Grid>
+                </VerticalStackLayout>
 
                 <!-- Stats Row with improved styling -->
                 <Grid Grid.Row="2"

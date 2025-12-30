@@ -179,5 +179,24 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
             return RarityConfig.Info.TryGetValue(rarity, out var info) ? info.Color : "#6b7280";
         }
     }
+
+    public string RarityBackgroundColor
+    {
+        get
+        {
+            var rarity = Player?.Rarity ?? Rarity.Common;
+            return rarity switch
+            {
+                Rarity.Goat => "#1a0a0d",      // Deep crimson/black
+                Rarity.Legendary => "#1a1408", // Deep gold/black
+                Rarity.Epic => "#140f1f",      // Deep purple/black
+                Rarity.Rare => "#0a1220",      // Deep blue/black
+                Rarity.Uncommon => "#0a1510",  // Deep green/black
+                Rarity.Common => "#0f172a",    // Default dark blue
+                _ => "#0f172a"
+            };
+        }
+    }
+
     public string EraColor => EraConfig.GetColor(Player?.Era ?? Era.Modern);
 }

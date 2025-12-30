@@ -5,23 +5,11 @@
              xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
              x:Class="BasketballArchetypeCollector.Views.PlayerDetailPage"
              x:DataType="vm:PlayerDetailViewModel"
-             BackgroundColor="#0f172a"
+             BackgroundColor="{Binding RarityBackgroundColor}"
              Shell.NavBarIsVisible="False">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="16">
-
-            <!-- Debug Banner -->
-            <Border StrokeShape="RoundRectangle 6"
-                    BackgroundColor="#7f1d1d"
-                    Padding="8"
-                    IsVisible="{Binding DebugInfo, Converter={StaticResource NotNullConverter}}">
-                <Label Text="{Binding DebugInfo}"
-                       FontFamily="InterRegular"
-                       FontSize="10"
-                       TextColor="#fca5a5"
-                       HorizontalTextAlignment="Center" />
-            </Border>
 
             <!-- Back Button -->
             <HorizontalStackLayout>
