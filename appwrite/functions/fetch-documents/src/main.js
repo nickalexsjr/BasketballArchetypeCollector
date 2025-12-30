@@ -26,7 +26,14 @@ module.exports = async function (context) {
             return res.json({ success: false, error: 'Missing collection parameter' });
         }
 
-        log(`Fetching all documents from collection: ${collectionId}`);
+        // Optional query filters
+        const filters = body.filters || {};  // e.g., { "userId": "abc123" }
+        const orderBy = body.orderBy || null;  // e.g., { "field": "purchasedAt", "order": "desc" }
+
+        log(`Fetching documents from collection: ${collectionId}`);
+        if (Object.keys(filters).length > 0) {
+            log(`Filters: ${JSON.stringify(filters)}`);
+        }
 
         // Fetch all documents with pagination
         const allDocuments = [];
@@ -35,13 +42,30 @@ module.exports = async function (context) {
         let hasMore = true;
 
         while (hasMore) {
+            // Build query array
+            const queries = [
+                Query.limit(limit),
+                Query.offset(offset)
+            ];
+
+            // Add filters (e.g., Query.equal("userId", "abc123"))
+            for (const [field, value] of Object.entries(filters)) {
+                queries.push(Query.equal(field, value));
+            }
+
+            // Add ordering if specified
+            if (orderBy) {
+                if (orderBy.order === 'desc') {
+                    queries.push(Query.orderDesc(orderBy.field));
+                } else {
+                    queries.push(Query.orderAsc(orderBy.field));
+                }
+            }
+
             const response = await databases.listDocuments(
                 databaseId,
                 collectionId,
-                [
-                    Query.limit(limit),
-                    Query.offset(offset)
-                ]
+                queries
             );
 
             allDocuments.push(...response.documents);

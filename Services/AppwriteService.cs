@@ -877,6 +877,122 @@ public class AppwriteService
         }
     }
 
+    /// <summary>
+    /// Helper class for ordering
+    /// </summary>
+    private class OrderBySpec
+    {
+        public string Field { get; set; } = "";
+        public string Order { get; set; } = "asc";
+    }
+
+    /// <summary>
+    /// Fetches documents from a collection with optional filters using the fetch-documents function.
+    /// This bypasses the 25 document limit.
+    /// </summary>
+    private async Task<List<Document>> FetchDocumentsWithFilter(string collectionName, Dictionary<string, string>? filters = null, OrderBySpec? orderBy = null)
+    {
+        try
+        {
+            var payload = new Dictionary<string, object>
+            {
+                { "collection", collectionName }
+            };
+
+            if (filters != null && filters.Count > 0)
+            {
+                payload["filters"] = filters;
+            }
+
+            if (orderBy != null)
+            {
+                payload["orderBy"] = new { field = orderBy.Field, order = orderBy.Order };
+            }
+
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(payload);
+            System.Diagnostics.Debug.WriteLine($"[FetchDocumentsWithFilter] Calling function with: {payloadJson}");
+
+            var execution = await _functions.CreateExecution(
+                functionId: AppConfig.FetchDocumentsFunctionId,
+                body: payloadJson,
+                xasync: false,
+                method: Appwrite.Enums.ExecutionMethod.POST
+            );
+
+            if (string.IsNullOrEmpty(execution.ResponseBody))
+            {
+                System.Diagnostics.Debug.WriteLine($"[FetchDocumentsWithFilter] Empty response for {collectionName}");
+                return new List<Document>();
+            }
+
+            var response = System.Text.Json.JsonDocument.Parse(execution.ResponseBody);
+
+            if (response.RootElement.TryGetProperty("success", out var success) && !success.GetBoolean())
+            {
+                var errorMsg = response.RootElement.TryGetProperty("error", out var err) ? err.GetString() : "Unknown error";
+                System.Diagnostics.Debug.WriteLine($"[FetchDocumentsWithFilter] Error: {errorMsg}");
+                return new List<Document>();
+            }
+
+            var documents = new List<Document>();
+            if (response.RootElement.TryGetProperty("documents", out var docsElement))
+            {
+                foreach (var doc in docsElement.EnumerateArray())
+                {
+                    var docData = new Dictionary<string, object>();
+                    string docId = "";
+
+                    foreach (var prop in doc.EnumerateObject())
+                    {
+                        if (prop.Name == "$id")
+                        {
+                            docId = prop.Value.GetString() ?? "";
+                            continue;
+                        }
+                        if (prop.Name.StartsWith("$")) continue;
+
+                        object value;
+                        switch (prop.Value.ValueKind)
+                        {
+                            case System.Text.Json.JsonValueKind.String:
+                                value = prop.Value.GetString() ?? "";
+                                break;
+                            case System.Text.Json.JsonValueKind.Number:
+                                if (prop.Value.TryGetInt64(out var longVal))
+                                    value = longVal.ToString();
+                                else
+                                    value = prop.Value.GetDouble().ToString();
+                                break;
+                            case System.Text.Json.JsonValueKind.True:
+                                value = "true";
+                                break;
+                            case System.Text.Json.JsonValueKind.False:
+                                value = "false";
+                                break;
+                            case System.Text.Json.JsonValueKind.Null:
+                                value = "";
+                                break;
+                            default:
+                                value = prop.Value.ToString();
+                                break;
+                        }
+                        docData[prop.Name] = value;
+                    }
+
+                    documents.Add(new Document(docId, "", "", "", "", new List<string>(), docData));
+                }
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[FetchDocumentsWithFilter] Got {documents.Count} documents from {collectionName}");
+            return documents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FetchDocumentsWithFilter] Error: {ex.Message}");
+            return new List<Document>();
+        }
+    }
+
     #endregion
 
     #region Pack Purchases
@@ -937,20 +1053,16 @@ public class AppwriteService
         {
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: querying for userId={userId}");
 
-            var result = await _databases.ListDocuments(
-                databaseId: AppConfig.DatabaseId,
-                collectionId: AppConfig.PackPurchasesCollection,
-                queries: new List<string>
-                {
-                    Query.Equal("userId", userId),
-                    Query.Limit(MaxQueryLimit),
-                    Query.OrderDesc("purchasedAt")
-                }
+            // Use fetch-documents function to bypass 25-doc limit
+            var docs = await FetchDocumentsWithFilter(
+                AppConfig.PackPurchasesCollection,
+                new Dictionary<string, string> { { "userId", userId } },
+                new OrderBySpec { Field = "purchasedAt", Order = "desc" }
             );
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: query returned {result.Documents.Count} documents, total={result.Total}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetUserPackPurchases: got {docs.Count} documents");
 
-            foreach (var doc in result.Documents)
+            foreach (var doc in docs)
             {
                 var mapped = MapPackPurchaseFromDocument(doc);
                 System.Diagnostics.Debug.WriteLine($"[AppwriteService] Mapped purchase: packId={mapped.PackId}, cost={mapped.Cost}");
