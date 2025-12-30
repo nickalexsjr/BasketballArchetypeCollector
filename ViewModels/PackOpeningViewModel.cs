@@ -197,8 +197,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             }
 
             // Separate cards into cached vs needs-generation
-            var cachedCards = new List<(PackOpenResult result, string crestUrl)>();
-            var needsGeneration = new List<PackOpenResult>();
+            var cachedCards = new List<(GameStateService.PackOpenResult result, string crestUrl)>();
+            var needsGeneration = new List<GameStateService.PackOpenResult>();
 
             foreach (var packResult in packResults)
             {
