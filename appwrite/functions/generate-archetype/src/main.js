@@ -18,7 +18,15 @@ Constraints:
 - The crest must be abstract, original, and collectible: geometric sigil + iconography + patterns + materials + frame notes.
 - Must be safe for an unlicensed game: no endorsement implications.
 - Output MUST be valid JSON only, matching the schema exactly.
-- If you are unsure of the player's style, set "confidence":"low" and infer from provided stat hints or generic role assumptions.`;
+- If you are unsure of the player's style, set "confidence":"low" and infer from provided stat hints or generic role assumptions.
+
+CRITICAL for image_prompt:
+- Make each crest WILDLY unique and visually stunning
+- Use varied art styles: cyberpunk, ethereal, crystalline, volcanic, cosmic, ancient runes, neon, biomechanical, celestial, arcane
+- Include specific unique elements: glowing orbs, energy fractals, sacred geometry, floating shards, plasma cores, runic circles
+- Vary color palettes dramatically: not just gold/blue - use crimson/black, electric cyan, deep purple/magenta, emerald/silver, sunset orange
+- Add dynamic elements: energy particles, light rays, swirling auras, crystalline formations, ethereal flames
+- Each crest should feel like a legendary collectible artifact`;
 
 const ARCHETYPE_SCHEMA = {
     "player_name": "string",
@@ -114,14 +122,20 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
     const url = 'https://modelslab.com/api/v6/images/text2img';
     const startTime = Date.now();
 
-    const enhancedPrompt = `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents, high quality.`;
+    // Random style elements for variety
+    const styles = ['ultra detailed', 'hyperrealistic render', '8k octane render', 'unreal engine 5', 'cinematic lighting'];
+    const finishes = ['holographic iridescent', 'chrome metallic', 'glowing neon edges', 'crystalline refractions', 'ethereal glow'];
+    const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+    const randomFinish = finishes[Math.floor(Math.random() * finishes.length)];
+
+    const enhancedPrompt = `Legendary trading card crest emblem, ${prompt}, ${randomStyle}, ${randomFinish}, intricate details, symmetrical design, centered composition, dark dramatic background, volumetric lighting, masterpiece quality`;
 
     // Optimized for speed while maintaining quality
     const payload = {
         key: apiKey,
         model_id: "sdxl",
         prompt: enhancedPrompt,
-        negative_prompt: "text, words, letters, signature, watermark, human, person, face, blurry",
+        negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality, ugly, deformed, amateur",
         width: "512",
         height: "512",
         samples: "1",
