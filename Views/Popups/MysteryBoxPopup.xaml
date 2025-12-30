@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BasketballArchetypeCollector.Views.Popups.MysteryBoxPopup"
+             BackgroundColor="#000000CC"
+             Shell.NavBarIsVisible="False">
+
+    <Grid VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+        <Border StrokeShape="RoundRectangle 20"
+                BackgroundColor="#1e293b"
+                Stroke="#a855f7"
+                StrokeThickness="3"
+                Padding="24"
+                MaximumWidthRequest="340">
+            <VerticalStackLayout Spacing="20">
+                <!-- Header -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="📦 MYSTERY BOX"
+                           FontFamily="OrbitronBold"
+                           FontSize="24"
+                           TextColor="#a855f7"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Pick a box to reveal your prize!"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Mystery Boxes Grid -->
+                <Grid x:Name="BoxGrid"
+                      RowDefinitions="Auto,Auto"
+                      ColumnDefinitions="*,*,*"
+                      RowSpacing="12"
+                      ColumnSpacing="12">
+                    <!-- Box 1 -->
+                    <Border x:Name="Box1" Grid.Row="0" Grid.Column="0"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#4c1d95"
+                            Stroke="#a855f7"
+                            StrokeThickness="2"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoxTapped" CommandParameter="1" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="Box1Label" Text="?" FontFamily="OrbitronBold" FontSize="32" TextColor="#c4b5fd"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- Box 2 -->
+                    <Border x:Name="Box2" Grid.Row="0" Grid.Column="1"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#4c1d95"
+                            Stroke="#a855f7"
+                            StrokeThickness="2"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoxTapped" CommandParameter="2" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="Box2Label" Text="?" FontFamily="OrbitronBold" FontSize="32" TextColor="#c4b5fd"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- Box 3 -->
+                    <Border x:Name="Box3" Grid.Row="0" Grid.Column="2"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#4c1d95"
+                            Stroke="#a855f7"
+                            StrokeThickness="2"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoxTapped" CommandParameter="3" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="Box3Label" Text="?" FontFamily="OrbitronBold" FontSize="32" TextColor="#c4b5fd"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- Box 4 -->
+                    <Border x:Name="Box4" Grid.Row="1" Grid.Column="0"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#4c1d95"
+                            Stroke="#a855f7"
+                            StrokeThickness="2"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoxTapped" CommandParameter="4" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="Box4Label" Text="?" FontFamily="OrbitronBold" FontSize="32" TextColor="#c4b5fd"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- Box 5 -->
+                    <Border x:Name="Box5" Grid.Row="1" Grid.Column="1"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#4c1d95"
+                            Stroke="#a855f7"
+                            StrokeThickness="2"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoxTapped" CommandParameter="5" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="Box5Label" Text="?" FontFamily="OrbitronBold" FontSize="32" TextColor="#c4b5fd"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- Box 6 -->
+                    <Border x:Name="Box6" Grid.Row="1" Grid.Column="2"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="#4c1d95"
+                            Stroke="#a855f7"
+                            StrokeThickness="2"
+                            HeightRequest="80">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBoxTapped" CommandParameter="6" />
+                        </Border.GestureRecognizers>
+                        <Label x:Name="Box6Label" Text="?" FontFamily="OrbitronBold" FontSize="32" TextColor="#c4b5fd"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                </Grid>
+
+                <!-- Result Display (hidden initially) -->
+                <VerticalStackLayout x:Name="ResultStack" IsVisible="False" Spacing="8" HorizontalOptions="Center">
+                    <Label Text="🎉" FontSize="48" HorizontalOptions="Center" />
+                    <Label x:Name="ResultLabel"
+                           FontFamily="OrbitronBold"
+                           FontSize="32"
+                           TextColor="#22c55e"
+                           HorizontalTextAlignment="Center">
+                        <Label.Shadow>
+                            <Shadow Brush="#22c55e" Offset="0,0" Radius="15" Opacity="0.5" />
+                        </Label.Shadow>
+                    </Label>
+                </VerticalStackLayout>
+
+                <!-- Prize Tiers -->
+                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="4">
+                    <Border Grid.Column="0" StrokeShape="RoundRectangle 6" BackgroundColor="#14532d" Padding="4">
+                        <Label Text="100" FontFamily="OrbitronBold" FontSize="10" TextColor="#86efac" HorizontalTextAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="1" StrokeShape="RoundRectangle 6" BackgroundColor="#1e3a5f" Padding="4">
+                        <Label Text="300" FontFamily="OrbitronBold" FontSize="10" TextColor="#7dd3fc" HorizontalTextAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="2" StrokeShape="RoundRectangle 6" BackgroundColor="#7c2d12" Padding="4">
+                        <Label Text="750" FontFamily="OrbitronBold" FontSize="10" TextColor="#fdba74" HorizontalTextAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="3" StrokeShape="RoundRectangle 6" BackgroundColor="#7f1d1d" Padding="4">
+                        <Label Text="2000" FontFamily="OrbitronBold" FontSize="10" TextColor="#fca5a5" HorizontalTextAlignment="Center" />
+                    </Border>
+                </Grid>
+
+                <!-- Close Button -->
+                <Button x:Name="CloseButton"
+                        Text="Close"
+                        FontFamily="InterSemiBold"
+                        FontSize="14"
+                        BackgroundColor="#334155"
+                        TextColor="#94a3b8"
+                        CornerRadius="10"
+                        HeightRequest="44"
+                        Clicked="OnCloseClicked" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

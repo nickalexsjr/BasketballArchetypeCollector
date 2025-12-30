@@ -344,6 +344,11 @@ public class GameStateService
         await SaveAndSync();
     }
 
+    public async Task SaveStateAsync()
+    {
+        await SaveAndSync();
+    }
+
     public async Task CacheArchetype(ArchetypeData archetype)
     {
         _archetypeCache[archetype.PlayerId] = archetype;

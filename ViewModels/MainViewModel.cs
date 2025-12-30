@@ -142,8 +142,7 @@ public partial class MainViewModel : BaseViewModel
     [RelayCommand]
     private async Task ClaimDailyBonus()
     {
-        if (!IsLoggedIn) return;
-        await _gameStateService.AddCoins(100);
-        UpdateFromState();
+        // Navigate to Daily tab where user can claim properly
+        await Shell.Current.GoToAsync("//daily");
     }
 }

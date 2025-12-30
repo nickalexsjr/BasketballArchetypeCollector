@@ -1,4 +1,5 @@
 using BasketballArchetypeCollector.Services;
+using BasketballArchetypeCollector.Views.Popups;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -7,6 +8,7 @@ namespace BasketballArchetypeCollector.ViewModels;
 public partial class DailyViewModel : BaseViewModel
 {
     private readonly GameStateService _gameStateService;
+    private readonly MiniGameService _miniGameService;
 
     private const int BaseReward = 100;
     private const int StreakBonus = 50;
@@ -29,9 +31,36 @@ public partial class DailyViewModel : BaseViewModel
     [ObservableProperty]
     private int _nextRewardAmount;
 
-    public DailyViewModel(GameStateService gameStateService)
+    // Mini-game availability
+    [ObservableProperty]
+    private bool _canLuckySpin;
+
+    [ObservableProperty]
+    private bool _canMysteryBox;
+
+    [ObservableProperty]
+    private bool _canCoinFlip;
+
+    [ObservableProperty]
+    private bool _canTrivia;
+
+    // Mini-game status text
+    [ObservableProperty]
+    private string _luckySpinStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _mysteryBoxStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _coinFlipStatus = string.Empty;
+
+    [ObservableProperty]
+    private string _triviaStatus = string.Empty;
+
+    public DailyViewModel(GameStateService gameStateService, MiniGameService miniGameService)
     {
         _gameStateService = gameStateService;
+        _miniGameService = miniGameService;
         Title = "Daily";
 
         _gameStateService.StateChanged += OnStateChanged;
@@ -93,6 +122,18 @@ public partial class DailyViewModel : BaseViewModel
         var effectiveStreak = CanClaim ? (CurrentStreak + 1) : CurrentStreak;
         if (effectiveStreak == 0) effectiveStreak = 1;
         NextRewardAmount = BaseReward + (effectiveStreak - 1) * StreakBonus;
+
+        // Update mini-game cooldowns
+        UpdateMiniGameCooldowns();
+    }
+
+    private void UpdateMiniGameCooldowns()
+    {
+        // Use MiniGameService to check all cooldowns
+        (CanLuckySpin, LuckySpinStatus) = _miniGameService.CheckLuckySpinCooldown();
+        (CanMysteryBox, MysteryBoxStatus) = _miniGameService.CheckMysteryBoxCooldown();
+        (CanCoinFlip, CoinFlipStatus) = _miniGameService.CheckCoinFlipCooldown();
+        (CanTrivia, TriviaStatus) = _miniGameService.CheckTriviaCooldown();
     }
 
     [RelayCommand]
@@ -157,5 +198,62 @@ public partial class DailyViewModel : BaseViewModel
         if (hours < 1)
             return $"{(int)(hours * 60)}m";
         return $"{(int)hours}h {(int)((hours % 1) * 60)}m";
+    }
+
+    // Mini-game commands
+    [RelayCommand]
+    private async Task OpenLuckySpin()
+    {
+        if (!CanLuckySpin)
+        {
+            await Shell.Current.DisplayAlert("Cooldown Active", LuckySpinStatus, "OK");
+            return;
+        }
+
+        var popup = new LuckySpinPopup(_miniGameService);
+        await Shell.Current.Navigation.PushModalAsync(popup);
+        Refresh();
+    }
+
+    [RelayCommand]
+    private async Task OpenMysteryBox()
+    {
+        if (!CanMysteryBox)
+        {
+            await Shell.Current.DisplayAlert("Cooldown Active", MysteryBoxStatus, "OK");
+            return;
+        }
+
+        var popup = new MysteryBoxPopup(_miniGameService);
+        await Shell.Current.Navigation.PushModalAsync(popup);
+        Refresh();
+    }
+
+    [RelayCommand]
+    private async Task OpenCoinFlip()
+    {
+        if (!CanCoinFlip)
+        {
+            await Shell.Current.DisplayAlert("Cooldown Active", CoinFlipStatus, "OK");
+            return;
+        }
+
+        var popup = new CoinFlipPopup(_miniGameService);
+        await Shell.Current.Navigation.PushModalAsync(popup);
+        Refresh();
+    }
+
+    [RelayCommand]
+    private async Task OpenTrivia()
+    {
+        if (!CanTrivia)
+        {
+            await Shell.Current.DisplayAlert("Cooldown Active", TriviaStatus, "OK");
+            return;
+        }
+
+        var popup = new TriviaPopup(_miniGameService);
+        await Shell.Current.Navigation.PushModalAsync(popup);
+        Refresh();
     }
 }

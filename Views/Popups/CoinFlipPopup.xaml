@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BasketballArchetypeCollector.Views.Popups.CoinFlipPopup"
+             BackgroundColor="#000000CC"
+             Shell.NavBarIsVisible="False">
+
+    <Grid VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+        <Border StrokeShape="RoundRectangle 20"
+                BackgroundColor="#1e293b"
+                Stroke="#3b82f6"
+                StrokeThickness="3"
+                Padding="24"
+                MaximumWidthRequest="340">
+            <VerticalStackLayout Spacing="20">
+                <!-- Header -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="🪙 COIN FLIP"
+                           FontFamily="OrbitronBold"
+                           FontSize="24"
+                           TextColor="#3b82f6"
+                           HorizontalTextAlignment="Center" />
+                    <Label x:Name="SubtitleLabel"
+                           Text="Bet 50 coins - Double or Nothing!"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Bet Amount Display -->
+                <Border x:Name="BetBorder"
+                        StrokeShape="RoundRectangle 16"
+                        BackgroundColor="#0f172a"
+                        Stroke="#334155"
+                        StrokeThickness="2"
+                        Padding="20"
+                        HeightRequest="100">
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                        <Label x:Name="BetLabel"
+                               Text="BET: 50"
+                               FontFamily="OrbitronBold"
+                               FontSize="28"
+                               TextColor="#fbbf24"
+                               HorizontalTextAlignment="Center" />
+                        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <Button x:Name="DecreaseBtn"
+                                    Text="-"
+                                    FontFamily="OrbitronBold"
+                                    FontSize="20"
+                                    BackgroundColor="#475569"
+                                    TextColor="White"
+                                    WidthRequest="50"
+                                    HeightRequest="40"
+                                    CornerRadius="8"
+                                    Clicked="OnDecreaseBet" />
+                            <Button x:Name="IncreaseBtn"
+                                    Text="+"
+                                    FontFamily="OrbitronBold"
+                                    FontSize="20"
+                                    BackgroundColor="#475569"
+                                    TextColor="White"
+                                    WidthRequest="50"
+                                    HeightRequest="40"
+                                    CornerRadius="8"
+                                    Clicked="OnIncreaseBet" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Coin Display (shows during flip) -->
+                <Label x:Name="CoinLabel"
+                       Text="🪙"
+                       FontSize="80"
+                       HorizontalOptions="Center"
+                       IsVisible="False">
+                    <Label.Shadow>
+                        <Shadow Brush="#fbbf24" Offset="0,0" Radius="30" Opacity="0.6" />
+                    </Label.Shadow>
+                </Label>
+
+                <!-- Result Display (hidden initially) -->
+                <VerticalStackLayout x:Name="ResultStack" IsVisible="False" Spacing="8" HorizontalOptions="Center">
+                    <Label x:Name="ResultEmoji" Text="🎉" FontSize="48" HorizontalOptions="Center" />
+                    <Label x:Name="ResultLabel"
+                           FontFamily="OrbitronBold"
+                           FontSize="28"
+                           TextColor="#22c55e"
+                           HorizontalTextAlignment="Center">
+                        <Label.Shadow>
+                            <Shadow Brush="#22c55e" Offset="0,0" Radius="15" Opacity="0.5" />
+                        </Label.Shadow>
+                    </Label>
+                </VerticalStackLayout>
+
+                <!-- Choice Buttons -->
+                <Grid x:Name="ChoiceGrid" ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Grid.Column="0"
+                            x:Name="HeadsBtn"
+                            Text="HEADS"
+                            FontFamily="OrbitronBold"
+                            FontSize="16"
+                            BackgroundColor="#1e3a5f"
+                            TextColor="#7dd3fc"
+                            CornerRadius="12"
+                            HeightRequest="60"
+                            Clicked="OnHeadsClicked" />
+                    <Button Grid.Column="1"
+                            x:Name="TailsBtn"
+                            Text="TAILS"
+                            FontFamily="OrbitronBold"
+                            FontSize="16"
+                            BackgroundColor="#1e3a5f"
+                            TextColor="#7dd3fc"
+                            CornerRadius="12"
+                            HeightRequest="60"
+                            Clicked="OnTailsClicked" />
+                </Grid>
+
+                <!-- Close Button -->
+                <Button x:Name="CloseButton"
+                        Text="Cancel"
+                        FontFamily="InterSemiBold"
+                        FontSize="14"
+                        BackgroundColor="#334155"
+                        TextColor="#94a3b8"
+                        CornerRadius="10"
+                        HeightRequest="44"
+                        Clicked="OnCloseClicked" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

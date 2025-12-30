@@ -168,6 +168,155 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- Mini-Games Section -->
+                <Label Text="MINI-GAMES"
+                       FontFamily="OrbitronBold"
+                       FontSize="20"
+                       TextColor="White"
+                       Margin="0,10,0,0">
+                    <Label.Shadow>
+                        <Shadow Brush="#f97316"
+                                Offset="0,0"
+                                Radius="10"
+                                Opacity="0.3" />
+                    </Label.Shadow>
+                </Label>
+
+                <!-- Lucky Spin -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{Binding CanLuckySpin, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#7c2d12|#1e293b}"
+                        Stroke="{Binding CanLuckySpin, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#f97316|#334155}"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenLuckySpinCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="🎰"
+                               FontSize="36"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="12,0" VerticalOptions="Center">
+                            <Label Text="Lucky Spin"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#f97316" />
+                            <Label Text="{Binding LuckySpinStatus}"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2"
+                               Text="50-1000"
+                               FontFamily="OrbitronBold"
+                               FontSize="14"
+                               TextColor="#fbbf24"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Mystery Box -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{Binding CanMysteryBox, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#4c1d95|#1e293b}"
+                        Stroke="{Binding CanMysteryBox, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#a855f7|#334155}"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenMysteryBoxCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="📦"
+                               FontSize="36"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="12,0" VerticalOptions="Center">
+                            <Label Text="Mystery Box"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#a855f7" />
+                            <Label Text="{Binding MysteryBoxStatus}"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2"
+                               Text="100-2000"
+                               FontFamily="OrbitronBold"
+                               FontSize="14"
+                               TextColor="#fbbf24"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Coin Flip -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{Binding CanCoinFlip, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#1e3a5f|#1e293b}"
+                        Stroke="{Binding CanCoinFlip, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#3b82f6|#334155}"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenCoinFlipCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="🪙"
+                               FontSize="36"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="12,0" VerticalOptions="Center">
+                            <Label Text="Coin Flip"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#3b82f6" />
+                            <Label Text="{Binding CoinFlipStatus}"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2"
+                               Text="2x or 0"
+                               FontFamily="OrbitronBold"
+                               FontSize="14"
+                               TextColor="#fbbf24"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Trivia -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{Binding CanTrivia, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#14532d|#1e293b}"
+                        Stroke="{Binding CanTrivia, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#22c55e|#334155}"
+                        StrokeThickness="2"
+                        Padding="16">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenTriviaCommand}" />
+                    </Border.GestureRecognizers>
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="🏀"
+                               FontSize="36"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Margin="12,0" VerticalOptions="Center">
+                            <Label Text="NBA Trivia"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#22c55e" />
+                            <Label Text="{Binding TriviaStatus}"
+                                   FontFamily="InterRegular"
+                                   FontSize="12"
+                                   TextColor="#94a3b8" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2"
+                               Text="Up to 500"
+                               FontFamily="OrbitronBold"
+                               FontSize="14"
+                               TextColor="#fbbf24"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Spacer for bottom padding -->
+                <BoxView HeightRequest="20" Color="Transparent" />
+
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

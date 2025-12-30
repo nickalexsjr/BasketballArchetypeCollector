@@ -9,6 +9,12 @@ public class GameState
     // Daily rewards
     public int DailyStreak { get; set; } = 0;
     public DateTime? LastDailyClaimUtc { get; set; }
+
+    // Mini-game cooldowns
+    public DateTime? LastLuckySpinUtc { get; set; }      // 3 hour cooldown
+    public DateTime? LastMysteryBoxUtc { get; set; }     // 6 hour cooldown
+    public DateTime? LastCoinFlipUtc { get; set; }       // 4 hour cooldown
+    public DateTime? LastTriviaUtc { get; set; }         // 2 hour cooldown
 }
 
 public class GameStats

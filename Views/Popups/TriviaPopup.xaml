@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BasketballArchetypeCollector.Views.Popups.TriviaPopup"
+             BackgroundColor="#000000CC"
+             Shell.NavBarIsVisible="False">
+
+    <Grid VerticalOptions="Center" HorizontalOptions="Center" Padding="20">
+        <Border StrokeShape="RoundRectangle 20"
+                BackgroundColor="#1e293b"
+                Stroke="#22c55e"
+                StrokeThickness="3"
+                Padding="24"
+                MaximumWidthRequest="360">
+            <VerticalStackLayout Spacing="16">
+                <!-- Header -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="🏀 NBA TRIVIA"
+                           FontFamily="OrbitronBold"
+                           FontSize="24"
+                           TextColor="#22c55e"
+                           HorizontalTextAlignment="Center" />
+                    <Label x:Name="SubtitleLabel"
+                           Text="Answer correctly to win coins!"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Score/Progress -->
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label x:Name="QuestionNumLabel"
+                               Text="Q1/5"
+                               FontFamily="OrbitronBold"
+                               FontSize="16"
+                               TextColor="#3b82f6"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Question"
+                               FontFamily="InterRegular"
+                               FontSize="10"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout HorizontalOptions="Center">
+                        <Label x:Name="ScoreLabel"
+                               Text="0"
+                               FontFamily="OrbitronBold"
+                               FontSize="16"
+                               TextColor="#fbbf24"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="Points"
+                               FontFamily="InterRegular"
+                               FontSize="10"
+                               TextColor="#64748b"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <!-- Question Box -->
+                <Border StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#0f172a"
+                        Stroke="#334155"
+                        StrokeThickness="2"
+                        Padding="16"
+                        MinimumHeightRequest="80">
+                    <Label x:Name="QuestionLabel"
+                           Text="Loading question..."
+                           FontFamily="InterSemiBold"
+                           FontSize="16"
+                           TextColor="White"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"
+                           LineBreakMode="WordWrap" />
+                </Border>
+
+                <!-- Answer Buttons -->
+                <VerticalStackLayout x:Name="AnswerStack" Spacing="10">
+                    <Button x:Name="Answer1Btn"
+                            Text="Answer 1"
+                            FontFamily="InterSemiBold"
+                            FontSize="14"
+                            BackgroundColor="#1e3a5f"
+                            TextColor="#7dd3fc"
+                            CornerRadius="10"
+                            HeightRequest="48"
+                            Clicked="OnAnswerClicked" />
+                    <Button x:Name="Answer2Btn"
+                            Text="Answer 2"
+                            FontFamily="InterSemiBold"
+                            FontSize="14"
+                            BackgroundColor="#1e3a5f"
+                            TextColor="#7dd3fc"
+                            CornerRadius="10"
+                            HeightRequest="48"
+                            Clicked="OnAnswerClicked" />
+                    <Button x:Name="Answer3Btn"
+                            Text="Answer 3"
+                            FontFamily="InterSemiBold"
+                            FontSize="14"
+                            BackgroundColor="#1e3a5f"
+                            TextColor="#7dd3fc"
+                            CornerRadius="10"
+                            HeightRequest="48"
+                            Clicked="OnAnswerClicked" />
+                    <Button x:Name="Answer4Btn"
+                            Text="Answer 4"
+                            FontFamily="InterSemiBold"
+                            FontSize="14"
+                            BackgroundColor="#1e3a5f"
+                            TextColor="#7dd3fc"
+                            CornerRadius="10"
+                            HeightRequest="48"
+                            Clicked="OnAnswerClicked" />
+                </VerticalStackLayout>
+
+                <!-- Result Display (hidden initially) -->
+                <VerticalStackLayout x:Name="ResultStack" IsVisible="False" Spacing="8" HorizontalOptions="Center">
+                    <Label x:Name="ResultEmoji" Text="🎉" FontSize="48" HorizontalOptions="Center" />
+                    <Label x:Name="ResultLabel"
+                           FontFamily="OrbitronBold"
+                           FontSize="24"
+                           TextColor="#22c55e"
+                           HorizontalTextAlignment="Center">
+                        <Label.Shadow>
+                            <Shadow Brush="#22c55e" Offset="0,0" Radius="15" Opacity="0.5" />
+                        </Label.Shadow>
+                    </Label>
+                    <Label x:Name="ResultDetailsLabel"
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Close/Next Button -->
+                <Button x:Name="ActionButton"
+                        Text="Skip Question"
+                        FontFamily="InterSemiBold"
+                        FontSize="14"
+                        BackgroundColor="#334155"
+                        TextColor="#94a3b8"
+                        CornerRadius="10"
+                        HeightRequest="44"
+                        Clicked="OnActionClicked" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>
