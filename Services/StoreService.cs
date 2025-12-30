@@ -102,23 +102,24 @@ public class StoreService
             // Verify purchase state
             if (purchase.State == PurchaseState.Purchased)
             {
-                // Consume the purchase (for consumable items like coins)
-                var consumed = await billing.ConsumePurchaseAsync(purchase.ProductId, purchase.PurchaseToken);
-
-                if (consumed != null)
+                // Add coins to user account FIRST
+                if (_productCoins.TryGetValue(productId, out var coins))
                 {
-                    // Add coins to user account
-                    if (_productCoins.TryGetValue(productId, out var coins))
-                    {
-                        await _gameStateService.AddCoins(coins);
-                        result.Success = true;
-                        result.CoinsAdded = coins;
-                        System.Diagnostics.Debug.WriteLine($"[StoreService] Successfully purchased {coins} coins");
-                    }
+                    await _gameStateService.AddCoins(coins);
+                    result.Success = true;
+                    result.CoinsAdded = coins;
+                    System.Diagnostics.Debug.WriteLine($"[StoreService] Successfully purchased {coins} coins");
                 }
-                else
+
+                // Then try to consume (for iOS this marks it as consumed so it can be bought again)
+                try
                 {
-                    result.ErrorMessage = "Failed to complete purchase. Please contact support.";
+                    await billing.ConsumePurchaseAsync(purchase.ProductId, purchase.PurchaseToken);
+                }
+                catch (Exception consumeEx)
+                {
+                    // Consume failed but coins already added - that's OK
+                    System.Diagnostics.Debug.WriteLine($"[StoreService] Consume failed (coins already added): {consumeEx.Message}");
                 }
             }
             else if (purchase.State == PurchaseState.Deferred)
@@ -128,7 +129,7 @@ public class StoreService
             }
             else
             {
-                result.ErrorMessage = "Purchase failed. Please try again.";
+                result.ErrorMessage = $"Purchase state: {purchase.State}. Please try again.";
             }
 
             await billing.DisconnectAsync();
