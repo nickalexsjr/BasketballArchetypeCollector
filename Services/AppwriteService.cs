@@ -361,15 +361,16 @@ public class AppwriteService
                     var cooldowns = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(cooldownsJson);
                     if (cooldowns != null)
                     {
-                        if (cooldowns.TryGetValue("luckySpin", out var ls) && DateTime.TryParse(ls, out var lsDate))
+                        // Use RoundtripKind to preserve UTC from ISO 8601 format
+                        if (cooldowns.TryGetValue("luckySpin", out var ls) && DateTime.TryParse(ls, null, System.Globalization.DateTimeStyles.RoundtripKind, out var lsDate))
                             state.LastLuckySpinUtc = lsDate;
-                        if (cooldowns.TryGetValue("mysteryBox", out var mb) && DateTime.TryParse(mb, out var mbDate))
+                        if (cooldowns.TryGetValue("mysteryBox", out var mb) && DateTime.TryParse(mb, null, System.Globalization.DateTimeStyles.RoundtripKind, out var mbDate))
                             state.LastMysteryBoxUtc = mbDate;
-                        if (cooldowns.TryGetValue("coinFlip", out var cf) && DateTime.TryParse(cf, out var cfDate))
+                        if (cooldowns.TryGetValue("coinFlip", out var cf) && DateTime.TryParse(cf, null, System.Globalization.DateTimeStyles.RoundtripKind, out var cfDate))
                             state.LastCoinFlipUtc = cfDate;
-                        if (cooldowns.TryGetValue("trivia", out var tr) && DateTime.TryParse(tr, out var trDate))
+                        if (cooldowns.TryGetValue("trivia", out var tr) && DateTime.TryParse(tr, null, System.Globalization.DateTimeStyles.RoundtripKind, out var trDate))
                             state.LastTriviaUtc = trDate;
-                        if (cooldowns.TryGetValue("dailyClaim", out var dc) && DateTime.TryParse(dc, out var dcDate))
+                        if (cooldowns.TryGetValue("dailyClaim", out var dc) && DateTime.TryParse(dc, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dcDate))
                             state.LastDailyClaimUtc = dcDate;
                         if (cooldowns.TryGetValue("dailyStreak", out var ds) && int.TryParse(ds, out var dsVal))
                             state.DailyStreak = dsVal;

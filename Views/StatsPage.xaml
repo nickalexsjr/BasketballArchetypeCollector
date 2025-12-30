@@ -409,20 +409,13 @@
                     BackgroundColor="#1e293b"
                     Padding="16"
                     IsVisible="{Binding IsLoggedIn, Converter={StaticResource InvertedBoolConverter}}">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Sign in to sync your collection across devices"
-                           FontFamily="InterRegular"
-                           FontSize="14"
-                           TextColor="#94a3b8"
-                           HorizontalTextAlignment="Center" />
-                    <Button Text="Sign In / Sign Up"
-                            Command="{Binding SignInCommand}"
-                            BackgroundColor="#3b82f6"
-                            TextColor="White"
-                            FontFamily="InterSemiBold"
-                            CornerRadius="8"
-                            HeightRequest="44" />
-                </VerticalStackLayout>
+                <Button Text="Sign In / Sign Up"
+                        Command="{Binding SignInCommand}"
+                        BackgroundColor="#3b82f6"
+                        TextColor="White"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="8"
+                        HeightRequest="44" />
             </Border>
 
             <!-- Support Section -->

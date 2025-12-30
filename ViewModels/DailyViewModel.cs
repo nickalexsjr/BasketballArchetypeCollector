@@ -139,48 +139,56 @@ public partial class DailyViewModel : BaseViewModel
     [RelayCommand]
     private async Task ClaimDailyAsync()
     {
-        if (!CanClaim) return;
+        if (!CanClaim || IsBusy) return;
+        IsBusy = true;
 
-        var state = _gameStateService.CurrentState;
-        var now = DateTime.UtcNow;
-        var lastClaim = state.LastDailyClaimUtc;
-
-        // Check if streak should reset
-        if (lastClaim != null && lastClaim != DateTime.MinValue)
+        try
         {
-            var hoursSinceClaim = (now - lastClaim.Value).TotalHours;
-            if (hoursSinceClaim >= 48)
+            var state = _gameStateService.CurrentState;
+            var now = DateTime.UtcNow;
+            var lastClaim = state.LastDailyClaimUtc;
+
+            // Check if streak should reset
+            if (lastClaim != null && lastClaim != DateTime.MinValue)
             {
-                // Streak broken - reset to 1
-                state.DailyStreak = 0;
+                var hoursSinceClaim = (now - lastClaim.Value).TotalHours;
+                if (hoursSinceClaim >= 48)
+                {
+                    // Streak broken - reset to 1
+                    state.DailyStreak = 0;
+                }
             }
+
+            // Increment streak
+            state.DailyStreak++;
+            CurrentStreak = state.DailyStreak;
+
+            // Calculate reward
+            var reward = BaseReward + (state.DailyStreak - 1) * StreakBonus;
+
+            // Update last claim time
+            state.LastDailyClaimUtc = now;
+
+            // Add coins (this also saves and syncs)
+            await _gameStateService.AddCoins(reward);
+
+            // Update UI
+            Coins = state.Coins;
+            CanClaim = false;
+            LastClaimText = "Claimed just now!";
+            ClaimButtonText = "Come back in 24 hours";
+            NextRewardAmount = BaseReward + state.DailyStreak * StreakBonus;
+
+            // Show celebration
+            await Shell.Current.DisplayAlert(
+                "Daily Bonus Claimed!",
+                $"You earned {reward} coins!\n\nStreak: {state.DailyStreak} days",
+                "Awesome!");
         }
-
-        // Increment streak
-        state.DailyStreak++;
-        CurrentStreak = state.DailyStreak;
-
-        // Calculate reward
-        var reward = BaseReward + (state.DailyStreak - 1) * StreakBonus;
-
-        // Update last claim time
-        state.LastDailyClaimUtc = now;
-
-        // Add coins (this also saves and syncs)
-        await _gameStateService.AddCoins(reward);
-
-        // Update UI
-        Coins = state.Coins;
-        CanClaim = false;
-        LastClaimText = "Claimed just now!";
-        ClaimButtonText = "Come back in 24 hours";
-        NextRewardAmount = BaseReward + state.DailyStreak * StreakBonus;
-
-        // Show celebration
-        await Shell.Current.DisplayAlert(
-            "Daily Bonus Claimed!",
-            $"You earned {reward} coins!\n\nStreak: {state.DailyStreak} days",
-            "Awesome!");
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private string FormatTimeAgo(DateTime utcTime)
