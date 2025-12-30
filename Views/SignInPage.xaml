@@ -170,13 +170,21 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Cancel -->
-            <Button Text="Continue without account"
-                    Command="{Binding CancelCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#64748b"
-                    FontFamily="InterRegular"
-                    FontSize="14" />
+            <!-- Guest Mode -->
+            <VerticalStackLayout Spacing="4">
+                <Button Text="Continue as Guest"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#64748b"
+                        FontFamily="InterRegular"
+                        FontSize="14" />
+                <Label Text="⚠️ Guest data is not saved. If you sign up later, you'll start fresh."
+                       FontFamily="InterRegular"
+                       FontSize="11"
+                       TextColor="#f59e0b"
+                       HorizontalTextAlignment="Center"
+                       Padding="20,0" />
+            </VerticalStackLayout>
 
         </VerticalStackLayout>
     </ScrollView>

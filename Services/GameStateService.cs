@@ -28,6 +28,34 @@ public class GameStateService
         _playerDataService = playerDataService;
     }
 
+    /// <summary>
+    /// Clears all local game state data. Used on logout to prevent data leaking between accounts.
+    /// </summary>
+    public async Task ClearLocalDataAsync()
+    {
+        System.Diagnostics.Debug.WriteLine("[GameStateService] Clearing all local data...");
+
+        // Reset in-memory state
+        _currentState = new GameState();
+        _archetypeCache = new Dictionary<string, ArchetypeData>();
+        _currentUserId = null;
+
+        // Clear secure storage
+        try
+        {
+            SecureStorage.Remove(LocalGameStateKey);
+            SecureStorage.Remove(LocalArchetypeCacheKey);
+            System.Diagnostics.Debug.WriteLine("[GameStateService] Local data cleared successfully");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Error clearing secure storage: {ex.Message}");
+        }
+
+        StateChanged?.Invoke(this, EventArgs.Empty);
+        await Task.CompletedTask;
+    }
+
     public async Task InitializeAsync(string? userId)
     {
         _currentUserId = userId;

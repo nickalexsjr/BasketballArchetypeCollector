@@ -88,6 +88,10 @@ public partial class SignInViewModel : BaseViewModel
 
         try
         {
+            // Clear any existing local data before signing in/up
+            // This prevents old guest data or previous user data from showing
+            await _gameStateService.ClearLocalDataAsync();
+
             string? errorMessage;
             if (IsSignUp)
             {
@@ -100,7 +104,7 @@ public partial class SignInViewModel : BaseViewModel
 
             if (errorMessage == null)
             {
-                // Success
+                // Success - initialize with the new user's data
                 var session = await _appwriteService.GetCurrentSession();
                 await _gameStateService.InitializeAsync(session?.UserId);
                 await Shell.Current.GoToAsync("//main/daily");

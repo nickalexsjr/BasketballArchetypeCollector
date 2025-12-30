@@ -211,10 +211,14 @@ public partial class StatsViewModel : BaseViewModel
 
         if (confirm)
         {
+            // Sign out from Appwrite
             await _appwriteService.SignOut();
-            IsLoggedIn = false;
-            UserEmail = string.Empty;
-            UserDisplayName = string.Empty;
+
+            // Clear all local data to prevent it showing for next user
+            await _gameStateService.ClearLocalDataAsync();
+
+            // Navigate to login screen
+            await Shell.Current.GoToAsync("//login");
         }
     }
 
@@ -252,19 +256,14 @@ public partial class StatsViewModel : BaseViewModel
                 {
                     // Delete account and all associated data
                     await _appwriteService.DeleteAccount();
-                    IsLoggedIn = false;
-                    UserEmail = string.Empty;
-                    UserDisplayName = string.Empty;
 
-                    // Clear pack purchase stats
-                    StandardPacksBought = 0;
-                    PremiumPacksBought = 0;
-                    ElitePacksBought = 0;
-                    LegendaryPacksBought = 0;
-                    TotalCoinsSpent = 0;
-                    FavoritePackType = "Sign in to track";
+                    // Clear all local data
+                    await _gameStateService.ClearLocalDataAsync();
 
                     await Shell.Current.DisplayAlert("Account Deleted", "Your account and all data have been deleted.", "OK");
+
+                    // Navigate to login screen
+                    await Shell.Current.GoToAsync("//login");
                 }
                 catch (Exception ex)
                 {
