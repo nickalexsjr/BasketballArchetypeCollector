@@ -37,7 +37,7 @@ public partial class LoadingPage : ContentPage
                 // User is logged in, initialize and go to main
                 System.Diagnostics.Debug.WriteLine($"[LoadingPage] Found existing session for {user.Email}");
                 await _gameStateService.InitializeAsync(user.Id);
-                await Shell.Current.GoToAsync("//main/packs");
+                await Shell.Current.GoToAsync("//main/daily");
             }
             else
             {

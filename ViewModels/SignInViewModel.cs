@@ -103,7 +103,7 @@ public partial class SignInViewModel : BaseViewModel
                 // Success
                 var session = await _appwriteService.GetCurrentSession();
                 await _gameStateService.InitializeAsync(session?.UserId);
-                await Shell.Current.GoToAsync("//main/packs");
+                await Shell.Current.GoToAsync("//main/daily");
             }
             else
             {
@@ -132,6 +132,6 @@ public partial class SignInViewModel : BaseViewModel
     {
         // Continue as guest - initialize game state without user ID
         await _gameStateService.InitializeAsync(null);
-        await Shell.Current.GoToAsync("//main/packs");
+        await Shell.Current.GoToAsync("//main/daily");
     }
 }

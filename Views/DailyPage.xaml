@@ -296,7 +296,7 @@
                                FontSize="36"
                                VerticalOptions="Center" />
                         <VerticalStackLayout Grid.Column="1" Margin="12,0" VerticalOptions="Center">
-                            <Label Text="NBA Trivia"
+                            <Label Text="Trivia"
                                    FontFamily="OrbitronBold"
                                    FontSize="18"
                                    TextColor="#22c55e" />
