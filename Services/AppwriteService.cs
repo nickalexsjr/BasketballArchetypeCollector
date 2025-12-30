@@ -465,29 +465,17 @@ public class AppwriteService
         {
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype querying for playerId: '{playerId}'");
 
-            // Try querying as string first
-            var result = await _databases.ListDocuments(
-                databaseId: AppConfig.DatabaseId,
-                collectionId: AppConfig.ArchetypesCollection,
-                queries: new List<string> { Query.Equal("playerId", playerId), Query.Limit(1) }
+            // Use fetch-documents function with filter (same mechanism that works on app restart)
+            var docs = await FetchDocumentsWithFilter(
+                AppConfig.ArchetypesCollection,
+                new Dictionary<string, string> { { "playerId", playerId } }
             );
 
-            // If not found and playerId is numeric, try as integer
-            if (result.Documents.Count == 0 && int.TryParse(playerId, out var playerIdInt))
-            {
-                System.Diagnostics.Debug.WriteLine($"[AppwriteService] String query failed, trying as integer: {playerIdInt}");
-                result = await _databases.ListDocuments(
-                    databaseId: AppConfig.DatabaseId,
-                    collectionId: AppConfig.ArchetypesCollection,
-                    queries: new List<string> { Query.Equal("playerId", playerIdInt), Query.Limit(1) }
-                );
-            }
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype found {docs.Count} documents");
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype found {result.Documents.Count} documents");
-
-            if (result.Documents.Count > 0)
+            if (docs.Count > 0)
             {
-                var archetype = MapArchetypeFromDocument(result.Documents[0]);
+                var archetype = MapArchetypeFromDocument(docs[0]);
                 System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype mapped: {archetype.Archetype}, URL: {archetype.CrestImageUrl ?? "null"}");
                 return archetype;
             }

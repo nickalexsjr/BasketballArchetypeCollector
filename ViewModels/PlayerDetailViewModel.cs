@@ -83,17 +83,18 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
 
                 // Check for cached archetype locally first
                 var cacheCount = _gameStateService.ArchetypeCache.Count;
-                DebugInfo = $"ID: {Player.Id} | Cache: {cacheCount}";
+                var cacheKeys = string.Join(",", _gameStateService.ArchetypeCache.Keys.TakeLast(5));
+                DebugInfo = $"ID: {Player.Id} | Cache: {cacheCount} | Last5: {cacheKeys}";
 
                 var cached = _gameStateService.GetCachedArchetype(Player.Id);
                 if (cached != null)
                 {
-                    DebugInfo = $"✓ Local cache | {cached.ArchetypeName}";
+                    DebugInfo = $"✓ Local | {cached.ArchetypeName}";
                     SetArchetype(cached);
                     return;
                 }
 
-                DebugInfo = $"ID: {Player.Id} | Cache: {cacheCount} | Not in local";
+                DebugInfo = $"✗ ID: {Player.Id} NOT in cache | Keys: {cacheKeys}";
 
                 // Try to fetch from Appwrite if not cached locally
                 try
