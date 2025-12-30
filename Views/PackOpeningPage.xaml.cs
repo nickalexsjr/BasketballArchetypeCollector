@@ -10,6 +10,7 @@ public partial class PackOpeningPage : ContentPage
     private int _animatedCardCount;
     private bool _isAnimatingLoading;
     private CancellationTokenSource? _loadingAnimationCts;
+    private bool _isFirstAppearing = true;
 
     public PackOpeningPage(PackOpeningViewModel viewModel)
     {
@@ -41,16 +42,54 @@ public partial class PackOpeningPage : ContentPage
     {
         base.OnAppearing();
 
-        // Only auto-start ONCE per page instance
-        if (!_hasStartedOpening && !_viewModel.IsOpening && _viewModel.Cards.Count == 0)
+        System.Diagnostics.Debug.WriteLine($"[PackOpeningPage] OnAppearing: Cards.Count={_viewModel.Cards.Count}, IsOpening={_viewModel.IsOpening}, IsFirstAppearing={_isFirstAppearing}");
+
+        if (_viewModel.Cards.Count > 0 && !_viewModel.IsOpening)
         {
+            // Returning to page with existing cards - ensure they're visible
+            System.Diagnostics.Debug.WriteLine($"[PackOpeningPage] Returning to page with {_viewModel.Cards.Count} existing cards");
+            _animatedCardCount = _viewModel.Cards.Count;
+
+            // Wait for UI to rebuild, then ensure all cards are visible
+            await Task.Delay(50);
+            EnsureCardsVisible();
+        }
+        else if (_isFirstAppearing && !_viewModel.IsOpening && _viewModel.Cards.Count == 0)
+        {
+            // First time opening - start pack opening
+            _isFirstAppearing = false;
             _hasStartedOpening = true;
             _animatedCardCount = 0;
-            await Task.Delay(100); // Small delay for smooth transition
+            await Task.Delay(100);
             if (_viewModel.OpenPackCommand.CanExecute(null))
             {
                 _viewModel.OpenPackCommand.Execute(null);
             }
+        }
+
+        _isFirstAppearing = false;
+    }
+
+    private void EnsureCardsVisible()
+    {
+        try
+        {
+            var children = CardsContainer.Children;
+            System.Diagnostics.Debug.WriteLine($"[PackOpeningPage] EnsureCardsVisible: {children.Count} children");
+
+            foreach (var child in children)
+            {
+                if (child is Border cardBorder)
+                {
+                    cardBorder.Opacity = 1;
+                    cardBorder.Scale = 1;
+                    cardBorder.Rotation = 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PackOpeningPage] EnsureCardsVisible error: {ex.Message}");
         }
     }
 
@@ -120,7 +159,7 @@ public partial class PackOpeningPage : ContentPage
             // Wait a moment for the UI to update
             await Task.Delay(50);
 
-            // Animate any new cards
+            // Animate any new cards (only during pack opening)
             await AnimateNewCards();
         }
         else if (e.Action == NotifyCollectionChangedAction.Reset)

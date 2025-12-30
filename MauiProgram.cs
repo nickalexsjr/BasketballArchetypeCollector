@@ -34,7 +34,8 @@ public static class MauiProgram
         builder.Services.AddTransient<MainViewModel>();
         builder.Services.AddTransient<CollectionViewModel>();
         builder.Services.AddTransient<PackStoreViewModel>();
-        builder.Services.AddTransient<PackOpeningViewModel>();
+        // PackOpeningViewModel is Singleton to preserve cards when navigating to/from PlayerDetail
+        builder.Services.AddSingleton<PackOpeningViewModel>();
         builder.Services.AddTransient<PlayerDetailViewModel>();
         builder.Services.AddTransient<SignInViewModel>();
         builder.Services.AddTransient<DatabaseViewModel>();

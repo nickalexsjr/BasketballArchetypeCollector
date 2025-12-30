@@ -75,15 +75,11 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private bool _hasError;
 
-    // Card detail modal properties
-    [ObservableProperty]
-    private bool _showCardDetail;
-
-    [ObservableProperty]
-    private CardItem? _selectedCardForDetail;
-
     // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
     private bool _hasOpenedPack;
+
+    // Track the last opened pack ID to know when to reset
+    private string? _lastPackId;
 
     public PackOpeningViewModel(GameStateService gameStateService, PlayerDataService playerDataService, AppwriteService appwriteService)
     {
@@ -97,10 +93,19 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     {
         if (query.TryGetValue("packId", out var packIdObj) && packIdObj is string packId)
         {
-            // Reset state for new pack
-            _hasOpenedPack = false;
-            Cards.Clear();
-            Pack = PackConfig.GetPackById(packId);
+            // Only reset if this is a DIFFERENT pack than what we had
+            if (packId != _lastPackId)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PackOpening] New pack: {packId}, resetting state");
+                _lastPackId = packId;
+                _hasOpenedPack = false;
+                Cards.Clear();
+                Pack = PackConfig.GetPackById(packId);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[PackOpening] Same pack: {packId}, preserving {Cards.Count} cards");
+            }
         }
     }
 
@@ -282,34 +287,21 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task GoBack()
     {
+        // Clear state when explicitly going back to pack store
+        _lastPackId = null;
+        _hasOpenedPack = false;
+        Cards.Clear();
         await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]
-    private void ViewCard(CardItem cardItem)
+    private async Task ViewCard(CardItem cardItem)
     {
         if (cardItem?.Player == null) return;
 
-        // Show card detail as modal overlay instead of navigating away
-        // This prevents the issue of losing pack results when navigating back
-        SelectedCardForDetail = cardItem;
-        ShowCardDetail = true;
-    }
-
-    [RelayCommand]
-    private void CloseCardDetail()
-    {
-        ShowCardDetail = false;
-        SelectedCardForDetail = null;
-    }
-
-    [RelayCommand]
-    private async Task ViewFullDetail()
-    {
-        // For when user wants to navigate to the full detail page (e.g., to sell)
-        if (SelectedCardForDetail?.Player == null) return;
-        ShowCardDetail = false;
-        await Shell.Current.GoToAsync($"playerdetail?playerId={SelectedCardForDetail.Player.Id}");
+        // Navigate directly to player detail page
+        // The cards will be preserved because we're using the same ViewModel instance
+        await Shell.Current.GoToAsync($"playerdetail?playerId={cardItem.Player.Id}");
     }
 
     [RelayCommand]
@@ -336,6 +328,11 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 
                 Coins = _gameStateService.CurrentState.Coins;
                 await Shell.Current.DisplayAlert("Sold!", $"You received {SellAllValue} coins.", "OK");
+
+                // Clear state when leaving
+                _lastPackId = null;
+                _hasOpenedPack = false;
+                Cards.Clear();
                 await Shell.Current.GoToAsync("..");
             }
             catch (Exception ex)
