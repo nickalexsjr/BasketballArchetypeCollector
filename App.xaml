@@ -18,6 +18,7 @@
             <converters:SortDirectionConverter x:Key="SortDirectionConverter" />
             <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
             <converters:BoolToTextConverter x:Key="BoolToTextConverter" />
+            <converters:PlayerIdToCrestConverter x:Key="PlayerIdToCrestConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

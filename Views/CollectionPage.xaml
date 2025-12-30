@@ -183,6 +183,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Player">
                         <controls:PlayerCard Player="{Binding}"
+                                             CrestImageUrl="{Binding Id, Converter={StaticResource PlayerIdToCrestConverter}}"
                                              CardSize="Small">
                             <controls:PlayerCard.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CollectionViewModel}}, Path=NavigateToPlayerCommand}"

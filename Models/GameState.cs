@@ -5,6 +5,10 @@ public class GameState
     public int Coins { get; set; } = 1000;
     public List<string> Collection { get; set; } = new();
     public GameStats Stats { get; set; } = new();
+
+    // Daily rewards
+    public int DailyStreak { get; set; } = 0;
+    public DateTime? LastDailyClaimUtc { get; set; }
 }
 
 public class GameStats

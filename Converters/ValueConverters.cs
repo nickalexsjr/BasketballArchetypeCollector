@@ -104,3 +104,25 @@ public class BoolToTextConverter : IValueConverter
     }
 }
 
+public class PlayerIdToCrestConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is string playerId)
+        {
+            var gameStateService = Application.Current?.Handler?.MauiContext?.Services.GetService<BasketballArchetypeCollector.Services.GameStateService>();
+            if (gameStateService != null)
+            {
+                var archetype = gameStateService.GetCachedArchetype(playerId);
+                return archetype?.CrestImageUrl;
+            }
+        }
+        return null;
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+

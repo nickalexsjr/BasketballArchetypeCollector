@@ -70,7 +70,7 @@ public partial class PlayerCard : ContentView
 
     public double CardWidth => CardSize switch
     {
-        CardSizeOption.Small => 85,   // Fits 3+ cards with margins on iPhone
+        CardSizeOption.Small => 105,   // Slightly wider for 3 cards per row
         CardSizeOption.Medium => 130,
         CardSizeOption.Large => 170,
         _ => 130
@@ -78,8 +78,8 @@ public partial class PlayerCard : ContentView
 
     public double CardHeight => CardSize switch
     {
-        CardSizeOption.Small => 140,
-        CardSizeOption.Medium => 210,  // Taller to fit crest + name
+        CardSizeOption.Small => 155,   // Taller to fit crest + name on small cards
+        CardSizeOption.Medium => 210,
         CardSizeOption.Large => 280,
         _ => 210
     };

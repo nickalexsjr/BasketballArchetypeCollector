@@ -81,6 +81,11 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 IsOwned = _gameStateService.OwnsCard(Player.Id);
                 Coins = _gameStateService.CurrentState.Coins;
 
+                // Notify UI about rarity-dependent properties
+                OnPropertyChanged(nameof(RarityColor));
+                OnPropertyChanged(nameof(RarityBackgroundColor));
+                OnPropertyChanged(nameof(EraColor));
+
                 // Check for cached archetype locally first
                 var cacheCount = _gameStateService.ArchetypeCache.Count;
                 var cacheKeys = string.Join(",", _gameStateService.ArchetypeCache.Keys.TakeLast(5));

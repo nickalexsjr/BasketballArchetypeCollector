@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BasketballArchetypeCollector.ViewModels"
+             xmlns:controls="clr-namespace:BasketballArchetypeCollector.Controls"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="BasketballArchetypeCollector.Views.DailyPage"
+             x:DataType="vm:DailyViewModel"
+             BackgroundColor="#0f172a"
+             Shell.NavBarIsVisible="False"
+             ios:Page.UseSafeArea="True">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                BackgroundColor="#0f172a"
+                Padding="20,16"
+                StrokeThickness="0">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                    <Label Text="DAILY REWARDS"
+                           FontFamily="OrbitronBold"
+                           FontSize="24"
+                           TextColor="White">
+                        <Label.Shadow>
+                            <Shadow Brush="#22c55e"
+                                    Offset="0,0"
+                                    Radius="10"
+                                    Opacity="0.3" />
+                        </Label.Shadow>
+                    </Label>
+                    <Label Text="Come back daily to earn bonus coins!"
+                           FontFamily="InterRegular"
+                           FontSize="12"
+                           TextColor="#94a3b8" />
+                </VerticalStackLayout>
+
+                <controls:CoinDisplay Grid.Column="1"
+                                      Coins="{Binding Coins}"
+                                      VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="20">
+
+                <!-- Streak Display -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="#1e293b"
+                        Stroke="#22c55e"
+                        StrokeThickness="2"
+                        Padding="24">
+                    <VerticalStackLayout Spacing="16" HorizontalOptions="Center">
+                        <Label Text="🔥"
+                               FontSize="48"
+                               HorizontalOptions="Center" />
+                        <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                            <Label Text="{Binding CurrentStreak, StringFormat='{0} Day Streak'}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="28"
+                                   TextColor="#22c55e"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding LastClaimText}"
+                                   FontFamily="InterRegular"
+                                   FontSize="14"
+                                   TextColor="#94a3b8"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Daily Claim Button -->
+                <Border StrokeShape="RoundRectangle 16"
+                        BackgroundColor="{Binding CanClaim, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#14532d|#1e293b}"
+                        Stroke="{Binding CanClaim, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#22c55e|#334155}"
+                        StrokeThickness="2"
+                        Padding="24">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ClaimDailyCommand}" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Label Text="{Binding CanClaim, Converter={StaticResource BoolToTextConverter}, ConverterParameter=🎁|✅}"
+                               FontSize="48"
+                               HorizontalOptions="Center" />
+                        <Label Text="Daily Bonus"
+                               FontFamily="OrbitronBold"
+                               FontSize="20"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center" />
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="🪙"
+                                   FontSize="20"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding NextRewardAmount, StringFormat='+{0} Coins'}"
+                                   FontFamily="OrbitronBold"
+                                   FontSize="18"
+                                   TextColor="#fbbf24"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding ClaimButtonText}"
+                               FontFamily="InterSemiBold"
+                               FontSize="14"
+                               TextColor="{Binding CanClaim, Converter={StaticResource BoolToColorConverter}, ConverterParameter=#86efac|#64748b}"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Reward Info -->
+                <Border StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1e293b"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="How It Works"
+                               FontFamily="OrbitronBold"
+                               FontSize="16"
+                               TextColor="White" />
+                        <Label Text="• Claim your daily bonus once every 24 hours"
+                               FontFamily="InterRegular"
+                               FontSize="13"
+                               TextColor="#94a3b8" />
+                        <Label Text="• Each day you claim, your streak increases"
+                               FontFamily="InterRegular"
+                               FontSize="13"
+                               TextColor="#94a3b8" />
+                        <Label Text="• Rewards increase by 50 coins per streak day!"
+                               FontFamily="InterRegular"
+                               FontSize="13"
+                               TextColor="#22c55e" />
+                        <Label Text="• Miss a day and your streak resets to 1"
+                               FontFamily="InterRegular"
+                               FontSize="13"
+                               TextColor="#f87171" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Reward Preview -->
+                <Border StrokeShape="RoundRectangle 12"
+                        BackgroundColor="#1e293b"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Streak Rewards"
+                               FontFamily="OrbitronBold"
+                               FontSize="16"
+                               TextColor="White" />
+                        <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center">
+                                <Label Text="Day 1" FontFamily="InterSemiBold" FontSize="11" TextColor="#64748b" HorizontalTextAlignment="Center" />
+                                <Label Text="100" FontFamily="OrbitronBold" FontSize="14" TextColor="#fbbf24" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                                <Label Text="Day 2" FontFamily="InterSemiBold" FontSize="11" TextColor="#64748b" HorizontalTextAlignment="Center" />
+                                <Label Text="150" FontFamily="OrbitronBold" FontSize="14" TextColor="#fbbf24" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center">
+                                <Label Text="Day 3" FontFamily="InterSemiBold" FontSize="11" TextColor="#64748b" HorizontalTextAlignment="Center" />
+                                <Label Text="200" FontFamily="OrbitronBold" FontSize="14" TextColor="#fbbf24" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center">
+                                <Label Text="Day 4" FontFamily="InterSemiBold" FontSize="11" TextColor="#64748b" HorizontalTextAlignment="Center" />
+                                <Label Text="250" FontFamily="OrbitronBold" FontSize="14" TextColor="#fbbf24" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="4" HorizontalOptions="Center">
+                                <Label Text="Day 5+" FontFamily="InterSemiBold" FontSize="11" TextColor="#22c55e" HorizontalTextAlignment="Center" />
+                                <Label Text="300+" FontFamily="OrbitronBold" FontSize="14" TextColor="#22c55e" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
