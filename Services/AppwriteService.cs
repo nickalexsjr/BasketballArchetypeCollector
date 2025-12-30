@@ -465,12 +465,23 @@ public class AppwriteService
         {
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype querying for playerId: '{playerId}'");
 
-            // Query by playerId field
+            // Try querying as string first
             var result = await _databases.ListDocuments(
                 databaseId: AppConfig.DatabaseId,
                 collectionId: AppConfig.ArchetypesCollection,
                 queries: new List<string> { Query.Equal("playerId", playerId), Query.Limit(1) }
             );
+
+            // If not found and playerId is numeric, try as integer
+            if (result.Documents.Count == 0 && int.TryParse(playerId, out var playerIdInt))
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] String query failed, trying as integer: {playerIdInt}");
+                result = await _databases.ListDocuments(
+                    databaseId: AppConfig.DatabaseId,
+                    collectionId: AppConfig.ArchetypesCollection,
+                    queries: new List<string> { Query.Equal("playerId", playerIdInt), Query.Limit(1) }
+                );
+            }
 
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] GetCachedArchetype found {result.Documents.Count} documents");
 
