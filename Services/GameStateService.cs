@@ -203,7 +203,15 @@ public class GameStateService
         return _archetypeCache.TryGetValue(playerId, out var archetype) ? archetype : null;
     }
 
-    public async Task<List<Player>> OpenPack(Pack pack)
+    // Result class for pack opening with duplicate info
+    public class PackOpenResult
+    {
+        public Player Player { get; set; } = null!;
+        public bool IsDuplicate { get; set; }
+        public int DuplicateCoins { get; set; }
+    }
+
+    public async Task<List<PackOpenResult>> OpenPackWithDuplicateInfo(Pack pack)
     {
         if (!CanAfford(pack.Cost))
         {
@@ -217,13 +225,13 @@ public class GameStateService
         _currentState.Coins -= pack.Cost;
         _currentState.Stats.PacksOpened++;
 
-        var cards = new List<Player>();
+        var results = new List<PackOpenResult>();
         var random = new Random();
 
         for (int i = 0; i < pack.Cards; i++)
         {
             var player = GetRandomPlayer(pack, random);
-            cards.Add(player);
+            var result = new PackOpenResult { Player = player };
 
             if (!_currentState.Collection.Contains(player.Id))
             {
@@ -231,6 +239,8 @@ public class GameStateService
                 _currentState.Collection.Add(player.Id);
                 _currentState.Stats.CardsCollected++;
                 _currentState.Stats.IncrementRarityCount(player.Rarity);
+                result.IsDuplicate = false;
+                result.DuplicateCoins = 0;
                 System.Diagnostics.Debug.WriteLine($"[GameStateService] Added NEW card: {player.FullName} (ID: {player.Id})");
             }
             else
@@ -238,8 +248,12 @@ public class GameStateService
                 // Duplicate - give half coin value
                 var sellValue = RarityConfig.GetSellValue(player.Rarity);
                 _currentState.Coins += sellValue;
+                result.IsDuplicate = true;
+                result.DuplicateCoins = sellValue;
                 System.Diagnostics.Debug.WriteLine($"[GameStateService] DUPLICATE card: {player.FullName}, +{sellValue} coins");
             }
+
+            results.Add(result);
         }
 
         System.Diagnostics.Debug.WriteLine($"[GameStateService] After: Coins={_currentState.Coins}, Collection.Count={_currentState.Collection.Count}");
@@ -258,7 +272,7 @@ public class GameStateService
                     PackId = pack.Id,
                     Cost = pack.Cost,
                     PurchasedAt = DateTime.UtcNow,
-                    PlayersReceived = cards.Select(c => c.Id).ToList()
+                    PlayersReceived = results.Select(r => r.Player.Id).ToList()
                 };
                 await _appwriteService.SavePackPurchase(_currentUserId, purchase);
                 System.Diagnostics.Debug.WriteLine($"[GameStateService] Pack purchase recorded successfully");
@@ -273,7 +287,14 @@ public class GameStateService
             System.Diagnostics.Debug.WriteLine($"[GameStateService] Skipping pack purchase record - no user ID (guest mode)");
         }
 
-        return cards;
+        return results;
+    }
+
+    // Backwards-compatible method that just returns players
+    public async Task<List<Player>> OpenPack(Pack pack)
+    {
+        var results = await OpenPackWithDuplicateInfo(pack);
+        return results.Select(r => r.Player).ToList();
     }
 
     private Player GetRandomPlayer(Pack pack, Random random)

@@ -186,14 +186,36 @@
                                             Radius="20"
                                             Opacity="0.7" />
                                 </Border.Shadow>
-                                <controls:PlayerCard Player="{Binding Player}"
-                                                     CrestImageUrl="{Binding CrestImageUrl}"
-                                                     CardSize="Medium">
-                                    <controls:PlayerCard.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PackOpeningViewModel}}, Path=ViewCardCommand}"
-                                                              CommandParameter="{Binding}" />
-                                    </controls:PlayerCard.GestureRecognizers>
-                                </controls:PlayerCard>
+                                <Grid>
+                                    <controls:PlayerCard Player="{Binding Player}"
+                                                         CrestImageUrl="{Binding CrestImageUrl}"
+                                                         CardSize="Medium"
+                                                         Opacity="{Binding IsDuplicate, Converter={StaticResource BoolToOpacityConverter}}">
+                                        <controls:PlayerCard.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PackOpeningViewModel}}, Path=ViewCardCommand}"
+                                                                  CommandParameter="{Binding}" />
+                                        </controls:PlayerCard.GestureRecognizers>
+                                    </controls:PlayerCard>
+                                    <!-- Duplicate overlay -->
+                                    <Border IsVisible="{Binding IsDuplicate}"
+                                            BackgroundColor="#CC000000"
+                                            StrokeShape="RoundRectangle 12">
+                                        <VerticalStackLayout VerticalOptions="Center"
+                                                             HorizontalOptions="Center"
+                                                             Spacing="4">
+                                            <Label Text="DUPLICATE"
+                                                   FontFamily="OrbitronBold"
+                                                   FontSize="14"
+                                                   TextColor="#ef4444"
+                                                   HorizontalTextAlignment="Center" />
+                                            <Label Text="{Binding DuplicateCoins, StringFormat='+{0} coins'}"
+                                                   FontFamily="InterSemiBold"
+                                                   FontSize="16"
+                                                   TextColor="#22c55e"
+                                                   HorizontalTextAlignment="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>

@@ -15,12 +15,20 @@ public partial class CardItem : ObservableObject
     [ObservableProperty]
     private string? _crestImageUrl;
 
+    [ObservableProperty]
+    private bool _isDuplicate;
+
+    [ObservableProperty]
+    private int _duplicateCoins;
+
     public string RarityColor => RarityConfig.GetInfo(Player.Rarity).PrimaryColor;
 
-    public CardItem(Player player, string? crestImageUrl = null)
+    public CardItem(Player player, string? crestImageUrl = null, bool isDuplicate = false, int duplicateCoins = 0)
     {
         Player = player;
         CrestImageUrl = crestImageUrl;
+        IsDuplicate = isDuplicate;
+        DuplicateCoins = duplicateCoins;
     }
 }
 
@@ -142,26 +150,30 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             ProgressBarWidth = 50;
             await Task.Delay(300);
 
-            // Open the pack and get cards
-            var players = await _gameStateService.OpenPack(Pack);
+            // Open the pack and get cards with duplicate info
+            var packResults = await _gameStateService.OpenPackWithDuplicateInfo(Pack);
 
             LoadingMessage = "Checking rarities...";
             LoadingProgress = 30;
             ProgressBarWidth = 75;
             await Task.Delay(200);
 
-            // Calculate sell all value
+            // Calculate sell all value (only for non-duplicates since duplicates are auto-sold)
             SellAllValue = 0;
-            foreach (var player in players)
+            foreach (var result in packResults)
             {
-                SellAllValue += RarityConfig.GetSellValue(player.Rarity);
+                if (!result.IsDuplicate)
+                {
+                    SellAllValue += RarityConfig.GetSellValue(result.Player.Rarity);
+                }
             }
 
             // Generate crests for each card (like the HTML version) and add to Cards collection
-            var totalCards = players.Count;
+            var totalCards = packResults.Count;
             for (int i = 0; i < totalCards; i++)
             {
-                var player = players[i];
+                var packResult = packResults[i];
+                var player = packResult.Player;
                 var progressPercent = 30 + (int)((i + 1) / (float)totalCards * 60); // 30% to 90%
 
                 LoadingMessage = $"Creating crest {i + 1} of {totalCards}...";
@@ -231,8 +243,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                     await Task.Delay(300);
                 }
 
-                // Add to Cards collection with crest URL
-                Cards.Add(new CardItem(player, crestUrl));
+                // Add to Cards collection with crest URL and duplicate info
+                Cards.Add(new CardItem(player, crestUrl, packResult.IsDuplicate, packResult.DuplicateCoins));
             }
 
             Coins = _gameStateService.CurrentState.Coins;
@@ -324,6 +336,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     private async Task ViewCard(CardItem cardItem)
     {
         if (cardItem?.Player == null) return;
+
+        // Block viewing duplicates - they're already auto-sold
+        if (cardItem.IsDuplicate) return;
 
         // Navigate directly to player detail page
         // The cards will be preserved because we're using the same ViewModel instance
