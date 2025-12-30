@@ -119,6 +119,13 @@ public partial class CollectionViewModel : BaseViewModel
 
     private void ApplyFilters()
     {
+        // Don't apply filters if players haven't loaded yet
+        if (_allPlayers.Count == 0)
+        {
+            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] ApplyFilters: Skipping - players not loaded yet");
+            return;
+        }
+
         System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] ApplyFilters: AllPlayers={_allPlayers.Count}, Ownership={SelectedOwnership}, OwnedCount={_gameStateService.CurrentState.Collection.Count}");
 
         var filtered = _allPlayers.AsEnumerable();
