@@ -188,7 +188,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                         {
                             await _gameStateService.CacheArchetype(archetype);
                             crestUrl = archetype.CrestImageUrl;
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: Generated crest for {player.FullName}: {archetype.ArchetypeName}, URL: {crestUrl ?? "null"}");
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: Generated crest for {player.FullName} (ID: {player.Id}): {archetype.ArchetypeName}, URL: {crestUrl ?? "null"}");
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Cache now has {_gameStateService.ArchetypeCache.Count} entries");
                         }
                         else
                         {

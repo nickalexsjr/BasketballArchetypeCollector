@@ -79,13 +79,16 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 Coins = _gameStateService.CurrentState.Coins;
 
                 // Check for cached archetype locally first
+                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Looking up archetype for PlayerId: '{Player.Id}'");
+                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Archetype cache has {_gameStateService.ArchetypeCache.Count} entries");
                 var cached = _gameStateService.GetCachedArchetype(Player.Id);
                 if (cached != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Found local cached archetype for {Player.FullName}");
+                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Found local cached archetype for {Player.FullName}: {cached.ArchetypeName}");
                     SetArchetype(cached);
                     return;
                 }
+                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] No local cache found for '{Player.Id}'");
 
                 // Try to fetch from Appwrite if not cached locally
                 try
@@ -106,25 +109,8 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                     System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype from Appwrite: {ex.Message}");
                 }
 
-                // If player is owned but no archetype exists, generate one now
-                if (IsOwned)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] No archetype found, generating for owned player: {Player.FullName}");
-                    try
-                    {
-                        var newArchetype = await _appwriteService.GenerateArchetype(Player);
-                        if (newArchetype != null)
-                        {
-                            await _gameStateService.CacheArchetype(newArchetype);
-                            SetArchetype(newArchetype);
-                            System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Generated archetype for {Player.FullName}: {newArchetype.ArchetypeName}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to generate archetype: {ex.Message}");
-                    }
-                }
+                // No archetype found - log for debugging
+                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] No archetype found for {Player.FullName} (IsOwned: {IsOwned})");
             }
             else
             {
