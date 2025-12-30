@@ -547,6 +547,32 @@ public class AppwriteService
         return cache;
     }
 
+    public async Task DeleteCachedArchetype(string playerId)
+    {
+        try
+        {
+            // Find the document with this playerId
+            var docs = await FetchDocumentsWithFilter(
+                AppConfig.ArchetypesCollection,
+                new Dictionary<string, string> { { "playerId", playerId } }
+            );
+
+            foreach (var doc in docs)
+            {
+                await _databases.DeleteDocument(
+                    databaseId: AppConfig.DatabaseId,
+                    collectionId: AppConfig.ArchetypesCollection,
+                    documentId: doc.Id
+                );
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Deleted archetype for player {playerId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] DeleteCachedArchetype error: {ex.Message}");
+        }
+    }
+
     private ArchetypeData MapArchetypeFromDocument(Document doc)
     {
         return new ArchetypeData

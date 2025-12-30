@@ -334,6 +334,24 @@ public class GameStateService
         _currentState.Collection.Remove(playerId);
         _currentState.Coins += sellValue;
 
+        // Remove archetype from cache when card is sold
+        if (_archetypeCache.Remove(playerId))
+        {
+            await SaveLocalArchetypeCache();
+            // Also remove from Appwrite if logged in
+            if (!string.IsNullOrEmpty(_currentUserId))
+            {
+                try
+                {
+                    await _appwriteService.DeleteCachedArchetype(playerId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[GameStateService] Failed to delete cloud archetype: {ex.Message}");
+                }
+            }
+        }
+
         await SaveAndSync();
         return sellValue;
     }
