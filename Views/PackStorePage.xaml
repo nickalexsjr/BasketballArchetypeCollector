@@ -53,7 +53,7 @@
                                    FontFamily="OrbitronBold"
                                    FontSize="18"
                                    TextColor="#3b82f6" />
-                            <Label Text="5 cards - Basic odds"
+                            <Label Text="3 cards - Basic odds"
                                    FontFamily="InterRegular"
                                    FontSize="12"
                                    TextColor="#94a3b8" />
@@ -94,7 +94,7 @@
                                    FontFamily="OrbitronBold"
                                    FontSize="18"
                                    TextColor="#a855f7" />
-                            <Label Text="5 cards - 2x rare chance, guaranteed Uncommon+"
+                            <Label Text="3 cards - 2x rare chance, guaranteed Uncommon+"
                                    FontFamily="InterRegular"
                                    FontSize="12"
                                    TextColor="#94a3b8" />
@@ -145,7 +145,7 @@
                                    FontFamily="OrbitronBold"
                                    FontSize="18"
                                    TextColor="#f97316" />
-                            <Label Text="5 cards - 3x epic, 2x legendary, guaranteed Rare+"
+                            <Label Text="3 cards - 3x epic, 2x legendary, guaranteed Rare+"
                                    FontFamily="InterRegular"
                                    FontSize="12"
                                    TextColor="#94a3b8" />
@@ -196,7 +196,7 @@
                                    FontFamily="OrbitronBold"
                                    FontSize="18"
                                    TextColor="#fbbf24" />
-                            <Label Text="5 cards - 5x legendary, 2x GOAT chance, guaranteed Epic+"
+                            <Label Text="3 cards - 5x legendary, 2x GOAT chance, guaranteed Epic+"
                                    FontFamily="InterRegular"
                                    FontSize="12"
                                    TextColor="#94a3b8" />
