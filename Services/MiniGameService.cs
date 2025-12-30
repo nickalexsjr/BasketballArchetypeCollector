@@ -22,7 +22,7 @@ public class MiniGameService
     public const double LuckySpinCooldownHours = 3;
     public const double MysteryBoxCooldownHours = 6;
     public const double CoinFlipCooldownHours = 4;
-    public const double TriviaCooldownHours = 2;
+    public const double TriviaCooldownHours = 16;
 
     // Lucky Spin prize tiers (coins, weight)
     private readonly (int coins, int weight)[] _luckySpinPrizes = new[]
@@ -140,7 +140,7 @@ public class MiniGameService
     #region Coin Flip
 
     public const int MinBet = 25;
-    public const int MaxBet = 500;
+    public const int MaxBet = 2500;
     public const int BetStep = 25;
 
     public bool CanAffordBet(int amount)

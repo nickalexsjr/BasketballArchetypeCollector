@@ -1,7 +1,7 @@
 {
   "name": "generate-archetype",
-  "version": "2.0.0",
-  "description": "Generate player archetype using OpenAI GPT-4 and ModelsLab (native fetch, no SDK)",
+  "version": "3.0.0",
+  "description": "Generate player archetype using OpenAI GPT-4 and ModelsLab (native fetch, no SDK, no-text enforced)",
   "main": "src/main.js",
   "dependencies": {
     "node-appwrite": "^12.0.0"

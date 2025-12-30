@@ -95,6 +95,34 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         _playerDataService = playerDataService;
         _appwriteService = appwriteService;
         Title = "Open Pack";
+
+        // Subscribe to state cleared event to clear pack state when user signs out/in
+        _gameStateService.StateCleared += OnStateCleared;
+    }
+
+    private void OnStateCleared(object? sender, EventArgs e)
+    {
+        // When game state is cleared (sign out/in), clear the pack opening state
+        // This prevents opened pack cards from persisting across user sessions
+        // Use MainThread to ensure UI-bound properties are updated safely
+        MainThread.BeginInvokeOnMainThread(ClearPackState);
+    }
+
+    /// <summary>
+    /// Clears all pack opening state. Called when user signs out or switches accounts.
+    /// </summary>
+    public void ClearPackState()
+    {
+        System.Diagnostics.Debug.WriteLine("[PackOpening] Clearing pack state due to account change");
+        _lastPackId = null;
+        _hasOpenedPack = false;
+        Cards.Clear();
+        Pack = null;
+        CurrentCard = null;
+        CurrentCardIndex = 0;
+        AllRevealed = false;
+        IsOpening = false;
+        IsRevealing = false;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

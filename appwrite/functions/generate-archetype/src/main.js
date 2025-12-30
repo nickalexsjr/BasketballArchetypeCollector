@@ -1,9 +1,14 @@
 /**
- * Generate Archetype Function v2
+ * Generate Archetype Function v3
  *
- * FIXED: Now uses native fetch (like SwishPot functions) instead of OpenAI SDK.
- * The OpenAI SDK has internal timeouts that cause 30-second crashes even when
- * Appwrite function timeout is set to 120+ seconds.
+ * v3 changes:
+ * - Stronger no-text enforcement in prompts (DALL-E and ModelsLab)
+ * - Faster generation: 15 inference steps, 1.5s poll interval
+ *
+ * v2 changes:
+ * - Uses native fetch (like SwishPot functions) instead of OpenAI SDK.
+ * - The OpenAI SDK has internal timeouts that cause 30-second crashes even when
+ *   Appwrite function timeout is set to 120+ seconds.
  *
  * ModelsLab image generation works 100% - the issue was the OpenAI SDK.
  */
@@ -99,7 +104,7 @@ async function callDallEWithFetch(apiKey, prompt, log) {
         },
         body: JSON.stringify({
             model: 'dall-e-2',
-            prompt: `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
+            prompt: `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, absolutely no text no letters no words no numbers no writing no typography, no people, centered composition, dark background, metallic accents.`,
             n: 1,
             size: '256x256'
         })
@@ -135,12 +140,12 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
         key: apiKey,
         model_id: "sdxl",
         prompt: enhancedPrompt,
-        negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality, ugly, deformed, amateur",
+        negative_prompt: "text, words, letters, numbers, writing, typography, font, alphabet, signature, watermark, label, title, caption, inscription, human, person, face, body, realistic photo, blurry, low quality, ugly, deformed, amateur",
         width: "512",
         height: "512",
         samples: "1",
-        num_inference_steps: "20",  // Reduced from 25 for faster generation
-        guidance_scale: 7,          // Slightly lower for speed
+        num_inference_steps: "15",  // Reduced for faster generation (SDXL still good at 15)
+        guidance_scale: 6.5,        // Lower for speed
         safety_checker: "no",
         enhance_prompt: "no",       // Skip prompt enhancement for speed
         seed: null,
@@ -212,8 +217,8 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
                 throw new Error('ModelsLab timeout: not enough time for next poll');
             }
 
-            // Wait 2 seconds before next poll (reduced from 3s)
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Wait 1.5 seconds before next poll
+            await new Promise(resolve => setTimeout(resolve, 1500));
         }
 
         throw new Error('ModelsLab timeout: max poll attempts reached');

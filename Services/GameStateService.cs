@@ -21,6 +21,7 @@ public class GameStateService
     public bool IsLoggedIn => !string.IsNullOrEmpty(_currentUserId);
 
     public event EventHandler? StateChanged;
+    public event EventHandler? StateCleared;
 
     public GameStateService(AppwriteService appwriteService, PlayerDataService playerDataService)
     {
@@ -53,6 +54,7 @@ public class GameStateService
         }
 
         StateChanged?.Invoke(this, EventArgs.Empty);
+        StateCleared?.Invoke(this, EventArgs.Empty);
         await Task.CompletedTask;
     }
 
