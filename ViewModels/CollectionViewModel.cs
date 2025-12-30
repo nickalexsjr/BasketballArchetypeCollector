@@ -36,7 +36,7 @@ public partial class CollectionViewModel : BaseViewModel
     private string _selectedEra = "All";
 
     [ObservableProperty]
-    private string _selectedOwnership = "All";
+    private string _selectedOwnership = "Owned";
 
     [ObservableProperty]
     private string _selectedSort = "Overall";
@@ -100,12 +100,29 @@ public partial class CollectionViewModel : BaseViewModel
         try
         {
             System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] LoadPlayersAsync starting...");
+
+            // Load player data
             await _playerDataService.LoadPlayersAsync();
             _allPlayers = _playerDataService.Players.Where(p => p.HasStats).ToList();
             TotalPlayers = _allPlayers.Count;
+            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] Loaded {_allPlayers.Count} players from data service");
+
+            // Wait briefly for GameState to load if collection is empty
+            // This handles race condition when user navigates to Collection before HomePage finishes
+            int waitAttempts = 0;
+            while (_gameStateService.CurrentState.Collection.Count == 0 && waitAttempts < 15)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] Waiting for GameState to load... attempt {waitAttempts + 1}");
+                await Task.Delay(200);
+                waitAttempts++;
+            }
+
             _hasLoadedOnce = true;
-            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] Loaded {_allPlayers.Count} players");
             UpdateStats();
+
+            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] GameState Collection: {_gameStateService.CurrentState.Collection.Count} cards");
+            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] SelectedOwnership: {SelectedOwnership}");
+
             ApplyFilters();
         }
         catch (Exception ex)

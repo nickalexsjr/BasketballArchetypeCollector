@@ -619,23 +619,37 @@ public class AppwriteService
             if (execution.Status != "completed")
             {
                 System.Diagnostics.Debug.WriteLine($"[AppwriteService] Execution did not complete in time. Status: {execution.Status}");
+                // Even if async didn't complete, check if archetype was saved to DB
+                var dbArchetype = await GetCachedArchetype(playerId);
+                if (dbArchetype != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AppwriteService] Found archetype in DB despite async status: {dbArchetype.Archetype}");
+                    return dbArchetype;
+                }
                 return null;
             }
 
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function response length: {execution.ResponseBody?.Length ?? 0}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] ResponseStatusCode: {execution.ResponseStatusCode}");
 
             if (!string.IsNullOrEmpty(execution.ResponseBody))
             {
                 System.Diagnostics.Debug.WriteLine($"[AppwriteService] ResponseBody: {execution.ResponseBody.Substring(0, Math.Min(500, execution.ResponseBody.Length))}");
             }
 
-            if (string.IsNullOrEmpty(execution.ResponseBody))
+            // First try to parse the response
+            if (!string.IsNullOrEmpty(execution.ResponseBody))
             {
-                System.Diagnostics.Debug.WriteLine("[AppwriteService] Empty response from generate-archetype function");
-                return null;
+                var parsed = ParseArchetypeResponse(execution.ResponseBody, playerId, playerName);
+                if (parsed != null)
+                {
+                    return parsed;
+                }
             }
 
-            return ParseArchetypeResponse(execution.ResponseBody, playerId, playerName);
+            // Fallback: Function completed but response empty/invalid - fetch from DB
+            System.Diagnostics.Debug.WriteLine("[AppwriteService] Falling back to DB fetch after function completed");
+            return await GetCachedArchetype(playerId);
         }
         catch (Exception ex)
         {

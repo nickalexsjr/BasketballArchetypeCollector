@@ -2,16 +2,22 @@
 
 A .NET MAUI iOS app that replicates the HTML NBA Cards Archetype game. Collect basketball player cards, open packs, and generate unique AI-powered archetype crests for each player.
 
-## Version: 1.5.3
+## Version: 1.5.5
 
 **Status: PRODUCTION READY**
 
 ---
 
+## What's New in v1.5.5
+
+- **Critical Fix** - Collection page now waits for GameState to load before filtering (fixes "no cards found" on initial load)
+- **Critical Fix** - Archetype generation now falls back to DB fetch if async response parsing fails
+- **Bugfix** - Collection filter restored to "Owned" with proper race condition handling
+- **Bugfix** - Added detailed logging for archetype generation and collection loading
+
 ## What's New in v1.5.3
 
 - **Critical Fix** - Appwrite function now uses ASYNC execution with polling (avoids 30s timeout)
-- **Bugfix** - Collection page now defaults to "All" filter (fixes empty collection on first load)
 - **Bugfix** - Player detail page now fetches archetype from Appwrite if not cached locally
 - **Improvement** - Card sizes reduced for better fit on screen (Small: 85x120)
 - **Improvement** - Added "All" option to ownership filter
