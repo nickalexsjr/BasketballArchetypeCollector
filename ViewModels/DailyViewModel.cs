@@ -122,12 +122,11 @@ public partial class DailyViewModel : BaseViewModel
         // Calculate reward
         var reward = BaseReward + (state.DailyStreak - 1) * StreakBonus;
 
-        // Add coins
-        state.Coins += reward;
+        // Update last claim time
         state.LastDailyClaimUtc = now;
 
-        // Save state
-        await _gameStateService.SaveStateAsync();
+        // Add coins (this also saves and syncs)
+        await _gameStateService.AddCoins(reward);
 
         // Update UI
         Coins = state.Coins;
