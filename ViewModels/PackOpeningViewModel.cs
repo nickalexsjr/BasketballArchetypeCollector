@@ -180,26 +180,41 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 else
                 {
                     // Generate new crest - fail silently, don't block pack opening
+                    ArchetypeData? archetype = null;
                     try
                     {
                         System.Diagnostics.Debug.WriteLine($"[PackOpening] Calling GenerateArchetype for {player.FullName}...");
-                        var archetype = await _appwriteService.GenerateArchetype(player);
-                        if (archetype != null)
-                        {
-                            await _gameStateService.CacheArchetype(archetype);
-                            crestUrl = archetype.CrestImageUrl;
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: Generated crest for {player.FullName} (ID: {player.Id}): {archetype.ArchetypeName}, URL: {crestUrl ?? "null"}");
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Cache now has {_gameStateService.ArchetypeCache.Count} entries");
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] GenerateArchetype returned null for {player.FullName}");
-                        }
+                        archetype = await _appwriteService.GenerateArchetype(player);
                     }
                     catch (Exception crestEx)
                     {
-                        // Crest generation fails silently - don't show error to user
-                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest error for {player.FullName}: {crestEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest generation error for {player.FullName}: {crestEx.Message}");
+                    }
+
+                    // If generation failed, try to fetch from Appwrite DB (function may have saved it)
+                    if (archetype == null)
+                    {
+                        try
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] Checking Appwrite DB for {player.FullName}...");
+                            archetype = await _appwriteService.GetCachedArchetype(player.Id);
+                        }
+                        catch (Exception dbEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] DB fetch error for {player.FullName}: {dbEx.Message}");
+                        }
+                    }
+
+                    if (archetype != null)
+                    {
+                        await _gameStateService.CacheArchetype(archetype);
+                        crestUrl = archetype.CrestImageUrl;
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: Got archetype for {player.FullName} (ID: {player.Id}): {archetype.ArchetypeName}, URL: {crestUrl ?? "null"}");
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Cache now has {_gameStateService.ArchetypeCache.Count} entries");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] No archetype available for {player.FullName}");
                     }
 
                     // Small delay between crest generations to avoid rate limits
