@@ -228,15 +228,28 @@ public class GameStateService
         // Record pack purchase to Appwrite (if logged in)
         if (!string.IsNullOrEmpty(_currentUserId))
         {
-            var purchase = new PackPurchase
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Recording pack purchase for user {_currentUserId}");
+            try
             {
-                UserId = _currentUserId,
-                PackId = pack.Id,
-                Cost = pack.Cost,
-                PurchasedAt = DateTime.UtcNow,
-                PlayersReceived = cards.Select(c => c.Id).ToList()
-            };
-            await _appwriteService.SavePackPurchase(_currentUserId, purchase);
+                var purchase = new PackPurchase
+                {
+                    UserId = _currentUserId,
+                    PackId = pack.Id,
+                    Cost = pack.Cost,
+                    PurchasedAt = DateTime.UtcNow,
+                    PlayersReceived = cards.Select(c => c.Id).ToList()
+                };
+                await _appwriteService.SavePackPurchase(_currentUserId, purchase);
+                System.Diagnostics.Debug.WriteLine($"[GameStateService] Pack purchase recorded successfully");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GameStateService] Failed to record pack purchase: {ex.Message}");
+            }
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[GameStateService] Skipping pack purchase record - no user ID (guest mode)");
         }
 
         return cards;

@@ -560,15 +560,18 @@ public class AppwriteService
 
     #endregion
 
-    #region Archetype Generation (Appwrite Function - like SwishPot)
+    #region Archetype Generation (Appwrite Function - ASYNC execution to avoid 30s timeout)
 
+    /// <summary>
+    /// Generates an archetype using the Appwrite function with ASYNC execution.
+    /// Uses xasync=true and polls for result to avoid the 30-second sync timeout.
+    /// </summary>
     public async Task<ArchetypeData?> GenerateArchetype(string playerId, string playerName, string statHints)
     {
         System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype called for: {playerName} (ID: {playerId})");
 
         try
         {
-            // Create a fresh Functions instance like SwishPot does
             var functions = new Appwrite.Services.Functions(_client);
 
             var payload = System.Text.Json.JsonSerializer.Serialize(new
@@ -578,16 +581,47 @@ public class AppwriteService
                 statHints
             });
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Calling function '{AppConfig.GenerateArchetypeFunctionId}' with payload: {payload}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Calling function '{AppConfig.GenerateArchetypeFunctionId}' with ASYNC execution");
 
+            // Use ASYNC execution (xasync: true) to avoid the 30-second sync timeout
             var execution = await functions.CreateExecution(
                 functionId: AppConfig.GenerateArchetypeFunctionId,
                 body: payload,
-                xasync: false,
+                xasync: true,  // CRITICAL: Use async to avoid 30s timeout
                 method: Appwrite.Enums.ExecutionMethod.POST
             );
 
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function execution status: {execution.Status}");
+            var executionId = execution.Id;
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] Async execution started: {executionId}, status: {execution.Status}");
+
+            // Poll for completion (max 120 seconds)
+            const int maxWaitMs = 120000;
+            const int pollIntervalMs = 2000;
+            var startTime = DateTime.UtcNow;
+
+            while ((DateTime.UtcNow - startTime).TotalMilliseconds < maxWaitMs)
+            {
+                await Task.Delay(pollIntervalMs);
+
+                execution = await functions.GetExecution(
+                    functionId: AppConfig.GenerateArchetypeFunctionId,
+                    executionId: executionId
+                );
+
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Polling execution {executionId}: status={execution.Status}");
+
+                if (execution.Status == "completed" || execution.Status == "failed")
+                {
+                    break;
+                }
+            }
+
+            if (execution.Status != "completed")
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppwriteService] Execution did not complete in time. Status: {execution.Status}");
+                return null;
+            }
+
             System.Diagnostics.Debug.WriteLine($"[AppwriteService] Function response length: {execution.ResponseBody?.Length ?? 0}");
 
             if (!string.IsNullOrEmpty(execution.ResponseBody))
@@ -601,7 +635,20 @@ public class AppwriteService
                 return null;
             }
 
-            var response = System.Text.Json.JsonDocument.Parse(execution.ResponseBody);
+            return ParseArchetypeResponse(execution.ResponseBody, playerId, playerName);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype EXCEPTION: {ex.Message}\n{ex.StackTrace}");
+            return null;
+        }
+    }
+
+    private ArchetypeData? ParseArchetypeResponse(string responseBody, string playerId, string playerName)
+    {
+        try
+        {
+            var response = System.Text.Json.JsonDocument.Parse(responseBody);
 
             if (response.RootElement.TryGetProperty("success", out var success) && success.GetBoolean())
             {
@@ -652,7 +699,7 @@ public class AppwriteService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[AppwriteService] GenerateArchetype EXCEPTION: {ex.Message}\n{ex.StackTrace}");
+            System.Diagnostics.Debug.WriteLine($"[AppwriteService] ParseArchetypeResponse error: {ex.Message}");
             return null;
         }
     }

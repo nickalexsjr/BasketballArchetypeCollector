@@ -12,6 +12,7 @@ public partial class CollectionViewModel : BaseViewModel
     private readonly PlayerDataService _playerDataService;
 
     private List<Player> _allPlayers = new();
+    private bool _hasLoadedOnce;
 
     [ObservableProperty]
     private ObservableCollection<Player> _players = new();
@@ -76,7 +77,11 @@ public partial class CollectionViewModel : BaseViewModel
     private void OnStateChanged(object? sender, EventArgs e)
     {
         UpdateStats();
-        ApplyFilters();
+        // Only apply filters if we've already loaded players
+        if (_hasLoadedOnce && _allPlayers.Count > 0)
+        {
+            ApplyFilters();
+        }
     }
 
     private void UpdateStats()
@@ -88,14 +93,18 @@ public partial class CollectionViewModel : BaseViewModel
     [RelayCommand]
     private async Task LoadPlayersAsync()
     {
+        // Allow reload but prevent concurrent loads
         if (IsBusy) return;
         IsBusy = true;
 
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] LoadPlayersAsync starting...");
             await _playerDataService.LoadPlayersAsync();
             _allPlayers = _playerDataService.Players.Where(p => p.HasStats).ToList();
             TotalPlayers = _allPlayers.Count;
+            _hasLoadedOnce = true;
+            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] Loaded {_allPlayers.Count} players");
             UpdateStats();
             ApplyFilters();
         }
@@ -110,22 +119,23 @@ public partial class CollectionViewModel : BaseViewModel
         }
     }
 
-    partial void OnSearchQueryChanged(string value) => ApplyFilters();
-    partial void OnSelectedRarityChanged(string value) => ApplyFilters();
-    partial void OnSelectedEraChanged(string value) => ApplyFilters();
-    partial void OnSelectedOwnershipChanged(string value) => ApplyFilters();
-    partial void OnSelectedSortChanged(string value) => ApplyFilters();
-    partial void OnSortDescendingChanged(bool value) => ApplyFilters();
+    partial void OnSearchQueryChanged(string value) => ApplyFiltersIfReady();
+    partial void OnSelectedRarityChanged(string value) => ApplyFiltersIfReady();
+    partial void OnSelectedEraChanged(string value) => ApplyFiltersIfReady();
+    partial void OnSelectedOwnershipChanged(string value) => ApplyFiltersIfReady();
+    partial void OnSelectedSortChanged(string value) => ApplyFiltersIfReady();
+    partial void OnSortDescendingChanged(bool value) => ApplyFiltersIfReady();
+
+    private void ApplyFiltersIfReady()
+    {
+        if (_hasLoadedOnce && _allPlayers.Count > 0)
+        {
+            ApplyFilters();
+        }
+    }
 
     private void ApplyFilters()
     {
-        // Don't apply filters if players haven't loaded yet
-        if (_allPlayers.Count == 0)
-        {
-            System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] ApplyFilters: Skipping - players not loaded yet");
-            return;
-        }
-
         System.Diagnostics.Debug.WriteLine($"[CollectionViewModel] ApplyFilters: AllPlayers={_allPlayers.Count}, Ownership={SelectedOwnership}, OwnedCount={_gameStateService.CurrentState.Collection.Count}");
 
         var filtered = _allPlayers.AsEnumerable();

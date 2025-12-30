@@ -70,18 +70,18 @@ public partial class PlayerCard : ContentView
 
     public double CardWidth => CardSize switch
     {
-        CardSizeOption.Small => 100,
-        CardSizeOption.Medium => 140,
-        CardSizeOption.Large => 200,
-        _ => 140
+        CardSizeOption.Small => 95,   // Fits 3 cards with margins on iPhone
+        CardSizeOption.Medium => 130,
+        CardSizeOption.Large => 180,
+        _ => 130
     };
 
     public double CardHeight => CardSize switch
     {
-        CardSizeOption.Small => 140,
-        CardSizeOption.Medium => 200,
-        CardSizeOption.Large => 280,
-        _ => 200
+        CardSizeOption.Small => 130,
+        CardSizeOption.Medium => 185,
+        CardSizeOption.Large => 250,
+        _ => 185
     };
 
     public PlayerCard()
