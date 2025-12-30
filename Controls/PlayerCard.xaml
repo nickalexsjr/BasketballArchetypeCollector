@@ -6,8 +6,8 @@
              x:Name="thisCard">
 
     <!-- Outer glow border for rarity -->
-    <Border StrokeShape="RoundRectangle 14"
-            StrokeThickness="3"
+    <Border StrokeShape="RoundRectangle 12"
+            StrokeThickness="2"
             Stroke="{Binding RarityColor, Source={x:Reference thisCard}}"
             BackgroundColor="Transparent"
             HeightRequest="{Binding CardHeight, Source={x:Reference thisCard}}"
@@ -15,15 +15,15 @@
         <Border.Shadow>
             <Shadow Brush="{Binding RarityColor, Source={x:Reference thisCard}}"
                     Offset="0,0"
-                    Radius="15"
-                    Opacity="0.5" />
+                    Radius="8"
+                    Opacity="0.6" />
         </Border.Shadow>
 
         <!-- Inner card with rarity-tinted background -->
-        <Border StrokeShape="RoundRectangle 12"
+        <Border StrokeShape="RoundRectangle 10"
                 StrokeThickness="0"
                 BackgroundColor="{Binding RarityBackgroundColor, Source={x:Reference thisCard}}"
-                Padding="8">
+                Padding="6">
 
             <Grid RowDefinitions="Auto,*,Auto,Auto">
                 <!-- Overall Badge with glow -->
@@ -148,7 +148,7 @@
                 <!-- Locked Overlay -->
                 <Border Grid.RowSpan="4"
                         BackgroundColor="#000000CC"
-                        StrokeShape="RoundRectangle 12"
+                        StrokeShape="RoundRectangle 10"
                         IsVisible="{Binding IsLocked, Source={x:Reference thisCard}}">
                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="4">
                         <Label Text="🔒"

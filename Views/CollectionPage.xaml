@@ -172,12 +172,12 @@
                      RefreshColor="#f97316"
                      BackgroundColor="#0a0a0f">
             <CollectionView ItemsSource="{Binding Players}"
-                            Margin="12,8,12,12">
+                            Margin="16,8,16,16">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"
                                      Span="3"
-                                     HorizontalItemSpacing="10"
-                                     VerticalItemSpacing="12" />
+                                     HorizontalItemSpacing="8"
+                                     VerticalItemSpacing="16" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Player">
