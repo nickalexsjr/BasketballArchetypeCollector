@@ -178,10 +178,10 @@
                         TextColor="#64748b"
                         FontFamily="InterRegular"
                         FontSize="14" />
-                <Label Text="⚠️ Guest data is not saved. Crests won't persist. If you sign up later, you'll start fresh."
+                <Label Text="Guest data is not saved. Crests might not work as expected and will not persist. If you sign up later, you'll start fresh."
                        FontFamily="InterRegular"
                        FontSize="11"
-                       TextColor="#f59e0b"
+                       TextColor="#64748b"
                        HorizontalTextAlignment="Center"
                        Padding="20,0" />
             </VerticalStackLayout>
