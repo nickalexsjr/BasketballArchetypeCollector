@@ -30,6 +30,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AppwriteService>();
         builder.Services.AddSingleton<GameStateService>();
         builder.Services.AddSingleton<MiniGameService>();
+        builder.Services.AddSingleton<StoreService>();
 
         // Register ViewModels
         builder.Services.AddTransient<MainViewModel>();

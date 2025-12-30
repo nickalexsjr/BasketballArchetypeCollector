@@ -50,7 +50,9 @@
                 </VerticalStackLayout>
 
                 <controls:CoinDisplay Grid.Column="1"
+                                      x:Name="CoinDisplayControl"
                                       Coins="{Binding Coins}"
+                                      ShowBuyButton="True"
                                       VerticalOptions="Center" />
             </Grid>
         </Border>

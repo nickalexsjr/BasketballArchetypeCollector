@@ -4,20 +4,39 @@
              x:Class="BasketballArchetypeCollector.Controls.CoinDisplay"
              x:Name="thisDisplay">
 
-    <Border StrokeShape="RoundRectangle 20"
-            BackgroundColor="#1e293b"
-            Stroke="#334155"
-            StrokeThickness="1"
-            Padding="12,6">
-        <HorizontalStackLayout Spacing="6">
-            <Label Text="🪙"
+    <HorizontalStackLayout Spacing="8">
+        <!-- Buy Coins Button -->
+        <Border StrokeShape="RoundRectangle 16"
+                BackgroundColor="#22c55e"
+                Padding="8,6"
+                IsVisible="{Binding ShowBuyButton, Source={x:Reference thisDisplay}}">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBuyTapped" />
+            </Border.GestureRecognizers>
+            <Label Text="+"
+                   FontFamily="InterBold"
                    FontSize="18"
-                   VerticalOptions="Center" />
-            <Label Text="{Binding Coins, Source={x:Reference thisDisplay}, StringFormat='{0:N0}'}"
-                   FontFamily="OrbitronBold"
-                   FontSize="16"
-                   TextColor="#fbbf24"
-                   VerticalOptions="Center" />
-        </HorizontalStackLayout>
-    </Border>
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center" />
+        </Border>
+
+        <!-- Coin Display -->
+        <Border StrokeShape="RoundRectangle 20"
+                BackgroundColor="#1e293b"
+                Stroke="#334155"
+                StrokeThickness="1"
+                Padding="12,6">
+            <HorizontalStackLayout Spacing="6">
+                <Label Text="🪙"
+                       FontSize="18"
+                       VerticalOptions="Center" />
+                <Label Text="{Binding Coins, Source={x:Reference thisDisplay}, StringFormat='{0:N0}'}"
+                       FontFamily="OrbitronBold"
+                       FontSize="16"
+                       TextColor="#fbbf24"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+    </HorizontalStackLayout>
 </ContentView>
