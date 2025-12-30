@@ -2,11 +2,19 @@
 
 A .NET MAUI iOS app that replicates the HTML NBA Cards Archetype game. Collect basketball player cards, open packs, and generate unique AI-powered archetype crests for each player.
 
-## Version: 1.5.0
+## Version: 1.5.3
 
 **Status: PRODUCTION READY**
 
 ---
+
+## What's New in v1.5.3
+
+- **Critical Fix** - Appwrite function now uses ASYNC execution with polling (avoids 30s timeout)
+- **Bugfix** - Collection page now defaults to "All" filter (fixes empty collection on first load)
+- **Bugfix** - Player detail page now fetches archetype from Appwrite if not cached locally
+- **Improvement** - Card sizes reduced for better fit on screen (Small: 85x120)
+- **Improvement** - Added "All" option to ownership filter
 
 ## What's New in v1.5.0
 
@@ -254,6 +262,17 @@ BasketballArchetypeCollector/
 | `generate-archetype` | GPT-4 + ModelsLab/DALL-E |
 | `fetch-documents` | Bypass 25-doc limit |
 
+### Function Execution Notes
+
+The `generate-archetype` function can take 30-90 seconds to complete (GPT-4 call + ModelsLab image generation).
+
+**Important:** The iOS app uses **asynchronous execution** (`xasync: true`) with polling to avoid the 30-second synchronous timeout limit. The client:
+1. Starts the function asynchronously
+2. Polls every 2 seconds for completion
+3. Waits up to 120 seconds for the result
+
+Set the function timeout in Appwrite Console to **200 seconds** to be safe.
+
 ---
 
 ## Codemagic CI/CD
@@ -343,7 +362,7 @@ Push to `main` branch triggers iOS build and TestFlight upload.
 
 ## Notes
 
-- **Version:** 1.5.0 (Build 24)
+- **Version:** 1.5.3 (Build 27)
 - **Framework:** .NET 8 MAUI
 - **Player Data:** 5,527 total players, 5,042 with stats
 - **Bundle ID:** `com.basketballarchetype.app`

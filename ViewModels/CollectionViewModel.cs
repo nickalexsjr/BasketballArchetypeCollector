@@ -36,7 +36,7 @@ public partial class CollectionViewModel : BaseViewModel
     private string _selectedEra = "All";
 
     [ObservableProperty]
-    private string _selectedOwnership = "Owned";
+    private string _selectedOwnership = "All";
 
     [ObservableProperty]
     private string _selectedSort = "Overall";
@@ -56,7 +56,7 @@ public partial class CollectionViewModel : BaseViewModel
 
     public List<string> OwnershipOptions { get; } = new()
     {
-        "Owned", "Not Owned"
+        "All", "Owned", "Not Owned"
     };
 
     public List<string> SortOptions { get; } = new()
@@ -227,4 +227,10 @@ public partial class CollectionViewModel : BaseViewModel
     }
 
     public bool IsOwned(string playerId) => _gameStateService.OwnsCard(playerId);
+
+    public string? GetCrestUrl(string playerId)
+    {
+        var archetype = _gameStateService.GetCachedArchetype(playerId);
+        return archetype?.CrestImageUrl;
+    }
 }

@@ -64,7 +64,7 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
         }
     }
 
-    private void LoadPlayer(string playerId)
+    private async void LoadPlayer(string playerId)
     {
         Player = _playerDataService.GetPlayerById(playerId);
         if (Player != null)
@@ -73,11 +73,28 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
             IsOwned = _gameStateService.OwnsCard(Player.Id);
             Coins = _gameStateService.CurrentState.Coins;
 
-            // Check for cached archetype
+            // Check for cached archetype locally first
             var cached = _gameStateService.GetCachedArchetype(Player.Id);
             if (cached != null)
             {
                 SetArchetype(cached);
+                return;
+            }
+
+            // Try to fetch from Appwrite if not cached locally
+            try
+            {
+                var cloudArchetype = await _appwriteService.GetCachedArchetype(Player.Id);
+                if (cloudArchetype != null)
+                {
+                    SetArchetype(cloudArchetype);
+                    // Cache it locally for next time
+                    await _gameStateService.CacheArchetype(cloudArchetype);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PlayerDetailViewModel] Failed to fetch archetype: {ex.Message}");
             }
         }
     }
