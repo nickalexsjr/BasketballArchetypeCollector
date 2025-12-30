@@ -2,11 +2,24 @@
 
 A .NET MAUI iOS app that replicates the HTML NBA Cards Archetype game. Collect basketball player cards, open packs, and generate unique AI-powered archetype crests for each player.
 
-## Version: 1.2.0
+## Version: 1.5.0
 
 **Status: PRODUCTION READY**
 
 ---
+
+## What's New in v1.5.0
+
+- **Feature** - Pack purchase tracking (saved to Appwrite `pack_purchases` collection)
+- **Feature** - Stats page shows purchase history by pack type
+- **Feature** - Cool loading animation during pack opening (wobbling card stack)
+- **Feature** - Card reveal animation with shake/spin effect
+- **Feature** - Card detail modal in pack opening (tap to view without navigation)
+- **Improvement** - PlayerCard redesigned with full rarity-tinted backgrounds
+- **Improvement** - CollectionPage redesigned with modern header, search bar, filter pills
+- **Improvement** - Account deletion now properly deletes data (like brainstreak)
+- **Bugfix** - Fixed cards going blank after viewing detail in pack opening
+- **Bugfix** - generate-archetype function now uses native fetch (fixes 30s timeout crash)
 
 ## What's New in v1.2.0
 
@@ -330,7 +343,7 @@ Push to `main` branch triggers iOS build and TestFlight upload.
 
 ## Notes
 
-- **Version:** 1.2.0 (Build 6)
+- **Version:** 1.5.0 (Build 24)
 - **Framework:** .NET 8 MAUI
 - **Player Data:** 5,527 total players, 5,042 with stats
 - **Bundle ID:** `com.basketballarchetype.app`
@@ -345,4 +358,4 @@ MIT License
 
 ---
 
-*Last Updated: December 29, 2025*
+*Last Updated: December 30, 2025*

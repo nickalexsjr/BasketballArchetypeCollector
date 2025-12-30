@@ -49,9 +49,13 @@
                 </Label>
 
                 <!-- Animated Card Stack -->
-                <Grid HeightRequest="120" WidthRequest="120" HorizontalOptions="Center">
+                <Grid x:Name="CardStackContainer"
+                      HeightRequest="140"
+                      WidthRequest="140"
+                      HorizontalOptions="Center">
                     <!-- Background cards (stacked effect) -->
-                    <Border StrokeShape="RoundRectangle 12"
+                    <Border x:Name="Card1"
+                            StrokeShape="RoundRectangle 12"
                             BackgroundColor="#1e293b"
                             Rotation="-12"
                             Opacity="0.4"
@@ -59,7 +63,8 @@
                             WidthRequest="70"
                             HorizontalOptions="Center"
                             VerticalOptions="Center" />
-                    <Border StrokeShape="RoundRectangle 12"
+                    <Border x:Name="Card2"
+                            StrokeShape="RoundRectangle 12"
                             BackgroundColor="#334155"
                             Rotation="-6"
                             Opacity="0.6"
@@ -67,7 +72,8 @@
                             WidthRequest="70"
                             HorizontalOptions="Center"
                             VerticalOptions="Center" />
-                    <Border StrokeShape="RoundRectangle 12"
+                    <Border x:Name="Card3"
+                            StrokeShape="RoundRectangle 12"
                             BackgroundColor="#475569"
                             Rotation="0"
                             Opacity="0.8"
@@ -75,8 +81,9 @@
                             WidthRequest="70"
                             HorizontalOptions="Center"
                             VerticalOptions="Center" />
-                    <!-- Top card with shimmer -->
-                    <Border StrokeShape="RoundRectangle 12"
+                    <!-- Top card with glow - this one animates -->
+                    <Border x:Name="TopCard"
+                            StrokeShape="RoundRectangle 12"
                             Stroke="#f97316"
                             StrokeThickness="2"
                             BackgroundColor="#1e293b"
@@ -88,8 +95,8 @@
                         <Border.Shadow>
                             <Shadow Brush="#f97316"
                                     Offset="0,0"
-                                    Radius="15"
-                                    Opacity="0.5" />
+                                    Radius="20"
+                                    Opacity="0.7" />
                         </Border.Shadow>
                         <Label Text="?"
                                FontFamily="OrbitronBold"

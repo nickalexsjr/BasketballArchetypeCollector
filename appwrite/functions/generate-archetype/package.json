@@ -1,10 +1,9 @@
 {
   "name": "generate-archetype",
-  "version": "1.0.0",
-  "description": "Generate player archetype using OpenAI GPT-4 and DALL-E",
+  "version": "2.0.0",
+  "description": "Generate player archetype using OpenAI GPT-4 and ModelsLab (native fetch, no SDK)",
   "main": "src/main.js",
   "dependencies": {
-    "node-appwrite": "^12.0.0",
-    "openai": "^4.0.0"
+    "node-appwrite": "^12.0.0"
   }
 }

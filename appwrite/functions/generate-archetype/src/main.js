@@ -1,20 +1,14 @@
 /**
- * Generate Archetype Function
+ * Generate Archetype Function v2
  *
- * CRITICAL: This function requires Appwrite timeout set to 120+ seconds!
+ * FIXED: Now uses native fetch (like SwishPot functions) instead of OpenAI SDK.
+ * The OpenAI SDK has internal timeouts that cause 30-second crashes even when
+ * Appwrite function timeout is set to 120+ seconds.
  *
- * In Appwrite Console:
- * 1. Go to Functions → generate-archetype → Settings
- * 2. Find "Timeout" setting (default is 30 seconds)
- * 3. Change to 120 or 180 seconds
- * 4. Save and REDEPLOY the function
- *
- * ModelsLab image generation works 100% - the 30s failure is Appwrite
- * killing the function before ModelsLab can complete.
+ * ModelsLab image generation works 100% - the issue was the OpenAI SDK.
  */
 
 const { Client, Databases, Storage, ID } = require('node-appwrite');
-const OpenAI = require('openai');
 
 const ARCHETYPE_SYSTEM_PROMPT = `You are a game design assistant for a basketball card game.
 Goal: Given a player name (and optional stat hints), infer a plausible play style archetype and generate a UNIQUE "Archetype Crest" design spec.
@@ -53,9 +47,69 @@ function stableSeed(text) {
     return Math.abs(hash).toString(16).substring(0, 16);
 }
 
-// Generate image using ModelsLab API with timeout
-// NOTE: Appwrite function timeout must be set to 120+ seconds in the Console!
-// Go to Functions → generate-archetype → Settings → Timeout → set to 120 or 180
+/**
+ * Call OpenAI Chat API using native fetch (no SDK).
+ * This avoids the internal timeout issues in the OpenAI SDK.
+ */
+async function callOpenAIChatWithFetch(apiKey, messages, log) {
+    log(`Calling OpenAI Chat API (native fetch)...`);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: messages,
+            max_tokens: 1200,
+            temperature: 0.8
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+}
+
+/**
+ * Call DALL-E API using native fetch (no SDK).
+ */
+async function callDallEWithFetch(apiKey, prompt, log) {
+    log(`Calling DALL-E API (native fetch)...`);
+
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'dall-e-2',
+            prompt: `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
+            n: 1,
+            size: '256x256'
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`DALL-E API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.data[0].url;
+}
+
+/**
+ * Generate image using ModelsLab API with timeout.
+ * ModelsLab works 100% - this is the cheaper option (~$0.002/image vs $0.016/image).
+ */
 async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 60000) {
     const url = 'https://modelslab.com/api/v6/images/text2img';
     const startTime = Date.now();
@@ -64,7 +118,7 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
 
     const payload = {
         key: apiKey,
-        model_id: "sdxl",  // SDXL model
+        model_id: "sdxl",
         prompt: enhancedPrompt,
         negative_prompt: "text, words, letters, numbers, signature, watermark, human, person, face, body, realistic photo, blurry, low quality",
         width: "512",
@@ -81,21 +135,11 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
 
     log(`Calling ModelsLab text2img API...`);
 
-    // Use AbortController to enforce timeout on fetch
-    const controller = new AbortController();
-    const fetchTimeout = setTimeout(() => controller.abort(), 30000); // 30s for initial request
-
-    let response;
-    try {
-        response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-        });
-    } finally {
-        clearTimeout(fetchTimeout);
-    }
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
 
     if (!response.ok) {
         throw new Error(`ModelsLab API error: ${response.status}`);
@@ -108,7 +152,7 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
         throw new Error(`ModelsLab error: ${result.message || result.messege || 'Unknown error'}`);
     }
 
-    // Handle async processing with strict timeout
+    // Handle async processing with timeout
     if (result.status === 'processing') {
         log(`Image processing, ETA: ${result.eta}s (max wait: ${maxWaitMs/1000}s)`);
         const fetchUrl = result.fetch_result;
@@ -171,6 +215,10 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
 module.exports = async function (context) {
     const { req, res, log, error } = context;
 
+    log('='.repeat(60));
+    log('GENERATE-ARCHETYPE v2 (native fetch, no OpenAI SDK)');
+    log('='.repeat(60));
+
     // Initialize clients
     const client = new Client()
         .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
@@ -180,17 +228,11 @@ module.exports = async function (context) {
     const databases = new Databases(client);
     const storage = new Storage(client);
 
-    // OpenAI SDK with extended timeout (default is 10 minutes but let's be explicit)
-    const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-        timeout: 120000,  // 120 seconds timeout for API calls
-        maxRetries: 2     // Retry failed requests
-    });
-
     const databaseId = process.env.DATABASE_ID;
     const archetypesCollection = process.env.ARCHETYPES_COLLECTION_ID;
     const crestsBucket = process.env.CRESTS_BUCKET_ID;
     const modelsLabApiKey = process.env.MODELSLAB_API_KEY;
+    const openaiApiKey = process.env.OPENAI_API_KEY;
 
     try {
         // Parse request body
@@ -233,7 +275,7 @@ module.exports = async function (context) {
 
         const seed = stableSeed(playerName);
 
-        // Step 1: Generate archetype data with GPT-4
+        // Step 1: Generate archetype data with GPT-4 (using native fetch)
         const userPrompt = `
 Player name: ${playerName}
 Optional stat hints: ${statHints || 'N/A'}
@@ -253,18 +295,13 @@ Important:
 - The image_prompt should describe ONLY the crest artwork (not a person).
 `.trim();
 
-        log(`Calling GPT-4...`);
-        const gptResponse = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: ARCHETYPE_SYSTEM_PROMPT },
-                { role: 'user', content: userPrompt }
-            ],
-            max_tokens: 1200,
-            temperature: 0.8
-        });
+        const messages = [
+            { role: 'system', content: ARCHETYPE_SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt }
+        ];
 
-        const gptContent = gptResponse.choices[0].message.content;
+        const gptContent = await callOpenAIChatWithFetch(openaiApiKey, messages, log);
+
         let archetypeData;
         try {
             archetypeData = JSON.parse(gptContent);
@@ -275,13 +312,11 @@ Important:
 
         log(`Archetype generated: ${archetypeData.archetype}`);
 
-        // Step 2: Generate crest image - try ModelsLab first (cheaper!), fallback to DALL-E after 30s
+        // Step 2: Generate crest image - try ModelsLab first (cheaper!), fallback to DALL-E
         let crestImageUrl = null;
         if (archetypeData.image_prompt) {
             // Try ModelsLab first (much cheaper: ~$0.002/image vs $0.016/image)
-            // ModelsLab works 100% - the issue is Appwrite function timeout, not ModelsLab
-            // IMPORTANT: Appwrite function timeout must be set to 120+ seconds in Console!
-            // Go to: Functions → generate-archetype → Settings → Timeout → set to 120
+            // ModelsLab works 100%!
             if (modelsLabApiKey) {
                 log(`Generating crest image with ModelsLab (60s timeout)...`);
                 try {
@@ -290,7 +325,7 @@ Important:
                         modelsLabApiKey,
                         log,
                         error,
-                        60000  // 60 second max wait for ModelsLab, then fallback to DALL-E
+                        60000  // 60 second max wait for ModelsLab
                     );
                     log(`ModelsLab image generated successfully`);
                 } catch (mlErr) {
@@ -299,18 +334,15 @@ Important:
                 }
             }
 
-            // Fallback to DALL-E if ModelsLab fails or times out
-            if (!crestImageUrl) {
+            // Fallback to DALL-E if ModelsLab fails (using native fetch)
+            if (!crestImageUrl && openaiApiKey) {
                 log(`Generating crest image with DALL-E (fallback)...`);
                 try {
-                    const imageResponse = await openai.images.generate({
-                        model: 'dall-e-2',
-                        prompt: `Premium holographic trading card crest design. ${archetypeData.image_prompt}. Abstract geometric art, no text, no people, centered composition, dark background, metallic accents.`,
-                        n: 1,
-                        size: '256x256'
-                    });
-
-                    crestImageUrl = imageResponse.data[0].url;
+                    crestImageUrl = await callDallEWithFetch(
+                        openaiApiKey,
+                        archetypeData.image_prompt,
+                        log
+                    );
                     log(`DALL-E image generated successfully`);
                 } catch (imgErr) {
                     error(`DALL-E error: ${imgErr.message}`);
@@ -320,7 +352,6 @@ Important:
         }
 
         // Step 3: Save to database
-        // Note: $createdAt is auto-generated by Appwrite, don't include createdAt
         const documentData = {
             playerId: playerId,
             playerName: playerName,
@@ -355,6 +386,8 @@ Important:
                 error(`Failed to save archetype: ${updateErr.message}`);
             }
         }
+
+        log(`SUCCESS: Archetype generated for ${playerName}`);
 
         return res.json({
             success: true,
