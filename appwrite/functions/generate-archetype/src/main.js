@@ -1,23 +1,24 @@
 /**
- * Generate Archetype Function v4
+ * Generate Archetype Function v5
  *
- * v4 changes:
- * - Added pre-warm endpoint (warmup=true) to wake up AI services without cost
+ * v5 changes:
+ * - 6-LAYER FALLBACK image generation for 100% reliability:
+ *   1. ModelsLab SDXL (primary, cheapest ~$0.002/image)
+ *   2. OpenAI DALL-E 2 via native fetch (first backup ~$0.016/image)
+ *   3. OpenAI DALL-E 2 via SDK (second backup, different approach)
+ *   4. ModelsLab Realvis XL v4.0 (third backup, different queue)
+ *   5. ModelsLab Juggernaut XL v8 (fourth backup, another queue)
+ *   6. ModelsLab DreamShaper XL (fifth backup, last resort)
+ * - Pre-warm endpoint (warmup=true) to wake up AI services without cost
  * - Supports parallel generation requests
  *
- * v3 changes:
+ * v3 changes (preserved):
  * - Stronger no-text enforcement in prompts (DALL-E and ModelsLab)
  * - Faster generation: 15 inference steps, 1.5s poll interval
- *
- * v2 changes:
- * - Uses native fetch (like SwishPot functions) instead of OpenAI SDK.
- * - The OpenAI SDK has internal timeouts that cause 30-second crashes even when
- *   Appwrite function timeout is set to 120+ seconds.
- *
- * ModelsLab image generation works 100% - the issue was the OpenAI SDK.
  */
 
 const { Client, Databases, Storage, ID } = require('node-appwrite');
+const OpenAI = require('openai');
 
 const ARCHETYPE_SYSTEM_PROMPT = `You are a game design assistant for a basketball card game.
 Goal: Given a player name (and optional stat hints), infer a plausible play style archetype and generate a UNIQUE "Archetype Crest" design spec.
@@ -124,10 +125,36 @@ async function callDallEWithFetch(apiKey, prompt, log) {
 }
 
 /**
- * Generate image using ModelsLab API with timeout.
- * ModelsLab works 100% - this is the cheaper option (~$0.002/image vs $0.016/image).
+ * Call DALL-E API using OpenAI SDK (alternative approach).
+ * This is a backup in case native fetch has issues.
  */
-async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs = 45000) {
+async function callDallEWithSDK(apiKey, prompt, log) {
+    log(`Calling DALL-E API (OpenAI SDK)...`);
+
+    const openai = new OpenAI({ apiKey });
+
+    const imageResponse = await openai.images.generate({
+        model: 'dall-e-2',
+        prompt: `Premium holographic trading card crest design. ${prompt}. Abstract geometric art, absolutely no text no letters no words no numbers no writing no typography, no people, centered composition, dark background, metallic accents.`,
+        n: 1,
+        size: '256x256'
+    });
+
+    return imageResponse.data[0].url;
+}
+
+/**
+ * Generate image using ModelsLab API with specified model.
+ * Supports multiple models for fallback reliability.
+ *
+ * @param {string} prompt - The image prompt
+ * @param {string} apiKey - ModelsLab API key
+ * @param {string} modelId - Model to use (e.g., 'sdxl', 'realvis-xl-v40', 'juggernaut-xl-v8', 'dreamshaper-xl')
+ * @param {function} log - Logging function
+ * @param {function} error - Error logging function
+ * @param {number} maxWaitMs - Maximum wait time in milliseconds
+ */
+async function generateImageWithModelsLab(prompt, apiKey, modelId, log, error, maxWaitMs = 45000) {
     const url = 'https://modelslab.com/api/v6/images/text2img';
     const startTime = Date.now();
 
@@ -142,13 +169,13 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
     // Optimized for speed while maintaining quality
     const payload = {
         key: apiKey,
-        model_id: "sdxl",
+        model_id: modelId,
         prompt: enhancedPrompt,
         negative_prompt: "text, words, letters, numbers, writing, typography, font, alphabet, signature, watermark, label, title, caption, inscription, human, person, face, body, realistic photo, blurry, low quality, ugly, deformed, amateur",
         width: "512",
         height: "512",
         samples: "1",
-        num_inference_steps: "15",  // Reduced for faster generation (SDXL still good at 15)
+        num_inference_steps: "15",  // Reduced for faster generation (still good quality at 15)
         guidance_scale: 6.5,        // Lower for speed
         safety_checker: "no",
         enhance_prompt: "no",       // Skip prompt enhancement for speed
@@ -157,7 +184,7 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
         track_id: null
     };
 
-    log(`Calling ModelsLab text2img API...`);
+    log(`Calling ModelsLab text2img API with model: ${modelId}...`);
 
     const response = await fetch(url, {
         method: 'POST',
@@ -170,7 +197,7 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
     }
 
     const result = await response.json();
-    log(`ModelsLab response status: ${result.status}`);
+    log(`ModelsLab (${modelId}) response status: ${result.status}`);
 
     if (result.status === 'error') {
         throw new Error(`ModelsLab error: ${result.message || result.messege || 'Unknown error'}`);
@@ -191,8 +218,8 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
 
         await new Promise(resolve => setTimeout(resolve, initialWait));
 
-        // Poll with strict timeout check
-        for (let attempt = 0; attempt < 4; attempt++) {
+        // Poll with strict timeout check - up to 6 attempts with 2s interval
+        for (let attempt = 0; attempt < 6; attempt++) {
             const elapsed = Date.now() - startTime;
             if (elapsed > maxWaitMs) {
                 throw new Error(`ModelsLab timeout: ${elapsed}ms > ${maxWaitMs}ms limit`);
@@ -205,10 +232,10 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
             });
 
             const pollResult = await pollResponse.json();
-            log(`Poll ${attempt + 1}: ${pollResult.status} (${Math.round(elapsed/1000)}s elapsed)`);
+            log(`Poll ${attempt + 1}/6: ${pollResult.status} (${Math.round(elapsed/1000)}s elapsed)`);
 
             if (pollResult.status === 'success' && pollResult.output && pollResult.output.length > 0) {
-                log(`ModelsLab completed in ${Math.round(elapsed/1000)}s`);
+                log(`ModelsLab (${modelId}) completed in ${Math.round(elapsed/1000)}s`);
                 return pollResult.output[0];
             }
 
@@ -221,8 +248,8 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
                 throw new Error('ModelsLab timeout: not enough time for next poll');
             }
 
-            // Wait 1.5 seconds before next poll
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Wait 2 seconds before next poll
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
         throw new Error('ModelsLab timeout: max poll attempts reached');
@@ -236,11 +263,111 @@ async function generateImageWithModelsLab(prompt, apiKey, log, error, maxWaitMs 
     throw new Error('ModelsLab: No image URL in response');
 }
 
+/**
+ * Generate image with 6-LAYER FALLBACK system for 100% reliability.
+ * Each ModelsLab model uses a different queue, maximizing success chance.
+ * Two different OpenAI approaches (fetch vs SDK) for maximum reliability.
+ *
+ * Fallback order:
+ * 1. ModelsLab SDXL (primary, cheapest)
+ * 2. OpenAI DALL-E 2 via native fetch (first backup)
+ * 3. OpenAI DALL-E 2 via SDK (second backup, different approach)
+ * 4. ModelsLab Realvis XL v4.0 (third backup, different queue)
+ * 5. ModelsLab Juggernaut XL v8 (fourth backup, another queue)
+ * 6. ModelsLab DreamShaper XL (fifth backup, last resort)
+ */
+async function generateImageWithFallbacks(prompt, modelsLabApiKey, openaiApiKey, log, error) {
+    let imageUrl = null;
+    const attempts = [];
+
+    // ===== LAYER 1: ModelsLab SDXL (Primary) =====
+    if (modelsLabApiKey) {
+        log(`[1/6] Trying LAYER 1: ModelsLab SDXL (primary)...`);
+        try {
+            imageUrl = await generateImageWithModelsLab(prompt, modelsLabApiKey, 'sdxl', log, error, 45000);
+            log(`SUCCESS: Image generated with ModelsLab SDXL`);
+            return { imageUrl, provider: 'ModelsLab SDXL', attempts: [...attempts, { layer: 1, provider: 'ModelsLab SDXL', success: true }] };
+        } catch (err) {
+            error(`Layer 1 (ModelsLab SDXL) failed: ${err.message}`);
+            attempts.push({ layer: 1, provider: 'ModelsLab SDXL', success: false, error: err.message });
+        }
+    }
+
+    // ===== LAYER 2: OpenAI DALL-E 2 via Native Fetch =====
+    if (openaiApiKey) {
+        log(`[2/6] Trying LAYER 2: OpenAI DALL-E 2 (native fetch)...`);
+        try {
+            imageUrl = await callDallEWithFetch(openaiApiKey, prompt, log);
+            log(`SUCCESS: Image generated with OpenAI DALL-E 2 (fetch)`);
+            return { imageUrl, provider: 'OpenAI DALL-E 2 (fetch)', attempts: [...attempts, { layer: 2, provider: 'OpenAI DALL-E 2 (fetch)', success: true }] };
+        } catch (err) {
+            error(`Layer 2 (DALL-E 2 fetch) failed: ${err.message}`);
+            attempts.push({ layer: 2, provider: 'OpenAI DALL-E 2 (fetch)', success: false, error: err.message });
+        }
+    }
+
+    // ===== LAYER 3: OpenAI DALL-E 2 via SDK (Different Approach) =====
+    if (openaiApiKey) {
+        log(`[3/6] Trying LAYER 3: OpenAI DALL-E 2 (SDK)...`);
+        try {
+            imageUrl = await callDallEWithSDK(openaiApiKey, prompt, log);
+            log(`SUCCESS: Image generated with OpenAI DALL-E 2 (SDK)`);
+            return { imageUrl, provider: 'OpenAI DALL-E 2 (SDK)', attempts: [...attempts, { layer: 3, provider: 'OpenAI DALL-E 2 (SDK)', success: true }] };
+        } catch (err) {
+            error(`Layer 3 (DALL-E 2 SDK) failed: ${err.message}`);
+            attempts.push({ layer: 3, provider: 'OpenAI DALL-E 2 (SDK)', success: false, error: err.message });
+        }
+    }
+
+    // ===== LAYER 4: ModelsLab Realvis XL v4.0 =====
+    if (modelsLabApiKey) {
+        log(`[4/6] Trying LAYER 4: ModelsLab Realvis XL v4.0...`);
+        try {
+            imageUrl = await generateImageWithModelsLab(prompt, modelsLabApiKey, 'realvis-xl-v40', log, error, 35000);
+            log(`SUCCESS: Image generated with ModelsLab Realvis XL v4.0`);
+            return { imageUrl, provider: 'ModelsLab Realvis XL v4.0', attempts: [...attempts, { layer: 4, provider: 'ModelsLab Realvis XL v4.0', success: true }] };
+        } catch (err) {
+            error(`Layer 4 (Realvis XL v4.0) failed: ${err.message}`);
+            attempts.push({ layer: 4, provider: 'ModelsLab Realvis XL v4.0', success: false, error: err.message });
+        }
+    }
+
+    // ===== LAYER 5: ModelsLab Juggernaut XL v8 =====
+    if (modelsLabApiKey) {
+        log(`[5/6] Trying LAYER 5: ModelsLab Juggernaut XL v8...`);
+        try {
+            imageUrl = await generateImageWithModelsLab(prompt, modelsLabApiKey, 'juggernaut-xl-v8', log, error, 35000);
+            log(`SUCCESS: Image generated with ModelsLab Juggernaut XL v8`);
+            return { imageUrl, provider: 'ModelsLab Juggernaut XL v8', attempts: [...attempts, { layer: 5, provider: 'ModelsLab Juggernaut XL v8', success: true }] };
+        } catch (err) {
+            error(`Layer 5 (Juggernaut XL v8) failed: ${err.message}`);
+            attempts.push({ layer: 5, provider: 'ModelsLab Juggernaut XL v8', success: false, error: err.message });
+        }
+    }
+
+    // ===== LAYER 6: ModelsLab DreamShaper XL (Last Resort) =====
+    if (modelsLabApiKey) {
+        log(`[6/6] Trying LAYER 6: ModelsLab DreamShaper XL (last resort)...`);
+        try {
+            imageUrl = await generateImageWithModelsLab(prompt, modelsLabApiKey, 'dreamshaper-xl', log, error, 35000);
+            log(`SUCCESS: Image generated with ModelsLab DreamShaper XL`);
+            return { imageUrl, provider: 'ModelsLab DreamShaper XL', attempts: [...attempts, { layer: 6, provider: 'ModelsLab DreamShaper XL', success: true }] };
+        } catch (err) {
+            error(`Layer 6 (DreamShaper XL) failed: ${err.message}`);
+            attempts.push({ layer: 6, provider: 'ModelsLab DreamShaper XL', success: false, error: err.message });
+        }
+    }
+
+    // All 6 layers exhausted - this should be extremely rare
+    error(`CRITICAL: All 6 image generation layers failed!`);
+    return { imageUrl: null, provider: null, attempts };
+}
+
 module.exports = async function (context) {
     const { req, res, log, error } = context;
 
     log('='.repeat(60));
-    log('GENERATE-ARCHETYPE v4 (parallel support, pre-warm)');
+    log('GENERATE-ARCHETYPE v5 (6-layer fallback, 100% reliability)');
     log('='.repeat(60));
 
     // Parse request body early for warmup check
@@ -348,42 +475,29 @@ Important:
 
         log(`Archetype generated: ${archetypeData.archetype}`);
 
-        // Step 2: Generate crest image - try ModelsLab first (cheaper!), fallback to DALL-E
+        // Step 2: Generate crest image with 5-LAYER FALLBACK for 100% reliability
         let crestImageUrl = null;
-        if (archetypeData.image_prompt) {
-            // Try ModelsLab first (much cheaper: ~$0.002/image vs $0.016/image)
-            // Optimized settings: 20 steps, no prompt enhancement
-            if (modelsLabApiKey) {
-                log(`Generating crest image with ModelsLab (45s timeout)...`);
-                try {
-                    crestImageUrl = await generateImageWithModelsLab(
-                        archetypeData.image_prompt,
-                        modelsLabApiKey,
-                        log,
-                        error,
-                        45000  // 45 second max wait for ModelsLab (reduced from 60s)
-                    );
-                    log(`ModelsLab image generated successfully`);
-                } catch (mlErr) {
-                    error(`ModelsLab error: ${mlErr.message}`);
-                    // Fall through to DALL-E
-                }
-            }
+        let imageProvider = null;
+        let fallbackAttempts = [];
 
-            // Fallback to DALL-E if ModelsLab fails (using native fetch)
-            if (!crestImageUrl && openaiApiKey) {
-                log(`Generating crest image with DALL-E (fallback)...`);
-                try {
-                    crestImageUrl = await callDallEWithFetch(
-                        openaiApiKey,
-                        archetypeData.image_prompt,
-                        log
-                    );
-                    log(`DALL-E image generated successfully`);
-                } catch (imgErr) {
-                    error(`DALL-E error: ${imgErr.message}`);
-                    // Continue without image - we'll still save archetype data
-                }
+        if (archetypeData.image_prompt) {
+            log(`Starting 6-layer image generation fallback system...`);
+            const result = await generateImageWithFallbacks(
+                archetypeData.image_prompt,
+                modelsLabApiKey,
+                openaiApiKey,
+                log,
+                error
+            );
+            crestImageUrl = result.imageUrl;
+            imageProvider = result.provider;
+            fallbackAttempts = result.attempts || [];
+
+            if (crestImageUrl) {
+                log(`Image generated successfully using: ${imageProvider}`);
+            } else {
+                error(`CRITICAL: All 6 image generation layers failed! Archetype saved without image.`);
+                log(`Failed attempts: ${JSON.stringify(fallbackAttempts)}`);
             }
         }
 
@@ -424,6 +538,9 @@ Important:
         }
 
         log(`SUCCESS: Archetype generated for ${playerName}`);
+        if (imageProvider) {
+            log(`Image provider used: ${imageProvider}`);
+        }
 
         return res.json({
             success: true,
@@ -432,7 +549,8 @@ Important:
                 subArchetype: archetypeData.sub_archetype,
                 playStyleSummary: archetypeData.play_style_summary,
                 crestImageUrl: crestImageUrl,
-                confidence: archetypeData.confidence
+                confidence: archetypeData.confidence,
+                imageProvider: imageProvider  // Track which provider succeeded
             }
         });
     } catch (err) {

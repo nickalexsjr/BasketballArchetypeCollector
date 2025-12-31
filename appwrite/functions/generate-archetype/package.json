@@ -1,9 +1,10 @@
 {
   "name": "generate-archetype",
-  "version": "3.0.0",
-  "description": "Generate player archetype using OpenAI GPT-4 and ModelsLab (native fetch, no SDK, no-text enforced)",
+  "version": "5.0.0",
+  "description": "Generate player archetype with 6-layer fallback image generation (ModelsLab SDXL -> DALL-E fetch -> DALL-E SDK -> Realvis -> Juggernaut -> DreamShaper)",
   "main": "src/main.js",
   "dependencies": {
-    "node-appwrite": "^12.0.0"
+    "node-appwrite": "^12.0.0",
+    "openai": "^4.0.0"
   }
 }
