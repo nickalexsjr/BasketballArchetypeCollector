@@ -204,6 +204,16 @@ public partial class StatsViewModel : BaseViewModel
     [RelayCommand]
     private async Task SignOut()
     {
+        // Prevent sign out while crests are being generated
+        if (_gameStateService.IsGeneratingCrests)
+        {
+            await Shell.Current.DisplayAlert(
+                "Please Wait",
+                "Cannot sign out while crests are being generated. Please wait for generation to complete.",
+                "OK");
+            return;
+        }
+
         var confirm = await Shell.Current.DisplayAlert(
             "Sign Out",
             "Are you sure you want to sign out?",

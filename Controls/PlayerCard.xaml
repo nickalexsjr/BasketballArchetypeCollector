@@ -41,7 +41,7 @@
                     <Label Text="{Binding Player.Overall, Source={x:Reference thisCard}}"
                            FontFamily="OrbitronBold"
                            FontSize="16"
-                           TextColor="White" />
+                           TextColor="{Binding RarityTextColor, Source={x:Reference thisCard}}" />
                 </Border>
 
                 <!-- Crest Image and Player Name -->

@@ -83,6 +83,7 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
 
                 // Notify UI about rarity-dependent properties
                 OnPropertyChanged(nameof(RarityColor));
+                OnPropertyChanged(nameof(RarityTextColor));
                 OnPropertyChanged(nameof(RarityBackgroundColor));
                 OnPropertyChanged(nameof(EraColor));
 
@@ -182,6 +183,15 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
         {
             var rarity = Player?.Rarity ?? Rarity.Common;
             return RarityConfig.Info.TryGetValue(rarity, out var info) ? info.Color : "#6b7280";
+        }
+    }
+
+    public string RarityTextColor
+    {
+        get
+        {
+            var rarity = Player?.Rarity ?? Rarity.Common;
+            return RarityConfig.Info.TryGetValue(rarity, out var info) ? info.TextColor : "#FFFFFF";
         }
     }
 

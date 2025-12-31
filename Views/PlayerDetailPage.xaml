@@ -70,7 +70,7 @@
                                 <Label Text="{Binding Player.Rarity}"
                                        FontFamily="InterBold"
                                        FontSize="12"
-                                       TextColor="White" />
+                                       TextColor="{Binding RarityTextColor}" />
                             </Border>
                             <Border StrokeShape="RoundRectangle 8"
                                     BackgroundColor="#334155"

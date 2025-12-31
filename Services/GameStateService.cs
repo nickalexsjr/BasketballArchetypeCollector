@@ -14,11 +14,18 @@ public class GameStateService
     private GameState _currentState = new();
     private Dictionary<string, ArchetypeData> _archetypeCache = new();
     private string? _currentUserId;
+    private bool _isGeneratingCrests;
 
     public GameState CurrentState => _currentState;
     public IReadOnlyDictionary<string, ArchetypeData> ArchetypeCache => _archetypeCache;
     public int CrestImageCount => _archetypeCache.Values.Count(a => a.HasCrestImage);
     public bool IsLoggedIn => !string.IsNullOrEmpty(_currentUserId);
+    public bool IsGeneratingCrests => _isGeneratingCrests;
+
+    public void SetGeneratingCrests(bool isGenerating)
+    {
+        _isGeneratingCrests = isGenerating;
+    }
 
     public event EventHandler? StateChanged;
     public event EventHandler? StateCleared;

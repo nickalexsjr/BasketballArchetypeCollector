@@ -14,12 +14,12 @@ public static class RarityConfig
 {
     public static readonly Dictionary<Rarity, RarityInfo> Info = new()
     {
-        { Rarity.Goat, new RarityInfo("GOAT", 0.5f, 2000, 99, "#DC143C", "#8B0000") },
-        { Rarity.Legendary, new RarityInfo("LEGENDARY", 2f, 500, 94, "#FFD700", "#FF8C00") },
-        { Rarity.Epic, new RarityInfo("EPIC", 8f, 200, 88, "#9B59B6", "#8E44AD") },
-        { Rarity.Rare, new RarityInfo("RARE", 15f, 75, 80, "#3498DB", "#2980B9") },
-        { Rarity.Uncommon, new RarityInfo("UNCOMMON", 25f, 30, 72, "#2ECC71", "#27AE60") },
-        { Rarity.Common, new RarityInfo("COMMON", 50f, 10, 0, "#7F8C8D", "#95A5A6") }
+        { Rarity.Goat, new RarityInfo("GOAT", 0.5f, 2000, 99, "#DC143C", "#8B0000", "#FFFFFF") },
+        { Rarity.Legendary, new RarityInfo("LEGENDARY", 2f, 500, 94, "#FFD700", "#FF8C00", "#000000") },
+        { Rarity.Epic, new RarityInfo("EPIC", 8f, 200, 88, "#9B59B6", "#8E44AD", "#FFFFFF") },
+        { Rarity.Rare, new RarityInfo("RARE", 15f, 75, 80, "#3498DB", "#2980B9", "#FFFFFF") },
+        { Rarity.Uncommon, new RarityInfo("UNCOMMON", 25f, 30, 72, "#2ECC71", "#27AE60", "#FFFFFF") },
+        { Rarity.Common, new RarityInfo("COMMON", 50f, 10, 0, "#7F8C8D", "#95A5A6", "#FFFFFF") }
     };
 
     public static Rarity DetermineRarity(int overall, string firstName, string lastName)
@@ -58,9 +58,10 @@ public class RarityInfo
     public int MinOverall { get; }
     public string PrimaryColor { get; }
     public string SecondaryColor { get; }
+    public string TextColor { get; }
     public string Color => PrimaryColor; // Alias for convenience
 
-    public RarityInfo(string label, float chance, int coinValue, int minOverall, string primaryColor, string secondaryColor)
+    public RarityInfo(string label, float chance, int coinValue, int minOverall, string primaryColor, string secondaryColor, string textColor)
     {
         Label = label;
         Chance = chance;
@@ -68,5 +69,6 @@ public class RarityInfo
         MinOverall = minOverall;
         PrimaryColor = primaryColor;
         SecondaryColor = secondaryColor;
+        TextColor = textColor;
     }
 }

@@ -139,6 +139,14 @@
                        FontSize="14"
                        TextColor="#64748b"
                        HorizontalTextAlignment="Center" />
+
+                <!-- Navigation hint -->
+                <Label Text="You can navigate to other tabs while crests generate"
+                       FontFamily="InterRegular"
+                       FontSize="12"
+                       TextColor="#475569"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,16,0,0" />
             </VerticalStackLayout>
         </Grid>
 

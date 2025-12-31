@@ -46,6 +46,10 @@ public partial class PlayerCard : ContentView
         ? info.Color
         : "#6b7280";
 
+    public string RarityTextColor => Player != null && RarityConfig.Info.TryGetValue(Player.Rarity, out var info)
+        ? info.TextColor
+        : "#FFFFFF";
+
     // Background color with rarity tint (semi-transparent overlay on dark base)
     public string RarityBackgroundColor => Player != null ? GetRarityBackground(Player.Rarity) : "#1e293b";
 
@@ -94,6 +98,7 @@ public partial class PlayerCard : ContentView
         if (bindable is PlayerCard card)
         {
             card.OnPropertyChanged(nameof(RarityColor));
+            card.OnPropertyChanged(nameof(RarityTextColor));
             card.OnPropertyChanged(nameof(RarityBackgroundColor));
             card.OnPropertyChanged(nameof(RarityLabel));
             card.OnPropertyChanged(nameof(EraColor));

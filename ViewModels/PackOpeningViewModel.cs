@@ -214,10 +214,16 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             }
 
             LoadingMessage = needsCrestCount > 0
-                ? $"Generating {needsCrestCount} crests..."
+                ? "Creating crests... Estimated time 2 minutes"
                 : "Loading crests...";
             LoadingProgress = 40;
             ProgressBarWidth = 100;
+
+            // Mark that we're generating crests (prevents sign out)
+            if (needsCrestCount > 0)
+            {
+                _gameStateService.SetGeneratingCrests(true);
+            }
 
             // Generate crests sequentially and update cards as they complete
             var totalCards = packResults.Count;
@@ -299,6 +305,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         finally
         {
             IsOpening = false;
+            _gameStateService.SetGeneratingCrests(false);
         }
     }
 
