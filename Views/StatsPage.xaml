@@ -64,8 +64,8 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Cards Collected -->
-                <Border Grid.Row="1" Grid.Column="0"
+                <!-- Cards Collected (spans both columns since Crests is hidden) -->
+                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                         StrokeShape="RoundRectangle 12"
                         BackgroundColor="#1e293b"
                         Padding="16">
@@ -83,11 +83,12 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Crests Generated -->
+                <!-- Crests Generated (hidden for now) -->
                 <Border Grid.Row="1" Grid.Column="1"
                         StrokeShape="RoundRectangle 12"
                         BackgroundColor="#1e293b"
-                        Padding="16">
+                        Padding="16"
+                        IsVisible="False">
                     <VerticalStackLayout HorizontalOptions="Center">
                         <Label Text="{Binding CrestsGenerated}"
                                FontFamily="OrbitronBold"
