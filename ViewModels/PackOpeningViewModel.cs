@@ -54,6 +54,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowCardsView))]
+    [NotifyPropertyChangedFor(nameof(ShowLoadingView))]
     private bool _isOpening;
 
     [ObservableProperty]
