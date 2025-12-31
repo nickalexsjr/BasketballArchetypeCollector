@@ -18,8 +18,8 @@
 		<ApplicationId>com.basketballarchetype.app</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.12.7</ApplicationDisplayVersion>
-		<ApplicationVersion>70</ApplicationVersion>
+		<ApplicationDisplayVersion>1.12.8</ApplicationDisplayVersion>
+		<ApplicationVersion>71</ApplicationVersion>
 
 		<WindowsPackageType>None</WindowsPackageType>
 

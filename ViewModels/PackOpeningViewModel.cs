@@ -39,6 +39,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     private readonly AppwriteService _appwriteService;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowEmptyState))]
+    [NotifyPropertyChangedFor(nameof(ShowLoadingView))]
     private Pack? _pack;
 
     [ObservableProperty]
@@ -52,7 +54,6 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowCardsView))]
-    [NotifyPropertyChangedFor(nameof(ShowLoadingView))]
     private bool _isOpening;
 
     [ObservableProperty]
@@ -93,14 +94,16 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     // Computed property to check if we have cards to show
     public bool HasCards => Cards.Count > 0;
 
-    // Show cards view when: has cards AND (not opening OR user chose to view live)
+    // Show cards view when: has cards AND (done opening OR user chose to view live)
     public bool ShowCardsView => HasCards && (!IsOpening || ShowLiveCreation);
 
-    // Show loading view when: opening AND not viewing live creation
-    public bool ShowLoadingView => IsOpening && !ShowLiveCreation;
+    // Show loading view when: pack is selected AND still opening AND not viewing live creation
+    // Also show when pack selected but opening hasn't started yet (waiting for OnAppearing to trigger it)
+    public bool ShowLoadingView => Pack != null && !ShowCardsView && !ShowEmptyState;
 
-    // Show empty state when: no pack selected and not opening and no cards
-    public bool ShowEmptyState => Pack == null && !IsOpening && !HasCards;
+    // Show empty state ONLY when: no pack selected AND no cards
+    // This should only happen after logout clears state, NOT during normal pack opening
+    public bool ShowEmptyState => Pack == null && !HasCards;
 
     // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
     private bool _hasOpenedPack;
@@ -136,8 +139,6 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         _lastPackId = null;
         _hasOpenedPack = false;
         Cards.Clear();
-        OnPropertyChanged(nameof(HasCards));
-        OnPropertyChanged(nameof(ShowCardsView));
         Pack = null;
         CurrentCard = null;
         CurrentCardIndex = 0;
@@ -145,6 +146,11 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         IsOpening = false;
         IsRevealing = false;
         ShowLiveCreation = false;
+
+        // Notify all computed visibility properties
+        OnPropertyChanged(nameof(HasCards));
+        OnPropertyChanged(nameof(ShowCardsView));
+        OnPropertyChanged(nameof(ShowLoadingView));
         OnPropertyChanged(nameof(ShowEmptyState));
     }
 
@@ -383,6 +389,15 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     {
         if (Pack == null) return;
 
+        // Block during crest generation
+        if (_gameStateService.IsGeneratingCrests)
+        {
+            await Shell.Current.DisplayAlert("Please Wait",
+                "Cannot open another pack while crests are being generated.",
+                "OK");
+            return;
+        }
+
         if (!_gameStateService.CanAfford(Pack.Cost))
         {
             await Shell.Current.DisplayAlert("Not Enough Coins",
@@ -399,6 +414,15 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [RelayCommand]
     private async Task GoBack()
     {
+        // Block during crest generation
+        if (_gameStateService.IsGeneratingCrests)
+        {
+            await Shell.Current.DisplayAlert("Please Wait",
+                "Cannot leave while crests are being generated. Please wait for generation to complete.",
+                "OK");
+            return;
+        }
+
         // Clear state when explicitly going back to pack store
         _lastPackId = null;
         _hasOpenedPack = false;
@@ -414,6 +438,15 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         // Block viewing duplicates - they're already auto-sold
         if (cardItem.IsDuplicate) return;
 
+        // Block during crest generation
+        if (_gameStateService.IsGeneratingCrests)
+        {
+            await Shell.Current.DisplayAlert("Please Wait",
+                "Cannot view card details while crests are being generated.",
+                "OK");
+            return;
+        }
+
         // Navigate directly to player detail page
         // The cards will be preserved because we're using the same ViewModel instance
         await Shell.Current.GoToAsync($"playerdetail?playerId={cardItem.Player.Id}");
@@ -423,6 +456,15 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     private async Task SellAll()
     {
         if (Cards.Count == 0) return;
+
+        // Block during crest generation
+        if (_gameStateService.IsGeneratingCrests)
+        {
+            await Shell.Current.DisplayAlert("Please Wait",
+                "Cannot sell cards while crests are being generated.",
+                "OK");
+            return;
+        }
 
         var confirm = await Shell.Current.DisplayAlert(
             "Sell All Cards",
