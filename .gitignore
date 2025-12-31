@@ -19,7 +19,6 @@ Thumbs.db
 appwrite/functions/*/node_modules/
 
 # Packages are generated, not stored
-*.tar.gz
 
 # Temp files
 *.tmp
