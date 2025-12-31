@@ -51,6 +51,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     private CardItem? _currentCard;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowCardsView))]
+    [NotifyPropertyChangedFor(nameof(ShowLoadingView))]
     private bool _isOpening;
 
     [ObservableProperty]
@@ -83,8 +85,19 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private bool _hasError;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowCardsView))]
+    [NotifyPropertyChangedFor(nameof(ShowLoadingView))]
+    private bool _showLiveCreation;
+
     // Computed property to check if we have cards to show
     public bool HasCards => Cards.Count > 0;
+
+    // Show cards view when: has cards AND (not opening OR user chose to view live)
+    public bool ShowCardsView => HasCards && (!IsOpening || ShowLiveCreation);
+
+    // Show loading view when: opening AND not viewing live creation
+    public bool ShowLoadingView => IsOpening && !ShowLiveCreation;
 
     // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
     private bool _hasOpenedPack;
@@ -121,12 +134,20 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         _hasOpenedPack = false;
         Cards.Clear();
         OnPropertyChanged(nameof(HasCards));
+        OnPropertyChanged(nameof(ShowCardsView));
         Pack = null;
         CurrentCard = null;
         CurrentCardIndex = 0;
         AllRevealed = false;
         IsOpening = false;
         IsRevealing = false;
+        ShowLiveCreation = false;
+    }
+
+    [RelayCommand]
+    private void ViewLiveCreation()
+    {
+        ShowLiveCreation = true;
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -141,6 +162,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 _hasOpenedPack = false;
                 Cards.Clear();
                 OnPropertyChanged(nameof(HasCards));
+        OnPropertyChanged(nameof(ShowCardsView));
                 Pack = PackConfig.GetPackById(packId);
             }
             else
@@ -166,6 +188,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         LoadingMessage = "Shuffling the deck...";
         ErrorMessage = null;
         HasError = false;
+        ShowLiveCreation = false;
 
         try
         {
@@ -207,6 +230,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 Cards.Add(new CardItem(packResult.Player, null, packResult.IsDuplicate, packResult.DuplicateCoins));
             }
             OnPropertyChanged(nameof(HasCards));
+        OnPropertyChanged(nameof(ShowCardsView));
 
             // Count how many need crest generation
             var needsCrestCount = 0;
@@ -220,7 +244,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             }
 
             LoadingMessage = needsCrestCount > 0
-                ? "Creating crests... Estimated time 2 minutes"
+                ? "Creating crests..."
                 : "Loading crests...";
             LoadingProgress = 40;
             ProgressBarWidth = 100;
@@ -250,7 +274,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 }
                 else
                 {
-                    LoadingMessage = $"Creating crest for {player.FullName}...";
+                    // Keep message as "Creating crests..." - don't show individual player names
                     LoadingProgress = progressPercent;
                     ProgressBarWidth = progressPercent * 2.5;
 

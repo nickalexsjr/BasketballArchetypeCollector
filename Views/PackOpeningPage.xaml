@@ -30,7 +30,7 @@
         </Border>
 
         <!-- Cool Loading State -->
-        <Grid IsVisible="{Binding IsOpening}"
+        <Grid IsVisible="{Binding ShowLoadingView}"
               VerticalOptions="Center"
               HorizontalOptions="Center">
             <VerticalStackLayout Spacing="24" Padding="40">
@@ -141,17 +141,35 @@
                        HorizontalTextAlignment="Center" />
 
                 <!-- Navigation hint -->
-                <Label Text="You can navigate to other tabs while crests generate"
+                <Label Text="Estimated time: 2 minutes"
                        FontFamily="InterRegular"
                        FontSize="12"
                        TextColor="#475569"
                        HorizontalTextAlignment="Center"
-                       Margin="0,16,0,0" />
+                       Margin="0,8,0,0" />
+
+                <!-- View Live Creation Button -->
+                <Button Text="View Crest Creation"
+                        Command="{Binding ViewLiveCreationCommand}"
+                        BackgroundColor="#334155"
+                        TextColor="White"
+                        FontFamily="InterSemiBold"
+                        FontSize="14"
+                        CornerRadius="8"
+                        HeightRequest="40"
+                        Margin="0,8,0,0" />
+
+                <Label Text="You can navigate to other tabs while crests generate"
+                       FontFamily="InterRegular"
+                       FontSize="11"
+                       TextColor="#475569"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,4,0,0" />
             </VerticalStackLayout>
         </Grid>
 
-        <!-- Cards Revealed (only show when not opening AND has cards) -->
-        <Grid IsVisible="{Binding HasCards}"
+        <!-- Cards Revealed (show when: has cards AND (not opening OR viewing live creation)) -->
+        <Grid IsVisible="{Binding ShowCardsView}"
               RowDefinitions="Auto,*,Auto"
               Padding="16">
 
