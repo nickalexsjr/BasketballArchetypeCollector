@@ -172,7 +172,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 _hasOpenedPack = false;
                 Cards.Clear();
                 OnPropertyChanged(nameof(HasCards));
-        OnPropertyChanged(nameof(ShowCardsView));
+                OnPropertyChanged(nameof(ShowCardsView));
+                OnPropertyChanged(nameof(ShowLoadingView));
                 Pack = PackConfig.GetPackById(packId);
             }
             else
@@ -240,7 +241,8 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 Cards.Add(new CardItem(packResult.Player, null, packResult.IsDuplicate, packResult.DuplicateCoins));
             }
             OnPropertyChanged(nameof(HasCards));
-        OnPropertyChanged(nameof(ShowCardsView));
+            OnPropertyChanged(nameof(ShowCardsView));
+            OnPropertyChanged(nameof(ShowLoadingView));
 
             // Count how many need crest generation
             var needsCrestCount = 0;

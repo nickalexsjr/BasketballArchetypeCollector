@@ -10,7 +10,9 @@ public static class OverallCalculator
         { "kareem abdul-jabbar", 98 },
         { "nikola jokic", 98 },
         { "wilt chamberlain", 98 },
-        { "tim duncan", 98 }
+        { "tim duncan", 98 },
+        { "kobe bryant", 96 },
+        { "luka doncic", 95 }
     };
 
     public static int Calculate(string firstName, string lastName, float ppg, float rpg, float apg,
