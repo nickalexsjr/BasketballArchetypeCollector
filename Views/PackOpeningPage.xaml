@@ -150,8 +150,8 @@
             </VerticalStackLayout>
         </Grid>
 
-        <!-- Cards Revealed -->
-        <Grid IsVisible="{Binding IsOpening, Converter={StaticResource InvertedBoolConverter}}"
+        <!-- Cards Revealed (only show when not opening AND has cards) -->
+        <Grid IsVisible="{Binding HasCards}"
               RowDefinitions="Auto,*,Auto"
               Padding="16">
 

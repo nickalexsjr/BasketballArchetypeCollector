@@ -83,6 +83,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private bool _hasError;
 
+    // Computed property to check if we have cards to show
+    public bool HasCards => Cards.Count > 0;
+
     // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
     private bool _hasOpenedPack;
 
@@ -117,6 +120,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         _lastPackId = null;
         _hasOpenedPack = false;
         Cards.Clear();
+        OnPropertyChanged(nameof(HasCards));
         Pack = null;
         CurrentCard = null;
         CurrentCardIndex = 0;
@@ -136,6 +140,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 _lastPackId = packId;
                 _hasOpenedPack = false;
                 Cards.Clear();
+                OnPropertyChanged(nameof(HasCards));
                 Pack = PackConfig.GetPackById(packId);
             }
             else
@@ -201,6 +206,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             {
                 Cards.Add(new CardItem(packResult.Player, null, packResult.IsDuplicate, packResult.DuplicateCoins));
             }
+            OnPropertyChanged(nameof(HasCards));
 
             // Count how many need crest generation
             var needsCrestCount = 0;
