@@ -1,0 +1,8 @@
+Currently deployed: v3
+
+v3 is the stable version currently in use on Appwrite.
+v4 adds pre-warm endpoint but parallel generation didn't help
+(ModelsLab processes images sequentially per API key anyway).
+
+To deploy: Upload generate-archetype-v3.tar.gz (or the v4 one - same functionality,
+just has extra warmup endpoint that returns immediately if warmup=true)

@@ -196,82 +196,88 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
                 }
             }
 
-            // Separate cards into cached vs needs-generation
-            var cachedCards = new List<(GameStateService.PackOpenResult result, string crestUrl)>();
-            var needsGeneration = new List<GameStateService.PackOpenResult>();
+            // Add all cards immediately (without crests) so user can see what they got
+            foreach (var packResult in packResults)
+            {
+                Cards.Add(new CardItem(packResult.Player, null, packResult.IsDuplicate, packResult.DuplicateCoins));
+            }
 
+            // Count how many need crest generation
+            var needsCrestCount = 0;
             foreach (var packResult in packResults)
             {
                 var cached = _gameStateService.GetCachedArchetype(packResult.Player.Id);
-                if (cached != null && cached.HasCrestImage)
+                if (cached == null || !cached.HasCrestImage)
                 {
-                    cachedCards.Add((packResult, cached.CrestImageUrl!));
-                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Using cached crest for {packResult.Player.FullName}");
-                }
-                else
-                {
-                    needsGeneration.Add(packResult);
+                    needsCrestCount++;
                 }
             }
 
-            LoadingMessage = $"Found {cachedCards.Count} cached, generating {needsGeneration.Count}...";
+            LoadingMessage = needsCrestCount > 0
+                ? $"Generating {needsCrestCount} crests..."
+                : "Loading crests...";
             LoadingProgress = 40;
             ProgressBarWidth = 100;
 
-            // Generate crests for uncached cards IN PARALLEL (v4)
-            var generatedCrests = new Dictionary<string, string?>();
-            if (needsGeneration.Count > 0)
+            // Generate crests sequentially and update cards as they complete
+            var totalCards = packResults.Count;
+            for (int i = 0; i < totalCards; i++)
             {
-                LoadingMessage = $"Generating {needsGeneration.Count} crests in parallel...";
-                System.Diagnostics.Debug.WriteLine($"[PackOpening] Starting parallel generation for {needsGeneration.Count} players");
+                var packResult = packResults[i];
+                var player = packResult.Player;
+                var progressPercent = 40 + (int)((i + 1) / (float)totalCards * 50); // 40% to 90%
 
-                try
-                {
-                    var players = needsGeneration.Select(r => r.Player);
-                    var results = await _appwriteService.GenerateArchetypesParallel(players);
-
-                    foreach (var (playerId, archetype) in results)
-                    {
-                        if (archetype != null)
-                        {
-                            await _gameStateService.CacheArchetype(archetype);
-                            generatedCrests[playerId] = archetype.CrestImageUrl;
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: {archetype.PlayerName} -> {archetype.ArchetypeName}");
-                        }
-                        else
-                        {
-                            generatedCrests[playerId] = null;
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] No archetype for player {playerId}");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Parallel generation error: {ex.Message}");
-                }
-            }
-
-            LoadingProgress = 80;
-            ProgressBarWidth = 200;
-            LoadingMessage = "Preparing cards...";
-
-            // Add all cards to collection in original order
-            foreach (var packResult in packResults)
-            {
                 string? crestUrl = null;
 
-                // Check if it was cached
-                var cachedItem = cachedCards.FirstOrDefault(c => c.result.Player.Id == packResult.Player.Id);
-                if (cachedItem.crestUrl != null)
+                // Check if already has cached crest
+                var cached = _gameStateService.GetCachedArchetype(player.Id);
+                if (cached != null && cached.HasCrestImage)
                 {
-                    crestUrl = cachedItem.crestUrl;
+                    crestUrl = cached.CrestImageUrl;
+                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Using cached crest for {player.FullName}");
                 }
-                else if (generatedCrests.TryGetValue(packResult.Player.Id, out var generatedUrl))
+                else
                 {
-                    crestUrl = generatedUrl;
+                    LoadingMessage = $"Creating crest for {player.FullName}...";
+                    LoadingProgress = progressPercent;
+                    ProgressBarWidth = progressPercent * 2.5;
+
+                    // Generate new crest
+                    ArchetypeData? archetype = null;
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Calling GenerateArchetype for {player.FullName}...");
+                        archetype = await _appwriteService.GenerateArchetype(player);
+                    }
+                    catch (Exception crestEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest generation error for {player.FullName}: {crestEx.Message}");
+                    }
+
+                    // If generation failed, try to fetch from Appwrite DB
+                    if (archetype == null)
+                    {
+                        try
+                        {
+                            await Task.Delay(500);
+                            archetype = await _appwriteService.GetCachedArchetype(player.Id);
+                        }
+                        catch (Exception dbEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[PackOpening] DB fetch error: {dbEx.Message}");
+                        }
+                    }
+
+                    if (archetype != null)
+                    {
+                        await _gameStateService.CacheArchetype(archetype);
+                        crestUrl = archetype.CrestImageUrl;
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: {player.FullName} -> {archetype.ArchetypeName}");
+                    }
                 }
 
-                Cards.Add(new CardItem(packResult.Player, crestUrl, packResult.IsDuplicate, packResult.DuplicateCoins));
+                // Update the card with crest URL
+                Cards[i].CrestImageUrl = crestUrl;
             }
 
             Coins = _gameStateService.CurrentState.Coins;

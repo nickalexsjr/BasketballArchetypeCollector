@@ -264,9 +264,6 @@
                             CornerRadius="12"
                             HeightRequest="50" />
                 </Grid>
-
-                <controls:CoinDisplay Coins="{Binding Coins}"
-                                      HorizontalOptions="Center" />
             </VerticalStackLayout>
         </Grid>
 
