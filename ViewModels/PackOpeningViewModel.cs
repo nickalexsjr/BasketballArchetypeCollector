@@ -99,6 +99,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
     // Show loading view when: opening AND not viewing live creation
     public bool ShowLoadingView => IsOpening && !ShowLiveCreation;
 
+    // Show empty state when: no pack selected and not opening and no cards
+    public bool ShowEmptyState => Pack == null && !IsOpening && !HasCards;
+
     // Track if we've already opened a pack in this session (prevents re-opening on navigation back)
     private bool _hasOpenedPack;
 
@@ -142,6 +145,7 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         IsOpening = false;
         IsRevealing = false;
         ShowLiveCreation = false;
+        OnPropertyChanged(nameof(ShowEmptyState));
     }
 
     [RelayCommand]

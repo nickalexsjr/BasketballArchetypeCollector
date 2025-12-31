@@ -293,5 +293,26 @@
             </VerticalStackLayout>
         </Grid>
 
+        <!-- Empty State (shown when no pack is being opened) -->
+        <Grid IsVisible="{Binding ShowEmptyState}"
+              VerticalOptions="Center"
+              HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="16" Padding="40">
+                <Label Text="No pack selected"
+                       FontFamily="InterSemiBold"
+                       FontSize="18"
+                       TextColor="#64748b"
+                       HorizontalTextAlignment="Center" />
+                <Button Text="Go to Pack Store"
+                        Command="{Binding GoBackCommand}"
+                        BackgroundColor="#f97316"
+                        TextColor="White"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="12"
+                        HeightRequest="50"
+                        WidthRequest="200" />
+            </VerticalStackLayout>
+        </Grid>
+
     </Grid>
 </ContentPage>
