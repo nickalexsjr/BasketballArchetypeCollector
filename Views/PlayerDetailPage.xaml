@@ -117,6 +117,51 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Retry Crest Section (owned but no crest) -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16"
+                    IsVisible="{Binding CanRetryCrest}">
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="Crest Not Generated"
+                           FontFamily="InterBold"
+                           FontSize="16"
+                           TextColor="#fbbf24"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="The crest for this player failed to generate. Tap below to try again."
+                           FontFamily="InterRegular"
+                           FontSize="14"
+                           TextColor="#94a3b8"
+                           HorizontalTextAlignment="Center" />
+                    <Button Text="Generate Crest"
+                            Command="{Binding RetryGenerateCrestCommand}"
+                            BackgroundColor="#f97316"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            CornerRadius="12"
+                            Padding="24,12"
+                            HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Generating Crest Indicator -->
+            <Border StrokeShape="RoundRectangle 12"
+                    BackgroundColor="#1e293b"
+                    Padding="16"
+                    IsVisible="{Binding IsRetryingCrest}">
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="True"
+                                       Color="#f97316"
+                                       HeightRequest="24"
+                                       WidthRequest="24" />
+                    <Label Text="Generating crest..."
+                           FontFamily="InterSemiBold"
+                           FontSize="16"
+                           TextColor="White"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
             <!-- Locked Player Message (not owned) -->
             <Border StrokeShape="RoundRectangle 12"
                     BackgroundColor="#1e293b"

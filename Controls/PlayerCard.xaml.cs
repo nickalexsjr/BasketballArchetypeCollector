@@ -16,6 +16,9 @@ public partial class PlayerCard : ContentView
     public static readonly BindableProperty CrestImageUrlProperty =
         BindableProperty.Create(nameof(CrestImageUrl), typeof(string), typeof(PlayerCard), null, propertyChanged: OnCrestChanged);
 
+    public static readonly BindableProperty IsGeneratingCrestProperty =
+        BindableProperty.Create(nameof(IsGeneratingCrest), typeof(bool), typeof(PlayerCard), false);
+
     public Player? Player
     {
         get => (Player?)GetValue(PlayerProperty);
@@ -38,6 +41,12 @@ public partial class PlayerCard : ContentView
     {
         get => (string?)GetValue(CrestImageUrlProperty);
         set => SetValue(CrestImageUrlProperty, value);
+    }
+
+    public bool IsGeneratingCrest
+    {
+        get => (bool)GetValue(IsGeneratingCrestProperty);
+        set => SetValue(IsGeneratingCrestProperty, value);
     }
 
     public bool HasCrest => !string.IsNullOrEmpty(CrestImageUrl);

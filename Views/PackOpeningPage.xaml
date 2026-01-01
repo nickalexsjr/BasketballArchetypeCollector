@@ -215,6 +215,7 @@
                                 <Grid>
                                     <controls:PlayerCard Player="{Binding Player}"
                                                          CrestImageUrl="{Binding CrestImageUrl}"
+                                                         IsGeneratingCrest="{Binding IsGeneratingCrest}"
                                                          CardSize="Medium"
                                                          Opacity="{Binding IsDuplicate, Converter={StaticResource BoolToOpacityConverter}}">
                                         <controls:PlayerCard.GestureRecognizers>
@@ -240,6 +241,17 @@
                                                    TextColor="#22c55e"
                                                    HorizontalTextAlignment="Center" />
                                         </VerticalStackLayout>
+                                    </Border>
+                                    <!-- Sold overlay (for cards sold from detail screen) -->
+                                    <Border IsVisible="{Binding IsSold}"
+                                            BackgroundColor="#CC000000"
+                                            StrokeShape="RoundRectangle 12">
+                                        <Label Text="SOLD"
+                                               FontFamily="OrbitronBold"
+                                               FontSize="18"
+                                               TextColor="#94a3b8"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
                                     </Border>
                                 </Grid>
                             </Border>

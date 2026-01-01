@@ -63,6 +63,25 @@
                                WidthRequest="66" />
                     </Border>
 
+                    <!-- Generating Crest Spinner (shown while generating) -->
+                    <Border StrokeShape="RoundRectangle 10"
+                            BackgroundColor="#0f172a80"
+                            Stroke="{Binding RarityColor, Source={x:Reference thisCard}}"
+                            StrokeThickness="1"
+                            IsVisible="{Binding IsGeneratingCrest, Source={x:Reference thisCard}}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            HeightRequest="70"
+                            WidthRequest="70"
+                            Padding="2">
+                        <ActivityIndicator IsRunning="{Binding IsGeneratingCrest, Source={x:Reference thisCard}}"
+                                           Color="{Binding RarityColor, Source={x:Reference thisCard}}"
+                                           HeightRequest="40"
+                                           WidthRequest="40"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                    </Border>
+
                     <!-- Player Name (always shown) -->
                     <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
                         <Label Text="{Binding Player.FirstName, Source={x:Reference thisCard}}"

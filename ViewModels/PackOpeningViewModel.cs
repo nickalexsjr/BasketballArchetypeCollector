@@ -21,14 +21,21 @@ public partial class CardItem : ObservableObject
     [ObservableProperty]
     private int _duplicateCoins;
 
+    [ObservableProperty]
+    private bool _isSold;
+
+    [ObservableProperty]
+    private bool _isGeneratingCrest;
+
     public string RarityColor => RarityConfig.GetInfo(Player.Rarity).PrimaryColor;
 
-    public CardItem(Player player, string? crestImageUrl = null, bool isDuplicate = false, int duplicateCoins = 0)
+    public CardItem(Player player, string? crestImageUrl = null, bool isDuplicate = false, int duplicateCoins = 0, bool isGeneratingCrest = false)
     {
         Player = player;
         CrestImageUrl = crestImageUrl;
         IsDuplicate = isDuplicate;
         DuplicateCoins = duplicateCoins;
+        IsGeneratingCrest = isGeneratingCrest;
     }
 }
 
@@ -121,6 +128,44 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
 
         // Subscribe to state cleared event to clear pack state when user signs out/in
         _gameStateService.StateCleared += OnStateCleared;
+
+        // Subscribe to state changes to detect cards sold from other screens
+        _gameStateService.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        // Recalculate SellAllValue based on current ownership
+        // This handles the case where user sold a card from PlayerDetailPage
+        RecalculateSellAllValue();
+        Coins = _gameStateService.CurrentState.Coins;
+    }
+
+    /// <summary>
+    /// Recalculates SellAllValue based on which cards are still owned.
+    /// Also marks cards as sold if they were sold from another screen.
+    /// Prevents double-sell exploit when cards are sold from other screens.
+    /// </summary>
+    private void RecalculateSellAllValue()
+    {
+        var newValue = 0;
+        foreach (var cardItem in Cards)
+        {
+            // Check if card was sold from another screen
+            if (!cardItem.IsDuplicate && !cardItem.IsSold)
+            {
+                if (_gameStateService.OwnsCard(cardItem.Player.Id))
+                {
+                    newValue += RarityConfig.GetSellValue(cardItem.Player.Rarity);
+                }
+                else
+                {
+                    // Card was sold elsewhere - mark it as sold
+                    cardItem.IsSold = true;
+                }
+            }
+        }
+        SellAllValue = newValue;
     }
 
     private void OnStateCleared(object? sender, EventArgs e)
@@ -237,24 +282,29 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             }
 
             // Add all cards immediately (without crests) so user can see what they got
-            foreach (var packResult in packResults)
-            {
-                Cards.Add(new CardItem(packResult.Player, null, packResult.IsDuplicate, packResult.DuplicateCoins));
-            }
-            OnPropertyChanged(nameof(HasCards));
-            OnPropertyChanged(nameof(ShowCardsView));
-            OnPropertyChanged(nameof(ShowLoadingView));
-
-            // Count how many need crest generation
+            // Also determine which cards need crest generation
             var needsCrestCount = 0;
             foreach (var packResult in packResults)
             {
                 var cached = _gameStateService.GetCachedArchetype(packResult.Player.Id);
-                if (cached == null || !cached.HasCrestImage)
+                var hasCachedCrest = cached != null && cached.HasCrestImage;
+                var needsGeneration = !hasCachedCrest && !packResult.IsDuplicate;
+
+                if (needsGeneration)
                 {
                     needsCrestCount++;
                 }
+
+                Cards.Add(new CardItem(
+                    packResult.Player,
+                    hasCachedCrest ? cached!.CrestImageUrl : null,
+                    packResult.IsDuplicate,
+                    packResult.DuplicateCoins,
+                    isGeneratingCrest: needsGeneration));
             }
+            OnPropertyChanged(nameof(HasCards));
+            OnPropertyChanged(nameof(ShowCardsView));
+            OnPropertyChanged(nameof(ShowLoadingView));
 
             LoadingMessage = needsCrestCount > 0
                 ? "Creating crests..."
@@ -272,61 +322,59 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             var totalCards = packResults.Count;
             for (int i = 0; i < totalCards; i++)
             {
-                var packResult = packResults[i];
-                var player = packResult.Player;
+                var cardItem = Cards[i];
+
+                // Skip if already has crest (was cached) or is a duplicate
+                if (!cardItem.IsGeneratingCrest)
+                {
+                    continue;
+                }
+
+                var player = cardItem.Player;
                 var progressPercent = 40 + (int)((i + 1) / (float)totalCards * 50); // 40% to 90%
 
                 string? crestUrl = null;
 
-                // Check if already has cached crest
-                var cached = _gameStateService.GetCachedArchetype(player.Id);
-                if (cached != null && cached.HasCrestImage)
-                {
-                    crestUrl = cached.CrestImageUrl;
-                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Using cached crest for {player.FullName}");
-                }
-                else
-                {
-                    // Keep message as "Creating crests..." - don't show individual player names
-                    LoadingProgress = progressPercent;
-                    ProgressBarWidth = progressPercent * 2.5;
+                // Keep message as "Creating crests..." - don't show individual player names
+                LoadingProgress = progressPercent;
+                ProgressBarWidth = progressPercent * 2.5;
 
-                    // Generate new crest
-                    ArchetypeData? archetype = null;
+                // Generate new crest
+                ArchetypeData? archetype = null;
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Calling GenerateArchetype for {player.FullName}...");
+                    archetype = await _appwriteService.GenerateArchetype(player);
+                }
+                catch (Exception crestEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest generation error for {player.FullName}: {crestEx.Message}");
+                }
+
+                // If generation failed, try to fetch from Appwrite DB
+                if (archetype == null)
+                {
                     try
                     {
-                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Calling GenerateArchetype for {player.FullName}...");
-                        archetype = await _appwriteService.GenerateArchetype(player);
+                        await Task.Delay(500);
+                        archetype = await _appwriteService.GetCachedArchetype(player.Id);
                     }
-                    catch (Exception crestEx)
+                    catch (Exception dbEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[PackOpening] Crest generation error for {player.FullName}: {crestEx.Message}");
-                    }
-
-                    // If generation failed, try to fetch from Appwrite DB
-                    if (archetype == null)
-                    {
-                        try
-                        {
-                            await Task.Delay(500);
-                            archetype = await _appwriteService.GetCachedArchetype(player.Id);
-                        }
-                        catch (Exception dbEx)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[PackOpening] DB fetch error: {dbEx.Message}");
-                        }
-                    }
-
-                    if (archetype != null)
-                    {
-                        await _gameStateService.CacheArchetype(archetype);
-                        crestUrl = archetype.CrestImageUrl;
-                        System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: {player.FullName} -> {archetype.ArchetypeName}");
+                        System.Diagnostics.Debug.WriteLine($"[PackOpening] DB fetch error: {dbEx.Message}");
                     }
                 }
 
-                // Update the card with crest URL
-                Cards[i].CrestImageUrl = crestUrl;
+                if (archetype != null)
+                {
+                    await _gameStateService.CacheArchetype(archetype);
+                    crestUrl = archetype.CrestImageUrl;
+                    System.Diagnostics.Debug.WriteLine($"[PackOpening] SUCCESS: {player.FullName} -> {archetype.ArchetypeName}");
+                }
+
+                // Update the card with crest URL and stop spinner
+                cardItem.CrestImageUrl = crestUrl;
+                cardItem.IsGeneratingCrest = false;
             }
 
             Coins = _gameStateService.CurrentState.Coins;
@@ -441,6 +489,9 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
         // Block viewing duplicates - they're already auto-sold
         if (cardItem.IsDuplicate) return;
 
+        // Block viewing sold cards
+        if (cardItem.IsSold) return;
+
         // Block during crest generation
         if (_gameStateService.IsGeneratingCrests)
         {
@@ -469,25 +520,47 @@ public partial class PackOpeningViewModel : BaseViewModel, IQueryAttributable
             return;
         }
 
+        // Recalculate before showing dialog to ensure accurate value
+        RecalculateSellAllValue();
+
+        // Count how many cards can actually be sold
+        var sellableCards = Cards.Where(c => !c.IsDuplicate && _gameStateService.OwnsCard(c.Player.Id)).ToList();
+
+        if (sellableCards.Count == 0)
+        {
+            await Shell.Current.DisplayAlert("No Cards to Sell",
+                "All cards from this pack have already been sold.",
+                "OK");
+
+            // Clear state and go back
+            _lastPackId = null;
+            _hasOpenedPack = false;
+            Cards.Clear();
+            await Shell.Current.GoToAsync("..");
+            return;
+        }
+
         var confirm = await Shell.Current.DisplayAlert(
             "Sell All Cards",
-            $"Sell all {Cards.Count} cards for {SellAllValue} coins?",
+            $"Sell {sellableCards.Count} card{(sellableCards.Count == 1 ? "" : "s")} for {SellAllValue} coins?",
             "Sell All", "Cancel");
 
         if (confirm)
         {
             try
             {
-                foreach (var cardItem in Cards.ToList())
+                var actualSellValue = 0;
+                foreach (var cardItem in sellableCards)
                 {
+                    // Double-check ownership before selling (defensive)
                     if (_gameStateService.OwnsCard(cardItem.Player.Id))
                     {
-                        await _gameStateService.SellCard(cardItem.Player.Id);
+                        actualSellValue += await _gameStateService.SellCard(cardItem.Player.Id);
                     }
                 }
 
                 Coins = _gameStateService.CurrentState.Coins;
-                await Shell.Current.DisplayAlert("Sold!", $"You received {SellAllValue} coins.", "OK");
+                await Shell.Current.DisplayAlert("Sold!", $"You received {actualSellValue} coins.", "OK");
 
                 // Clear state when leaving
                 _lastPackId = null;

@@ -38,6 +38,12 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
     [ObservableProperty]
     private string _debugInfo = string.Empty;
 
+    [ObservableProperty]
+    private bool _isRetryingCrest;
+
+    // Show retry button only when: owned AND no crest AND not currently retrying
+    public bool CanRetryCrest => IsOwned && !HasArchetype && !IsRetryingCrest;
+
     public PlayerDetailViewModel(
         GameStateService gameStateService,
         PlayerDataService playerDataService,
@@ -56,6 +62,7 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
         {
             IsOwned = _gameStateService.OwnsCard(Player.Id);
             Coins = _gameStateService.CurrentState.Coins;
+            OnPropertyChanged(nameof(CanRetryCrest));
         }
     }
 
@@ -121,8 +128,9 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                     DebugInfo = $"✗ Appwrite error: {ex.Message}";
                 }
 
-                // No archetype found
+                // No archetype found - show retry button if owned
                 DebugInfo = $"✗ No archetype | ID: {Player.Id} | Cache: {cacheCount} | Owned: {IsOwned}";
+                OnPropertyChanged(nameof(CanRetryCrest));
             }
             else
             {
@@ -142,6 +150,60 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
         ArchetypeName = archetype.ArchetypeName;
         ArchetypeDescription = archetype.Description;
         CrestImageUrl = archetype.CrestImageUrl;
+        OnPropertyChanged(nameof(CanRetryCrest)); // Hide retry button when crest is set
+    }
+
+    [RelayCommand]
+    private async Task RetryGenerateCrestAsync()
+    {
+        if (Player == null || !IsOwned || HasArchetype || IsRetryingCrest) return;
+
+        IsRetryingCrest = true;
+        OnPropertyChanged(nameof(CanRetryCrest));
+
+        try
+        {
+            DebugInfo = "Generating crest...";
+
+            var archetype = await _appwriteService.GenerateArchetype(Player);
+
+            if (archetype != null && archetype.HasCrestImage)
+            {
+                await _gameStateService.CacheArchetype(archetype);
+                SetArchetype(archetype);
+                DebugInfo = $"✓ Generated | {archetype.ArchetypeName}";
+            }
+            else
+            {
+                // Generation returned but no crest image - try fetching from DB
+                await Task.Delay(500);
+                var cloudArchetype = await _appwriteService.GetCachedArchetype(Player.Id);
+                if (cloudArchetype != null && cloudArchetype.HasCrestImage)
+                {
+                    await _gameStateService.CacheArchetype(cloudArchetype);
+                    SetArchetype(cloudArchetype);
+                    DebugInfo = $"✓ Fetched | {cloudArchetype.ArchetypeName}";
+                }
+                else
+                {
+                    DebugInfo = "✗ Crest generation failed. Try again later.";
+                    await Shell.Current.DisplayAlert("Generation Failed",
+                        "Could not generate crest. Please try again later.", "OK");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PlayerDetail] Retry crest error: {ex.Message}");
+            DebugInfo = $"✗ Error: {ex.Message}";
+            await Shell.Current.DisplayAlert("Error",
+                "Failed to generate crest. Please try again.", "OK");
+        }
+        finally
+        {
+            IsRetryingCrest = false;
+            OnPropertyChanged(nameof(CanRetryCrest));
+        }
     }
 
     [RelayCommand]
@@ -162,6 +224,7 @@ public partial class PlayerDetailViewModel : BaseViewModel, IQueryAttributable
                 await _gameStateService.SellCard(Player.Id);
                 IsOwned = false;
                 Coins = _gameStateService.CurrentState.Coins;
+                OnPropertyChanged(nameof(CanRetryCrest)); // Update retry button visibility
                 await Shell.Current.DisplayAlert("Sold!", $"You received {sellValue} coins.", "OK");
             }
             catch (Exception ex)
